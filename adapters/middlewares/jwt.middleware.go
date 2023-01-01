@@ -100,18 +100,21 @@ func jWTConfig(secret string) echojwt.Config {
 // ConditionalJWTMiddleware skips JWT for unauthenticated routes
 func ConditionalJWTMiddleware(jwtSecret string) echo.MiddlewareFunc {
 	noAuthRoutes := map[string]bool{
-		"POST /v1/login":                                   true,
-		"POST /v1/register":                                true,
+		"GET /v1/health":                                   true,
+		"GET /v1/cache/health":                             true,
 		"GET /v1/verify_email":                             true,
-		"POST /v1/reset_password":                          true,
-		"POST /v1/resend_verification":                     true,
-		"POST /v1/request_password_reset":                  true,
+		"GET /v1/ai/capabilities":                          true,
 		"GET /v1/diagnostic_centres":                       true,
 		"GET /v1/diagnostic_centres/:diagnostic_centre_id": true,
-		"POST /v1/auth/google":                             true,
-		"GET /v1/health":                                   true,
-		"GET /v1/ai/capabilities": 													true,
-		"GET /v1/cache/health": 														true,
+    
+		"POST /v1/login":                  true,
+		"POST /v1/register":               true,
+		"POST /v1/auth/google":            true,
+		"POST /v1/verify_phone":           true,
+		"POST /v1/reset_password":         true,
+		"POST /v1/register_with_phone":    true,
+		"POST /v1/resend_verification":    true,
+		"POST /v1/request_password_reset": true,
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {

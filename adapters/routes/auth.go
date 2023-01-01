@@ -20,6 +20,20 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 		},
 		{
 			method:      http.MethodPost,
+			path:        "/register_with_phone",
+			handler:     handler.CreateWithPhoneNumber,
+			factory:     func() interface{} { return &domain.PhoneRegisterDTO{} },
+			description: "User registration with phone number",
+		},
+		{
+			method:      http.MethodPost,
+			path:        "/verify_phone",
+			handler:     handler.VerifyPhoneDTO,
+			factory:     func() interface{} { return &domain.VerifyPhoneDTO{} },
+			description: "Phone number verification",
+		},
+		{
+			method:      http.MethodPost,
 			path:        "/login",
 			handler:     handler.SignIn,
 			factory:     func() interface{} { return &domain.UserSignInDTO{} },

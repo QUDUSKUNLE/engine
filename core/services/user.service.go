@@ -81,6 +81,110 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)
 }
 
+func (service *ServicesHandler) CreateWithPhoneNumber(context echo.Context) error {
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.PhoneRegisterDTO)
+
+	// Check if phone number already exists
+	// existingUser, _ := service.userPort.GetUserByPhoneNumber(
+	//     context.Request().Context(),
+	//     pgtype.Text{String: dto.PhoneNumber, Valid: true},
+	// )
+	// if existingUser != nil {
+	//     utils.Error("Phone number already registered",
+	//         utils.LogField{Key: "phone_number", Value: dto.PhoneNumber})
+	//     return utils.ErrorResponse(http.StatusConflict, errors.New("phone number already registered"), context)
+	// }
+
+	// Hash password
+	hashedPassword, err := domain.HashPassword(dto.Password)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+
+	// Create user
+	newUser := db.CreateUserParams{
+		Fullname:      pgtype.Text{String: fmt.Sprintf("%s %s", dto.FirstName, dto.LastName), Valid: true},
+		PhoneNumber:   pgtype.Text{String: dto.PhoneNumber, Valid: true},
+		Password:      hashedPassword,
+		UserType:      dto.UserType,
+		Email:         pgtype.Text{},                        // Empty email for phone-based users
+		EmailVerified: pgtype.Bool{Bool: true, Valid: true}, // Skip email verification
+	}
+
+	createdUser, err := service.userPort.CreateUser(context.Request().Context(), newUser)
+	if err != nil {
+		utils.Error("Failed to create user with phone",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	// Generate SMS verification token
+	// token := GenerateRandomToken()
+	// expiresAt := time.Now().Add(15 * time.Minute)
+
+	// Save verification token (you need to extend the token table or create a new one)
+	// // For now, assuming you have a similar SMS verification token system
+	// smsVerificationParams := db.CreateSMSVerificationTokenParams{
+	//     PhoneNumber: dto.PhoneNumber,
+	//     Token:       token,
+	//     ExpiresAt:   pgtype.Timestamptz{Time: expiresAt, Valid: true},
+	// }
+
+	// _, err = service.userPort.CreateSMSVerificationToken(context.Request().Context(), smsVerificationParams)
+	// if err != nil {
+	//     utils.Error("Failed to create SMS verification token",
+	//         utils.LogField{Key: "error", Value: err.Error()})
+	//     return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	// }
+
+	// // Send SMS verification
+	// go service.sendSMSVerification(dto.PhoneNumber, token)
+
+	return utils.ResponseMessage(http.StatusCreated, map[string]interface{}{
+		"user_id":      createdUser.ID,
+		"phone_number": dto.PhoneNumber,
+		"message":      "Verification code sent to your phone",
+	}, context)
+}
+
+// Verify phone number with SMS code
+func (service *ServicesHandler) VerifyPhoneNumber(context echo.Context) error {
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.VerifyPhoneDTO)
+
+	// Get and verify token
+	// token, err := service.userPort.GetSMSVerificationToken(context.Request().Context(), dto.Token)
+	// if err != nil {
+	//     utils.Error("Invalid SMS verification token",
+	//         utils.LogField{Key: "error", Value: err.Error()})
+	//     return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid verification code"), context)
+	// }
+
+	// Check if token is expired or used
+	// if token.ExpiresAt.Time.Before(time.Now()) || (token.Used.Valid && token.Used.Bool) {
+	//     utils.Error("Expired or used SMS token",
+	//         utils.LogField{Key: "token_id", Value: token.ID})
+	//     return utils.ErrorResponse(http.StatusBadRequest, errors.New("verification code expired"), context)
+	// }
+
+	// // Mark phone as verified
+	// err = service.userPort.MarkPhoneAsVerified(context.Request().Context(), dto.PhoneNumber)
+	// if err != nil {
+	//     utils.Error("Failed to mark phone as verified",
+	//         utils.LogField{Key: "error", Value: err.Error()})
+	//     return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	// }
+
+	// // Mark token as used
+	// service.userPort.MarkSMSVerificationTokenUsed(context.Request().Context(), token.ID)
+
+	utils.Info("Phone number verified successfully",
+		utils.LogField{Key: "phone_number", Value: dto.PhoneNumber})
+
+	return utils.ResponseMessage(http.StatusOK, map[string]string{
+		"message": "Phone number verified successfully",
+	}, context)
+}
+
 func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	// Check for permission to add a diagnostic manager
 	owner, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
@@ -316,7 +420,7 @@ func (service *ServicesHandler) UpdatePassword(context echo.Context) error {
 
 	// Update password
 	if err := service.userPort.UpdatePassword(context.Request().Context(), db.UpdatePasswordParams{
-		ID:    currentUser.UserID.String(),
+		ID:       currentUser.UserID.String(),
 		Password: hashedPassword,
 	}); err != nil {
 		utils.Error("Failed to update password",

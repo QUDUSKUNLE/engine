@@ -42,6 +42,18 @@ type (
 		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required" example:"Diagnoxix12345"`
 		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER" example:"PATIENT"`
 	}
+	PhoneRegisterDTO struct {
+		FirstName       string      `json:"first_name" validate:"gte=3" example:"FirstName"`
+		LastName        string      `json:"last_name" validate:"gte=3" example:"LastName"`
+		PhoneNumber     string      `json:"phone_number" validate:"required,e164" example:"+23470311787767"`
+		Password        string      `json:"password" validate:"gte=6,lte=20,required" example:"Diagnoxix12345"`
+		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required" example:"Diagnoxix12345"`
+		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER" example:"PATIENT"`
+	}
+	VerifyPhoneDTO struct {
+		Token       string `json:"token" validate:"required"`
+		PhoneNumber string `json:"phone_number" validate:"required,e164" example:"+23470311787767"`
+	}
 	DiagnosticCentreManagerRegisterDTO struct {
 		Email     string      `json:"email" validate:"email,required"`
 		LastName  string      `json:"last_name" validate:"gte=3,required"`

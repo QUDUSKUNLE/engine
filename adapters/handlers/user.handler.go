@@ -174,3 +174,11 @@ func (handler *HTTPHandler) ResendVerification(context echo.Context) error {
 func (handler *HTTPHandler) GoogleLogin(context echo.Context) error {
 	return handler.service.GoogleLogin(context)
 }
+
+func (handler *HTTPHandler) VerifyPhoneDTO(context echo.Context) error {
+	return handler.service.VerifyPhoneNumber(context)
+}
+
+func (handler *HTTPHandler) CreateWithPhoneNumber(context echo.Context) error {
+	return handler.service.CreateWithPhoneNumber(context)
+}
