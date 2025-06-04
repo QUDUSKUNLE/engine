@@ -1,0 +1,4 @@
+.env
+tmp
+bin
+# internal/pdf/**.pdf
