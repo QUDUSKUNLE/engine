@@ -11,14 +11,259 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AvailableTests string
+
+const (
+	AvailableTestsBLOODTEST               AvailableTests = "BLOOD_TEST"
+	AvailableTestsURINETEST               AvailableTests = "URINE_TEST"
+	AvailableTestsXRAY                    AvailableTests = "X_RAY"
+	AvailableTestsMRI                     AvailableTests = "MRI"
+	AvailableTestsCTSCAN                  AvailableTests = "CT_SCAN"
+	AvailableTestsULTRASOUND              AvailableTests = "ULTRASOUND"
+	AvailableTestsECG                     AvailableTests = "ECG"
+	AvailableTestsEEG                     AvailableTests = "EEG"
+	AvailableTestsBIOPSY                  AvailableTests = "BIOPSY"
+	AvailableTestsSKINTEST                AvailableTests = "SKIN_TEST"
+	AvailableTestsALLERGYTEST             AvailableTests = "ALLERGY_TEST"
+	AvailableTestsGENETICTEST             AvailableTests = "GENETIC_TEST"
+	AvailableTestsIMMUNOLOGYTEST          AvailableTests = "IMMUNOLOGY_TEST"
+	AvailableTestsHORMONETEST             AvailableTests = "HORMONE_TEST"
+	AvailableTestsVIRALTEST               AvailableTests = "VIRAL_TEST"
+	AvailableTestsBACTERIALTEST           AvailableTests = "BACTERIAL_TEST"
+	AvailableTestsPARASITICTEST           AvailableTests = "PARASITIC_TEST"
+	AvailableTestsFUNGALTEST              AvailableTests = "FUNGAL_TEST"
+	AvailableTestsMOLECULARTEST           AvailableTests = "MOLECULAR_TEST"
+	AvailableTestsTOXICOLOGYTEST          AvailableTests = "TOXICOLOGY_TEST"
+	AvailableTestsECHO                    AvailableTests = "ECHO"
+	AvailableTestsCOVID19TEST             AvailableTests = "COVID_19_TEST"
+	AvailableTestsOTHER                   AvailableTests = "OTHER"
+	AvailableTestsBLOODSUGARTEST          AvailableTests = "BLOOD_SUGAR_TEST"
+	AvailableTestsLIPIDPROFILE            AvailableTests = "LIPID_PROFILE"
+	AvailableTestsHEMOGLOBINTEST          AvailableTests = "HEMOGLOBIN_TEST"
+	AvailableTestsTHYROIDTEST             AvailableTests = "THYROID_TEST"
+	AvailableTestsLIVERFUNCTIONTEST       AvailableTests = "LIVER_FUNCTION_TEST"
+	AvailableTestsKIDNEYFUNCTIONTEST      AvailableTests = "KIDNEY_FUNCTION_TEST"
+	AvailableTestsURICACIDTEST            AvailableTests = "URIC_ACID_TEST"
+	AvailableTestsVITAMINDTEST            AvailableTests = "VITAMIN_D_TEST"
+	AvailableTestsVITAMINB12TEST          AvailableTests = "VITAMIN_B12_TEST"
+	AvailableTestsHEMOGRAM                AvailableTests = "HEMOGRAM"
+	AvailableTestsCOMPLETEBLOODCOUNT      AvailableTests = "COMPLETE_BLOOD_COUNT"
+	AvailableTestsBLOODGROUPING           AvailableTests = "BLOOD_GROUPING"
+	AvailableTestsHEPATITISBTEST          AvailableTests = "HEPATITIS_B_TEST"
+	AvailableTestsHEPATITISCTEST          AvailableTests = "HEPATITIS_C_TEST"
+	AvailableTestsHIVTEST                 AvailableTests = "HIV_TEST"
+	AvailableTestsMALARIATEST             AvailableTests = "MALARIA_TEST"
+	AvailableTestsDENGUETEST              AvailableTests = "DENGUE_TEST"
+	AvailableTestsTYPHOIDTEST             AvailableTests = "TYPHOID_TEST"
+	AvailableTestsCOVID19ANTIBODYTEST     AvailableTests = "COVID_19_ANTIBODY_TEST"
+	AvailableTestsCOVID19RAPIDANTIGENTEST AvailableTests = "COVID_19_RAPID_ANTIGEN_TEST"
+	AvailableTestsCOVID19RTPCRTEST        AvailableTests = "COVID_19_RT_PCR_TEST"
+	AvailableTestsPREGNANCYTEST           AvailableTests = "PREGNANCY_TEST"
+)
+
+func (e *AvailableTests) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AvailableTests(s)
+	case string:
+		*e = AvailableTests(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AvailableTests: %T", src)
+	}
+	return nil
+}
+
+type NullAvailableTests struct {
+	AvailableTests AvailableTests `json:"available_tests"`
+	Valid          bool           `json:"valid"` // Valid is true if AvailableTests is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAvailableTests) Scan(value interface{}) error {
+	if value == nil {
+		ns.AvailableTests, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AvailableTests.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAvailableTests) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AvailableTests), nil
+}
+
+func (e AvailableTests) Valid() bool {
+	switch e {
+	case AvailableTestsBLOODTEST,
+		AvailableTestsURINETEST,
+		AvailableTestsXRAY,
+		AvailableTestsMRI,
+		AvailableTestsCTSCAN,
+		AvailableTestsULTRASOUND,
+		AvailableTestsECG,
+		AvailableTestsEEG,
+		AvailableTestsBIOPSY,
+		AvailableTestsSKINTEST,
+		AvailableTestsALLERGYTEST,
+		AvailableTestsGENETICTEST,
+		AvailableTestsIMMUNOLOGYTEST,
+		AvailableTestsHORMONETEST,
+		AvailableTestsVIRALTEST,
+		AvailableTestsBACTERIALTEST,
+		AvailableTestsPARASITICTEST,
+		AvailableTestsFUNGALTEST,
+		AvailableTestsMOLECULARTEST,
+		AvailableTestsTOXICOLOGYTEST,
+		AvailableTestsECHO,
+		AvailableTestsCOVID19TEST,
+		AvailableTestsOTHER,
+		AvailableTestsBLOODSUGARTEST,
+		AvailableTestsLIPIDPROFILE,
+		AvailableTestsHEMOGLOBINTEST,
+		AvailableTestsTHYROIDTEST,
+		AvailableTestsLIVERFUNCTIONTEST,
+		AvailableTestsKIDNEYFUNCTIONTEST,
+		AvailableTestsURICACIDTEST,
+		AvailableTestsVITAMINDTEST,
+		AvailableTestsVITAMINB12TEST,
+		AvailableTestsHEMOGRAM,
+		AvailableTestsCOMPLETEBLOODCOUNT,
+		AvailableTestsBLOODGROUPING,
+		AvailableTestsHEPATITISBTEST,
+		AvailableTestsHEPATITISCTEST,
+		AvailableTestsHIVTEST,
+		AvailableTestsMALARIATEST,
+		AvailableTestsDENGUETEST,
+		AvailableTestsTYPHOIDTEST,
+		AvailableTestsCOVID19ANTIBODYTEST,
+		AvailableTestsCOVID19RAPIDANTIGENTEST,
+		AvailableTestsCOVID19RTPCRTEST,
+		AvailableTestsPREGNANCYTEST:
+		return true
+	}
+	return false
+}
+
+func AllAvailableTestsValues() []AvailableTests {
+	return []AvailableTests{
+		AvailableTestsBLOODTEST,
+		AvailableTestsURINETEST,
+		AvailableTestsXRAY,
+		AvailableTestsMRI,
+		AvailableTestsCTSCAN,
+		AvailableTestsULTRASOUND,
+		AvailableTestsECG,
+		AvailableTestsEEG,
+		AvailableTestsBIOPSY,
+		AvailableTestsSKINTEST,
+		AvailableTestsALLERGYTEST,
+		AvailableTestsGENETICTEST,
+		AvailableTestsIMMUNOLOGYTEST,
+		AvailableTestsHORMONETEST,
+		AvailableTestsVIRALTEST,
+		AvailableTestsBACTERIALTEST,
+		AvailableTestsPARASITICTEST,
+		AvailableTestsFUNGALTEST,
+		AvailableTestsMOLECULARTEST,
+		AvailableTestsTOXICOLOGYTEST,
+		AvailableTestsECHO,
+		AvailableTestsCOVID19TEST,
+		AvailableTestsOTHER,
+		AvailableTestsBLOODSUGARTEST,
+		AvailableTestsLIPIDPROFILE,
+		AvailableTestsHEMOGLOBINTEST,
+		AvailableTestsTHYROIDTEST,
+		AvailableTestsLIVERFUNCTIONTEST,
+		AvailableTestsKIDNEYFUNCTIONTEST,
+		AvailableTestsURICACIDTEST,
+		AvailableTestsVITAMINDTEST,
+		AvailableTestsVITAMINB12TEST,
+		AvailableTestsHEMOGRAM,
+		AvailableTestsCOMPLETEBLOODCOUNT,
+		AvailableTestsBLOODGROUPING,
+		AvailableTestsHEPATITISBTEST,
+		AvailableTestsHEPATITISCTEST,
+		AvailableTestsHIVTEST,
+		AvailableTestsMALARIATEST,
+		AvailableTestsDENGUETEST,
+		AvailableTestsTYPHOIDTEST,
+		AvailableTestsCOVID19ANTIBODYTEST,
+		AvailableTestsCOVID19RAPIDANTIGENTEST,
+		AvailableTestsCOVID19RTPCRTEST,
+		AvailableTestsPREGNANCYTEST,
+	}
+}
+
+type Doctor string
+
+const (
+	DoctorFemale Doctor = "Female"
+	DoctorMale   Doctor = "Male"
+)
+
+func (e *Doctor) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Doctor(s)
+	case string:
+		*e = Doctor(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Doctor: %T", src)
+	}
+	return nil
+}
+
+type NullDoctor struct {
+	Doctor Doctor `json:"doctor"`
+	Valid  bool   `json:"valid"` // Valid is true if Doctor is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDoctor) Scan(value interface{}) error {
+	if value == nil {
+		ns.Doctor, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Doctor.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDoctor) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Doctor), nil
+}
+
+func (e Doctor) Valid() bool {
+	switch e {
+	case DoctorFemale,
+		DoctorMale:
+		return true
+	}
+	return false
+}
+
+func AllDoctorValues() []Doctor {
+	return []Doctor{
+		DoctorFemale,
+		DoctorMale,
+	}
+}
+
 type UserEnum string
 
 const (
-	UserEnumUSER              UserEnum = "USER"
-	UserEnumDIAGNOSTICCENTRE  UserEnum = "DIAGNOSTIC_CENTRE"
-	UserEnumHOSPITAL          UserEnum = "HOSPITAL"
-	UserEnumADMIN             UserEnum = "ADMIN"
-	UserEnumDIAGNOSTICMANAGER UserEnum = "DIAGNOSTIC_MANAGER"
+	UserEnumUSER                    UserEnum = "USER"
+	UserEnumDIAGNOSTICCENTREOWNER   UserEnum = "DIAGNOSTIC_CENTRE_OWNER"
+	UserEnumHOSPITAL                UserEnum = "HOSPITAL"
+	UserEnumADMIN                   UserEnum = "ADMIN"
+	UserEnumDIAGNOSTICCENTREMANAGER UserEnum = "DIAGNOSTIC_CENTRE_MANAGER"
 )
 
 func (e *UserEnum) Scan(src interface{}) error {
@@ -59,10 +304,10 @@ func (ns NullUserEnum) Value() (driver.Value, error) {
 func (e UserEnum) Valid() bool {
 	switch e {
 	case UserEnumUSER,
-		UserEnumDIAGNOSTICCENTRE,
+		UserEnumDIAGNOSTICCENTREOWNER,
 		UserEnumHOSPITAL,
 		UserEnumADMIN,
-		UserEnumDIAGNOSTICMANAGER:
+		UserEnumDIAGNOSTICCENTREMANAGER:
 		return true
 	}
 	return false
@@ -71,11 +316,26 @@ func (e UserEnum) Valid() bool {
 func AllUserEnumValues() []UserEnum {
 	return []UserEnum{
 		UserEnumUSER,
-		UserEnumDIAGNOSTICCENTRE,
+		UserEnumDIAGNOSTICCENTREOWNER,
 		UserEnumHOSPITAL,
 		UserEnumADMIN,
-		UserEnumDIAGNOSTICMANAGER,
+		UserEnumDIAGNOSTICCENTREMANAGER,
 	}
+}
+
+type DiagnosticCentre struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              string             `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 type User struct {
@@ -86,4 +346,5 @@ type User struct {
 	UserType  UserEnum           `db:"user_type" json:"user_type"`
 	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Fullname  pgtype.Text        `db:"fullname" json:"fullname"`
 }

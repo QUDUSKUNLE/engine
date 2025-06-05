@@ -59,7 +59,6 @@ func main() {
 
 	// Plug echo into PublicRoutesAdaptor
 	public := e.Group("/v1")
-	public.Use(middlewares.BodyValidationInterceptor)
 	routes.PublicRoutesAdaptor(public, httpHandler)
 
 	privateRoutes := e.Group("/v1")

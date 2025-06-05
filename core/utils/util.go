@@ -1,31 +1,26 @@
 package utils
 
 import (
+	"crypto/rand"
 	"errors"
+	"math/big"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/core/domain"
 	"github.com/medicue/adapters/db"
+	"github.com/medicue/core/domain"
 )
 
 func ErrorResponse(status int, message error, context echo.Context) error {
-	return context.JSON(status, echo.Map{
-		"error":   message.Error(),
-		"success": false,
-	})
+	return context.JSON(status, echo.Map{"error": message.Error()})
 }
 
 func ResponseMessage(status int, message interface{}, context echo.Context) error {
-	return context.JSON(status, echo.Map{
-		"result":  message,
-		"success": true,
-	})
+	return context.JSON(status, echo.Map{"result": message})
 }
-
 
 // GenerateToken generates a JWT token for the given user
 func GenerateToken(user domain.CurrentUserDTO) (string, error) {
@@ -66,4 +61,18 @@ func GenerateToken(user domain.CurrentUserDTO) (string, error) {
 	}
 
 	return token, nil
+}
+
+const passwordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}<>?/|"
+
+func GenerateRandomPassword(length int) (string) {
+	password := make([]byte, length)
+	for i := range password {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(passwordChars))))
+		if err != nil {
+			return ""
+		}
+		password[i] = passwordChars[num.Int64()]
+	}
+	return string(password)
 }

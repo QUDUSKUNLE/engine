@@ -18,6 +18,10 @@ type (
 		UserType         db.UserEnum `json:"user_type" validate:"required"`
 		DiagnosticCentre string      `json:"diagnostic_Centre"`
 	}
+	DiagnosticCentreManagerRegisterDTO struct {
+		Email            string      `json:"email" validate:"email,required"`
+		UserType         db.UserEnum `json:"user_type" validate:"required"`
+	}
 	UserSignInDTO struct {
 		Email    string `json:"email" validate:"email,required"`
 		Password string `json:"password" validate:"gte=6,lte=20,required"`

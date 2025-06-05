@@ -3,10 +3,21 @@ package routes
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/handlers"
+	"github.com/medicue/adapters/middlewares"
+	"github.com/medicue/core/domain"
 )
 
-func PrivateRoutesAdaptor(private *echo.Group, handler *handlers.HTTPHandler) *echo.Group {
-	// private.POST("/shipments", handler.PostShipping)
+func PrivateRoutesAdaptor(
+	private *echo.Group,
+	handler *handlers.HTTPHandler,
+) *echo.Group {
+	private.POST(
+		"/diagnostic_centre_manager",
+		handler.CreateDiagnosticCentreManager,
+		middlewares.BodyValidationInterceptorFor(func() interface{} {
+			return &domain.DiagnosticCentreManagerRegisterDTO{}
+		}),
+	)
 	// private.GET("/shipments", handler.GetShippings)
 
 	// private.PUT("/pickups", handler.PutPickUp)

@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/core/domain"
 )
 
 // Custom validator
@@ -38,11 +37,10 @@ func ValidationAdaptor(e *echo.Echo) *echo.Echo {
 	return e
 }
 
-func BodyValidationInterceptor(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		// Only validate for specific routes/methods
-		switch c.Path() {
-		case "/v1/register":
+// Generic body validation interceptor for any DTO
+func BodyValidationInterceptorFor(dtoFactory func() interface{}) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
 			if c.Request().Method == http.MethodPost {
 				bodyBytes, err := io.ReadAll(c.Request().Body)
 				if err != nil {
@@ -50,33 +48,16 @@ func BodyValidationInterceptor(next echo.HandlerFunc) echo.HandlerFunc {
 				}
 				c.Request().Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
-				var req domain.UserRegisterDTO
-				if err := json.Unmarshal(bodyBytes, &req); err != nil {
+				dto := dtoFactory()
+				if err := json.Unmarshal(bodyBytes, dto); err != nil {
 					return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 				}
-				if err := validator.New().Struct(req); err != nil {
+				if err := validator.New().Struct(dto); err != nil {
 					return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 				}
-				c.Set("validatedDTO", req)
+				c.Set("validatedDTO", dto)
 			}
-		case "/v1/login":
-			if c.Request().Method == http.MethodPost {
-				bodyBytes, err := io.ReadAll(c.Request().Body)
-				if err != nil {
-					return echo.NewHTTPError(http.StatusBadRequest, "Failed to read request body")
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
-				var req domain.UserSignInDTO
-				if err := json.Unmarshal(bodyBytes, &req); err != nil {
-					return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
-				}
-				if err := validator.New().Struct(req); err != nil {
-					return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-				}
-				c.Set("validatedDTO", req)
-			}
+			return next(c)
 		}
-		return next(c)
 	}
 }

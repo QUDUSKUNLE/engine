@@ -20,3 +20,7 @@ func (handler *HTTPHandler) Register(context echo.Context) error {
 func (handler *HTTPHandler) SignIn(context echo.Context) error {
 	return handler.service.Login(context)
 }
+
+func (handler *HTTPHandler) CreateDiagnosticCentreManager(context echo.Context) error {
+	return handler.service.CreateDiagnosticCentreManager(context)
+}
