@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/medicue/adapters/config"
 	"github.com/medicue/adapters/db"
+	"github.com/medicue/adapters/db/repository"
 	"github.com/medicue/adapters/handlers"
 	"github.com/medicue/adapters/middlewares"
 	"github.com/medicue/adapters/routes"
@@ -53,7 +54,7 @@ func main() {
 		log.Fatalf("Error connecting to the database")
 	}
 
-	repo := db.NewPostgresRepository(store)
+	repo := repository.NewPostgresRepository(store)
 	core := services.ServicesAdapter(*repo)
 	httpHandler := handlers.HttpAdapter(core)
 

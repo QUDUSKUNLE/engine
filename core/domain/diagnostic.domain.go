@@ -18,14 +18,17 @@ type (
 	}
 	CreateDiagnosticDTO struct {
 		DiagnosticCentreName string              `json:"diagnostic_centre_name" validate:"gte=10,lte=250,required"`
-		Latitude             float64             `json:"latitude" validate:""`
-		Longitude            float64             `json:"longitude"`
+		Latitude             float64             `json:"latitude" validate:"min=-90.00,max=90.00,required"`
+		Longitude            float64             `json:"longitude" validate:"min=-180.00,max=180.00,required"`
 		Address              Address             `json:"address"`
 		Contact              Contact             `json:"contact"`
 		Doctors              []db.Doctor         `json:"doctors"`
 		AvailableTests       []db.AvailableTests `json:"available_tests"`
 		CreatedBy            uuid.UUID           `json:"created_by"`
-		ADMINID              uuid.UUID           `json:"admin_id" validate:"uuid,required"`
+		AdminId              uuid.UUID           `json:"admin_id" validate:"uuid,required"`
+	}
+	GetDiagnosticParamDTO struct {
+		DiagnosticCentreID uuid.UUID `json:"diagnostic_centre_id" validate:"uuid,required"`
 	}
 	UpdateDiagnosticDTO struct {
 		DiagnosticCentreName string              `json:"diagnostic_centre_name"`

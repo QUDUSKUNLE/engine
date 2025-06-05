@@ -1,14 +1,14 @@
 package services
 
 import (
-	"github.com/medicue/adapters/db"
+	"github.com/medicue/adapters/db/repository"
 )
 
 type ServicesHandler struct {
-	repositoryService db.Repository
+	repositoryService repository.Repository
 }
 
-func ServicesAdapter(repo db.Repository) *ServicesHandler {
+func ServicesAdapter(repo repository.Repository) *ServicesHandler {
 	return &ServicesHandler{
 		repositoryService: repo,
 	}

@@ -7,18 +7,36 @@ import (
 	"github.com/medicue/core/domain"
 )
 
+type routeConfig struct {
+	path    string
+	handler echo.HandlerFunc
+	factory func() interface{}
+}
+
 func PrivateRoutesAdaptor(
 	private *echo.Group,
 	handler *handlers.HTTPHandler,
 ) *echo.Group {
-	private.POST(
-		"/diagnostic_centre_manager",
-		handler.CreateDiagnosticCentreManager,
-		middlewares.BodyValidationInterceptorFor(func() interface{} {
-			return &domain.DiagnosticCentreManagerRegisterDTO{}
-		}),
-	)
-	private.POST("/diagnostic_centres", handler.CreateDiagnostic)
+	routes := []routeConfig{
+		{
+			path:    "/diagnostic_centre_manager",
+			handler: handler.CreateDiagnosticCentreManager,
+			factory: func() interface{} { return &domain.DiagnosticCentreManagerRegisterDTO{} },
+		},
+		{
+			path:    "/diagnostic_centres",
+			handler: handler.CreateDiagnostic,
+			factory: func() interface{} { return &domain.CreateDiagnosticDTO{} },
+		},
+	}
+
+	for _, r := range routes {
+		private.POST(
+			r.path,
+			r.handler,
+			middlewares.BodyValidationInterceptorFor(r.factory),
+		)
+	}
 
 	// private.PUT("/pickups", handler.PutPickUp)
 	// private.GET("/pickups", handler.GetPickUps)

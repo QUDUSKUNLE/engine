@@ -12,10 +12,33 @@ import (
 
 type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error)
+	// Inserts a new diagnostic record into the diagnostic_centres table.
+	Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagnostic_CentreParams) (*DiagnosticCentre, error)
+	// Deletes a diagnosticCentre only by the created_by.
+	Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Delete_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
+	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
 	GetUser(ctx context.Context, id string) (*User, error)
 	GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error)
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, error)
+	// Retrieves a single diagnostic record by its ID.
+	Get_Diagnostic_Centre(ctx context.Context, id string) (*DiagnosticCentre, error)
+	// GetDiagnosticCentreByManager
+	Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*DiagnosticCentre, error)
+	// GetADiagnosticCentreByOwner :one
+	Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
+	// Retrieves the nearest diagnostic centres based on latitude and longitude.
+	Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Nearest_Diagnostic_CentresParams) ([]*Get_Nearest_Diagnostic_CentresRow, error)
+	// Retrieves all diagnostic records for a specific owner.
+	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*DiagnosticCentre, error)
+	// Retrieves all diagnostic records with pagination.
+	Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_Diagnostic_CentresParams) ([]*DiagnosticCentre, error)
+	// Searches diagnostic_centres by name with pagination.
+	Search_Diagnostic_Centres(ctx context.Context, arg Search_Diagnostic_CentresParams) ([]*DiagnosticCentre, error)
+	// SearchDiagnosticWith Doctor type
+	Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*DiagnosticCentre, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error)
+	// Updates a diagnostic centre by the owner.
+	Update_Diagnostic_Centre_ByOwner(ctx context.Context, arg Update_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"math/big"
 	"os"
@@ -83,4 +84,9 @@ func PrivateMiddlewareContext(context echo.Context, userType string) (*domain.Cu
 		return nil, errors.New("unauthorized to perform this operation")
 	}
 	return user, nil
+}
+
+// MarshalField marshals any struct to JSON and returns the bytes or an error
+func MarshalField(field interface{}) ([]byte, error) {
+	return json.Marshal(field)
 }
