@@ -18,7 +18,7 @@ func PrivateRoutesAdaptor(
 			return &domain.DiagnosticCentreManagerRegisterDTO{}
 		}),
 	)
-	// private.GET("/shipments", handler.GetShippings)
+	private.POST("/diagnostic_centres", handler.CreateDiagnostic)
 
 	// private.PUT("/pickups", handler.PutPickUp)
 	// private.GET("/pickups", handler.GetPickUps)

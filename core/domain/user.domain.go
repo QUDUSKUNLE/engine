@@ -3,11 +3,11 @@ package domain
 import (
 	"errors"
 
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/medicue/adapters/db"
 	"golang.org/x/crypto/bcrypt"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 type (
@@ -19,22 +19,22 @@ type (
 		DiagnosticCentre string      `json:"diagnostic_Centre"`
 	}
 	DiagnosticCentreManagerRegisterDTO struct {
-		Email            string      `json:"email" validate:"email,required"`
-		UserType         db.UserEnum `json:"user_type" validate:"required"`
+		Email    string      `json:"email" validate:"email,required"`
+		UserType db.UserEnum `json:"user_type" validate:"required"`
 	}
 	UserSignInDTO struct {
 		Email    string `json:"email" validate:"email,required"`
 		Password string `json:"password" validate:"gte=6,lte=20,required"`
 	}
 	CurrentUserDTO struct {
-		UserID       string  `json:"user_id"`
-		DiagnosticID string `json:"diagnostic_id"`
-		UserType     string  `json:"user_type"`
+		UserID       uuid.UUID   `json:"user_id"`
+		DiagnosticID uuid.UUID   `json:"diagnostic_id"`
+		UserType     db.UserEnum `json:"user_type"`
 	}
 	JwtCustomClaimsDTO struct {
-		UserID       uuid.UUID `json:"user_id"`
-		DiagnosticID uuid.UUID `json:"diagnostic_id"`
-		UserType     db.UserEnum   `json:"user_type"`
+		UserID       uuid.UUID   `json:"user_id"`
+		DiagnosticID uuid.UUID   `json:"diagnostic_id"`
+		UserType     db.UserEnum `json:"user_type"`
 		jwt.RegisteredClaims
 	}
 )

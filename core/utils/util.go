@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/domain"
@@ -30,25 +29,9 @@ func GenerateToken(user domain.CurrentUserDTO) (string, error) {
 		return "", ErrMissingSecretKey
 	}
 
-	var diagnosticID uuid.UUID
-	if user.DiagnosticID != "" {
-		parsedUUID, err := uuid.Parse(user.DiagnosticID)
-		if err != nil {
-			return "", err
-		}
-		diagnosticID = parsedUUID
-	}
-	var userID uuid.UUID
-	if user.UserID != "" {
-		parsedUserID, err := uuid.Parse(user.UserID)
-		if err != nil {
-			return "", err
-		}
-		userID = parsedUserID
-	}
 	claims := &domain.JwtCustomClaimsDTO{
-		UserID:       userID,
-		DiagnosticID: diagnosticID,
+		UserID:       user.UserID,
+		DiagnosticID: user.DiagnosticID,
 		UserType:     db.UserEnum(user.UserType),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(72 * time.Hour)),
@@ -65,7 +48,7 @@ func GenerateToken(user domain.CurrentUserDTO) (string, error) {
 
 const passwordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}<>?/|"
 
-func GenerateRandomPassword(length int) (string) {
+func GenerateRandomPassword(length int) string {
 	password := make([]byte, length)
 	for i := range password {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(passwordChars))))
@@ -75,4 +58,29 @@ func GenerateRandomPassword(length int) (string) {
 		password[i] = passwordChars[num.Int64()]
 	}
 	return string(password)
+}
+
+func currentUser(context echo.Context) (*domain.CurrentUserDTO, error) {
+	user := context.Get("user").(*jwt.Token)
+	claims, ok := user.Claims.(*domain.JwtCustomClaimsDTO)
+	if !ok {
+		return nil, errors.New("token is required")
+	}
+	return &domain.CurrentUserDTO{
+		UserID:       claims.UserID,
+		DiagnosticID: claims.DiagnosticID,
+		UserType:     claims.UserType,
+	}, nil
+}
+
+func PrivateMiddlewareContext(context echo.Context, userType string) (*domain.CurrentUserDTO, error) {
+	user, err := currentUser(context)
+	if err != nil {
+		return nil, err
+	}
+	// Check user type
+	if user.UserType != db.UserEnum(userType) {
+		return nil, errors.New("unauthorized to perform this operation")
+	}
+	return user, nil
 }

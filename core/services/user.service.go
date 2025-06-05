@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/domain"
@@ -30,10 +31,18 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 }
 
 func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Context) error {
+	// Check for permission to add a diagnostic manager
+	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+
 	dto, ok := context.Get("validatedDTO").(*domain.DiagnosticCentreManagerRegisterDTO)
+	// Check if there are appropriate UserEnumDiagnosticCentreManager
 	if !ok || dto.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequestBody), context)
 	}
+	// Auto generate a password for the manager
 	userDto := domain.UserRegisterDTO{
 		Email:    dto.Email,
 		Password: utils.GenerateRandomPassword(12),
@@ -48,6 +57,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		Password: newUser.Password,
 		UserType: newUser.UserType,
 	}
+	// Create a diagnostic centre manager
 	return service.createUserHelper(context, user, db.UserEnumDIAGNOSTICCENTREMANAGER)
 }
 
@@ -61,11 +71,16 @@ func (service *ServicesHandler) Login(context echo.Context) error {
 	if err := domain.ComparePassword(*response, dto.Password); err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	token, err := utils.GenerateToken(domain.CurrentUserDTO{UserID: response.ID, UserType: string(response.UserType)})
+	parsedUUID, err := uuid.Parse(response.ID)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	return utils.ResponseMessage(http.StatusCreated, map[string]string{"token": token}, context)
+	token, err := utils.GenerateToken(domain.CurrentUserDTO{
+		UserID: parsedUUID, UserType: response.UserType})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+	return utils.ResponseMessage(http.StatusOK, map[string]string{"token": token}, context)
 }
 
 func (service *ServicesHandler) createUserHelper(
