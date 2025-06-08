@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/big"
+		"net/http"
 	"os"
 	"time"
 
@@ -99,6 +100,26 @@ func ValidateParams(c echo.Context, params interface{}) error {
 	}
 	if err := validator.New().Struct(params); err != nil {
 		return echo.NewHTTPError(400, err.Error())
+	}
+	return nil
+}
+
+// Helper to marshal JSON fields and handle errors
+func MarshalJSONField(field interface{}, context echo.Context) ([]byte, error) {
+	data, err := json.Marshal(field)
+	if err != nil {
+		ErrorResponse(http.StatusInternalServerError, err, context)
+		return nil, err
+	}
+	return data, nil
+}
+
+// Unmarshal to JSON
+func UnmarshalJSONField(data []byte, v interface{}, context echo.Context) error {
+	err := json.Unmarshal(data, v)
+	if err != nil {
+		ErrorResponse(http.StatusInternalServerError, err, context)
+		return err
 	}
 	return nil
 }

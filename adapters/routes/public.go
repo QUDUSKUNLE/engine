@@ -48,6 +48,12 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 			handler: handler.CreateDiagnostic,
 			factory: func() interface{} { return &domain.CreateDiagnosticDTO{} },
 		},
+		{
+			method:  http.MethodGet,
+			path:    "/diagnostic_centres",
+			handler: handler.SearchDiagnosticCentre,
+			factory: func() interface{} { return &domain.SearchDiagnosticCentreParamDTO{} },
+		},
 	}
 
 	for _, r := range routes {

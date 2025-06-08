@@ -12,7 +12,7 @@ import (
 )
 
 func (service *ServicesHandler) Create(context echo.Context) error {
-	dto, ok := context.Get("validatedDTO").(*domain.UserRegisterDTO)
+	dto, ok := context.Get("validatedBodyDTO").(*domain.UserRegisterDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -37,13 +37,13 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
-	dto, ok := context.Get("validatedDTO").(*domain.DiagnosticCentreManagerRegisterDTO)
+	dto, ok := context.Get("validatedBodyDTO").(*domain.DiagnosticCentreManagerRegisterDTO)
 	// Check if there are appropriate UserEnumDiagnosticCentreManager
 	if !ok || dto.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
 	// Auto generate a password for the manager
-	password := utils.GenerateRandomPassword(12)
+	password := utils.GenerateRandomPassword(20)
 	userDto := domain.UserRegisterDTO{
 		Email:    dto.Email,
 		Password: password,
@@ -64,7 +64,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 
 func (service *ServicesHandler) Login(context echo.Context) error {
 	ctx := context.Request().Context()
-	dto := context.Get("validatedDTO").(*domain.UserSignInDTO)
+	dto := context.Get("validatedBodyDTO").(*domain.UserSignInDTO)
 	response, err := service.repositoryService.GetUserByEmail(ctx, dto.Email)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)

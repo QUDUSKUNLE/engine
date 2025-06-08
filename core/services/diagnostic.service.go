@@ -1,7 +1,6 @@
 package services
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -16,25 +15,25 @@ import (
 
 func (service *ServicesHandler) CreateDiagnsoticCentre(context echo.Context) error {
 	ctx := context.Request().Context()
-	current_user, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	dto, ok := context.Get("validatedDTO").(*domain.CreateDiagnosticDTO)
+	dto, ok := context.Get("validatedBodyDTO").(*domain.CreateDiagnosticDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
 
-	addressBytes, err := marshalJSONField(dto.Address, context)
+	addressBytes, err := utils.MarshalJSONField(dto.Address, context)
 	if err != nil {
 		return err
 	}
-	contactBytes, err := marshalJSONField(dto.Contact, context)
+	contactBytes, err := utils.MarshalJSONField(dto.Contact, context)
 	if err != nil {
 		return err
 	}
 
-	diagnostic_centre_param := db.Create_Diagnostic_CentreParams{
+	params := db.Create_Diagnostic_CentreParams{
 		DiagnosticCentreName: dto.DiagnosticCentreName,
 		Latitude:             pgtype.Float8{Float64: dto.Latitude, Valid: true},
 		Longitude:            pgtype.Float8{Float64: dto.Longitude, Valid: true},
@@ -42,22 +41,22 @@ func (service *ServicesHandler) CreateDiagnsoticCentre(context echo.Context) err
 		Contact:              contactBytes,
 		Doctors:              dto.Doctors,
 		AvailableTests:       dto.AvailableTests,
-		CreatedBy:            current_user.UserID.String(),
+		CreatedBy:            currentUser.UserID.String(),
 		AdminID:              dto.AdminId.String(),
 	}
-	response, err := service.repositoryService.CreateDiagnosticCentre(ctx, diagnostic_centre_param)
+	response, err := service.repositoryService.CreateDiagnosticCentre(ctx, params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	var Address domain.Address
-	if err := unmarshalJSONField(response.Address, &Address, context); err != nil {
+	var address domain.Address
+	if err := utils.UnmarshalJSONField(response.Address, &address, context); err != nil {
 		return err
 	}
-	var Contact domain.Contact
-	if err := unmarshalJSONField(response.Contact, &Contact, context); err != nil {
+	var contact domain.Contact
+	if err := utils.UnmarshalJSONField(response.Contact, &contact, context); err != nil {
 		return err
 	}
-	res := buildDiagnosticCentreResponse(response, Address, Contact)
+	res := buildDiagnosticCentreResponse(response, address, contact)
 	return utils.ResponseMessage(http.StatusCreated, res, context)
 }
 
@@ -72,40 +71,67 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	var Address domain.Address
-	if err := unmarshalJSONField(response.Address, &Address, context); err != nil {
+	var address domain.Address
+	if err := utils.UnmarshalJSONField(response.Address, &address, context); err != nil {
 		return err
 	}
-	var Contact domain.Contact
-	if err := unmarshalJSONField(response.Contact, &Contact, context); err != nil {
+	var contact domain.Contact
+	if err := utils.UnmarshalJSONField(response.Contact, &contact, context); err != nil {
 		return err
 	}
-	res := buildDiagnosticCentreResponse(response, Address, Contact)
+	res := buildDiagnosticCentreResponse(response, address, contact)
 	return utils.ResponseMessage(http.StatusOK, res, context)
 }
 
 func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) error {
-	return nil
-}
-
-// Helper to marshal JSON fields and handle errors
-func marshalJSONField(field interface{}, context echo.Context) ([]byte, error) {
-	data, err := json.Marshal(field)
-	if err != nil {
-		utils.ErrorResponse(http.StatusInternalServerError, err, context)
-		return nil, err
+	ctx := context.Request().Context()
+	queryParams, ok := context.Get("validatedQueryParamsDTO").(*domain.SearchDiagnosticCentreParamDTO)
+	if !ok {
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
-	return data, nil
-}
-
-// Unmarshal to JSON
-func unmarshalJSONField(data []byte, v interface{}, context echo.Context) error {
-	err := json.Unmarshal(data, v)
-	if err != nil {
-		utils.ErrorResponse(http.StatusInternalServerError, err, context)
-		return err
+	params := db.Get_Nearest_Diagnostic_CentresParams{
+		Radians:   queryParams.Latitude,
+		Radians_2: queryParams.Longitude,
 	}
-	return nil
+	if queryParams.Doctor != "" {
+		params.Doctors = []string{queryParams.Doctor}
+	}
+	if queryParams.Test != "" {
+		params.AvailableTests = []string{queryParams.Test}
+	}
+	response, err := service.repositoryService.GetNearestDiagnosticCentres(ctx, params)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+	result := make([]map[string]interface{}, 0, len(response))
+	for _, v := range response {
+		var address domain.Address
+		if err := utils.UnmarshalJSONField(v.Address, &address, context); err != nil {
+			return err
+		}
+		var contact domain.Contact
+		if err := utils.UnmarshalJSONField(v.Contact, &contact, context); err != nil {
+			return err
+		}
+		// Map v to a DiagnosticCentre struct
+		diagnosticCentre := &db.DiagnosticCentre{
+			ID:                  v.ID,
+			DiagnosticCentreName: v.DiagnosticCentreName,
+			Latitude:            v.Latitude,
+			Longitude:           v.Longitude,
+			Address:             v.Address,
+			Contact:             v.Contact,
+			Doctors:             v.Doctors,
+			AvailableTests:      v.AvailableTests,
+			CreatedAt:           v.CreatedAt,
+			UpdatedAt:           v.UpdatedAt,
+		}
+		item := buildDiagnosticCentreResponse(diagnosticCentre, address, contact)
+		item["distance"] = v.DistanceKm
+		item["distance_unit"] = "km"
+		result = append(result, item)
+	}
+	return utils.ResponseMessage(http.StatusOK, result, context)
 }
 
 // Helper to build diagnostic centre response

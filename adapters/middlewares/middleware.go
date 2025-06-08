@@ -32,30 +32,47 @@ func (c *CustomValidator) Validate(inter interface{}) error {
 }
 
 // ValidationAdaptor
-func ValidationAdaptor(e *echo.Echo) *echo.Echo {
-	e.Validator = &CustomValidator{validator: validator.New(validator.WithRequiredStructEnabled())}
-	return e
+func ValidationAdaptor(xx *echo.Echo) *echo.Echo {
+	xx.Validator = &CustomValidator{validator: validator.New(validator.WithRequiredStructEnabled())}
+	return xx
+}
+
+// Helper to handle DTO binding and validation
+func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc func(interface{}) error, setKey string) error {
+	dto := dtoFactory()
+	if err := bindFunc(dto); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
+	}
+	if err := c.Validate(dto); err != nil {
+		return err
+	}
+	c.Set(setKey, dto)
+	return nil
 }
 
 // Generic body validation interceptor for any DTO
 func BodyValidationInterceptorFor(dtoFactory func() interface{}) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			if c.Request().Method == http.MethodPost {
+			switch c.Request().Method {
+			case http.MethodGet, http.MethodDelete:
+				if err := bindAndValidateDTO(c, dtoFactory, c.Bind, "validatedQueryParamsDTO"); err != nil {
+					return err
+				}
+			case http.MethodPost:
 				bodyBytes, err := io.ReadAll(c.Request().Body)
 				if err != nil {
 					return echo.NewHTTPError(http.StatusBadRequest, "Failed to read request body")
 				}
 				c.Request().Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
-				dto := dtoFactory()
-				if err := json.Unmarshal(bodyBytes, dto); err != nil {
-					return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+				bindFunc := func(dto interface{}) error {
+					return json.Unmarshal(bodyBytes, dto)
 				}
-				c.Set("validatedDTO", dto)
+				if err := bindAndValidateDTO(c, dtoFactory, bindFunc, "validatedBodyDTO"); err != nil {
+					return err
+				}
 			}
-			// Validate params data (URL/query params)
-			// Example: If you want to validate query params, you can add logic here
 			return next(c)
 		}
 	}

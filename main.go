@@ -17,6 +17,7 @@ import (
 	"github.com/medicue/adapters/middlewares"
 	"github.com/medicue/adapters/routes"
 	"github.com/medicue/core/services"
+	"github.com/medicue/core/utils"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"golang.org/x/time/rate"
 )
@@ -63,12 +64,14 @@ func main() {
 	v1.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// List of /v1 routes that should NOT require JWT
+			key := fmt.Sprintf("%s %s", c.Request().Method, c.Path())
 			noAuthRoutes := map[string]bool{
-				"/v1/register": true,
-				"/v1/login":    true,
-				"/v1/diagnostic_centres/:diagnostic_centre_id": true,
+				"POST /v1/register":                                true,
+				"POST /v1/login":                                   true,
+				"GET /v1/diagnostic_centres":                       true,
+				"GET /v1/diagnostic_centres/:diagnostic_centre_id": true,
 			}
-			if noAuthRoutes[c.Path()] {
+			if noAuthRoutes[key] {
 				return next(c)
 			}
 			conn := middlewares.JWTConfig(cfg.JwtKey)
@@ -86,6 +89,8 @@ func main() {
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/metrics", echoprometheus.NewHandler())
+
+	e.HTTPErrorHandler = utils.CustomHTTPErrorHandler
 
 	// Start the server on port 8080
 	if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {

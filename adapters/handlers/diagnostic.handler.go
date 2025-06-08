@@ -9,3 +9,7 @@ func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 func (handler *HTTPHandler) GetDiagnosticCentre(context echo.Context) error {
 	return handler.service.GetDiagnosticCentre(context)
 }
+
+func (handler *HTTPHandler) SearchDiagnosticCentre(context echo.Context) error {
+	return handler.service.SearchDiagnosticCentre(context)
+}
