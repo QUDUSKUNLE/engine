@@ -330,8 +330,8 @@ type DiagnosticCentre struct {
 	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
 	Address              []byte             `db:"address" json:"address"`
 	Contact              []byte             `db:"contact" json:"contact"`
-	Doctors              []Doctor           `db:"doctors" json:"doctors"`
-	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	Doctors              []string           `db:"doctors" json:"doctors"`
+	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
 	AdminID              string             `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`

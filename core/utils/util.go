@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
@@ -19,7 +20,7 @@ func ErrorResponse(status int, message error, context echo.Context) error {
 }
 
 func ResponseMessage(status int, message interface{}, context echo.Context) error {
-	return context.JSON(status, echo.Map{"result": message})
+	return context.JSON(status, echo.Map{"data": message})
 }
 
 // GenerateToken generates a JWT token for the given user
@@ -89,4 +90,15 @@ func PrivateMiddlewareContext(context echo.Context, userType string) (*domain.Cu
 // MarshalField marshals any struct to JSON and returns the bytes or an error
 func MarshalField(field interface{}) ([]byte, error) {
 	return json.Marshal(field)
+}
+
+// ValidateParams validates URL or query params bound to a struct
+func ValidateParams(c echo.Context, params interface{}) error {
+	if err := c.Bind(params); err != nil {
+		return echo.NewHTTPError(400, "Invalid params")
+	}
+	if err := validator.New().Struct(params); err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
+	return nil
 }

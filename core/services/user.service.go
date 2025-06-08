@@ -14,7 +14,7 @@ import (
 func (service *ServicesHandler) Create(context echo.Context) error {
 	dto, ok := context.Get("validatedDTO").(*domain.UserRegisterDTO)
 	if !ok {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequestBody), context)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
 	newUser, err := domain.BuildNewUser(*dto)
 	if err != nil {
@@ -40,12 +40,13 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 	dto, ok := context.Get("validatedDTO").(*domain.DiagnosticCentreManagerRegisterDTO)
 	// Check if there are appropriate UserEnumDiagnosticCentreManager
 	if !ok || dto.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequestBody), context)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
 	// Auto generate a password for the manager
+	password := utils.GenerateRandomPassword(12)
 	userDto := domain.UserRegisterDTO{
 		Email:    dto.Email,
-		Password: utils.GenerateRandomPassword(12),
+		Password: password,
 		UserType: dto.UserType,
 	}
 	newUser, err := domain.BuildNewUser(userDto)

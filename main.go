@@ -58,20 +58,35 @@ func main() {
 	core := services.ServicesAdapter(*repo)
 	httpHandler := handlers.HttpAdapter(core)
 
+	v1 := e.Group("/v1")
+	// Add a middleware to skip JWT validation for specific routes under /v1
+	v1.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// List of /v1 routes that should NOT require JWT
+			noAuthRoutes := map[string]bool{
+				"/v1/register": true,
+				"/v1/login":    true,
+				"/v1/diagnostic_centres/:diagnostic_centre_id": true,
+			}
+			if noAuthRoutes[c.Path()] {
+				return next(c)
+			}
+			conn := middlewares.JWTConfig(cfg.JwtKey)
+			conn.ErrorHandler = func(c echo.Context, err error) error {
+				if c.Path() == "/v1/*" {
+					return c.JSON(http.StatusNotFound, map[string]string{"error": "Ouch!!! Page not found"})
+				}
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "missing or malformed jwt"})
+			}
+			return echojwt.WithConfig(conn)(next)(c)
+		}
+	})
 	// Plug echo into PublicRoutesAdaptor
-	public := e.Group("/v1")
-	routes.PublicRoutesAdaptor(public, httpHandler)
-
-	privateRoutes := e.Group("/v1")
-	// Set JWT Configuration 
-	conn := middlewares.JWTConfig(cfg.JwtKey)
-	privateRoutes.Use(echojwt.WithConfig(conn))
-
-	// Plug echo into PrivateRoutesAdaptor
-	routes.PrivateRoutesAdaptor(privateRoutes, httpHandler)
+	routes.RoutesAdaptor(v1, httpHandler)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/metrics", echoprometheus.NewHandler())
+
 	// Start the server on port 8080
 	if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)

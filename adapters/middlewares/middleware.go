@@ -52,11 +52,10 @@ func BodyValidationInterceptorFor(dtoFactory func() interface{}) echo.Middleware
 				if err := json.Unmarshal(bodyBytes, dto); err != nil {
 					return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 				}
-				if err := validator.New().Struct(dto); err != nil {
-					return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-				}
 				c.Set("validatedDTO", dto)
 			}
+			// Validate params data (URL/query params)
+			// Example: If you want to validate query params, you can add logic here
 			return next(c)
 		}
 	}
