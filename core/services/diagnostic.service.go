@@ -57,7 +57,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		CreatedBy:            currentUser.UserID.String(),
 		AdminID:              dto.AdminId.String(),
 	}
-	response, err := service.repositoryService.CreateDiagnosticCentre(ctx, params)
+	response, err := service.DiagnosticCentreRepo.CreateDiagnosticCentre(ctx, params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -75,7 +75,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 		fmt.Println(err.Error())
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
-	response, err := service.repositoryService.GetDiagnosticCentre(ctx, params.DiagnosticCentreID)
+	response, err := service.DiagnosticCentreRepo.GetDiagnosticCentre(ctx, params.DiagnosticCentreID)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -102,7 +102,7 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	if query.Test != "" {
 		params.AvailableTests = []string{query.Test}
 	}
-	response, err := service.repositoryService.GetNearestDiagnosticCentres(ctx, params)
+	response, err := service.DiagnosticCentreRepo.GetNearestDiagnosticCentres(ctx, params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -151,7 +151,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	response, err := service.repositoryService.UpdateDiagnosticCentreByOwner(ctx,
+	response, err := service.DiagnosticCentreRepo.UpdateDiagnosticCentreByOwner(ctx,
 		db.Update_Diagnostic_Centre_ByOwnerParams{
 			ID:                   param,
 			CreatedBy:            currentUser.UserID.String(),

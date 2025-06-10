@@ -65,7 +65,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 func (service *ServicesHandler) Login(context echo.Context) error {
 	ctx := context.Request().Context()
 	dto := context.Get("validatedBodyDTO").(*domain.UserSignInDTO)
-	response, err := service.repositoryService.GetUserByEmail(ctx, dto.Email)
+	response, err := service.UserRepo.GetUserByEmail(ctx, dto.Email)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -91,7 +91,7 @@ func (service *ServicesHandler) createUserHelper(
 ) error {
 	for _, t := range allowedTypes {
 		if dto.UserType == t {
-			response, err := service.repositoryService.CreateUser(ctx.Request().Context(), dto)
+			response, err := service.UserRepo.CreateUser(ctx.Request().Context(), dto)
 			if err != nil {
 				return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
 			}

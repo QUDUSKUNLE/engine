@@ -43,8 +43,10 @@ func main() {
 		log.Fatalf("Error connecting to the database")
 	}
 
-	repo := repository.NewPostgresRepository(store)
-	core := services.ServicesAdapter(*repo)
+	userRepo := repository.NewUserRepository(store)
+	scheduleRepo := repository.NewScheduleRepository(store)
+	diagnosticRepo := repository.NewDiagnosticCentreRepository(store)
+	core := services.ServicesAdapter(userRepo, scheduleRepo, diagnosticRepo)
 	httpHandler := handlers.HttpAdapter(core)
 
 	v1 := e.Group("/v1")

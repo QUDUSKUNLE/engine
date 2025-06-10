@@ -1,15 +1,19 @@
 package services
 
 import (
-	"github.com/medicue/adapters/db/repository"
+	"github.com/medicue/core/ports"
 )
 
 type ServicesHandler struct {
-	repositoryService repository.Repository
+	UserRepo             ports.UserRepository
+	ScheduleRepo         ports.ScheduleRepository
+	DiagnosticCentreRepo ports.DiagnosticRepository
 }
 
-func ServicesAdapter(repo repository.Repository) *ServicesHandler {
+func ServicesAdapter(userRepo ports.UserRepository, scheduleRepo ports.ScheduleRepository, diagnosticCentreRepo ports.DiagnosticRepository) *ServicesHandler {
 	return &ServicesHandler{
-		repositoryService: repo,
+		UserRepo:             userRepo,
+		ScheduleRepo:         scheduleRepo,
+		DiagnosticCentreRepo: diagnosticCentreRepo,
 	}
 }

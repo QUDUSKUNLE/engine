@@ -4,19 +4,11 @@ import (
 	"context"
 
 	"github.com/medicue/adapters/db"
+	"github.com/medicue/core/ports"
 )
 
-type ScheduleRepository interface {
-	CreateDiagnosticSchedule(ctx context.Context, arg db.Create_Diagnostic_ScheduleParams) (*db.DiagnosticSchedule, error)
-	GetDiagnosticSchedule(ctx context.Context, req db.Get_Diagnostic_ScheduleParams) (*db.DiagnosticSchedule, error)
-	GetDiagnosticSchedules(ctx context.Context, req db.Get_Diagnostic_SchedulesParams) ([]*db.DiagnosticSchedule, error)
-	UpdateDiagnosticSchedule(ctx context.Context, req db.Update_Diagnostic_ScheduleParams) (*db.DiagnosticSchedule, error)
-	DeleteDiagnosticSchedule(ctx context.Context, req db.Delete_Diagnostic_ScheduleParams) (*db.DiagnosticSchedule, error)
-	// ...add other methods as needed
-}
-
 // Ensure Repository implements DiagnosticCentreRepository
-var _ ScheduleRepository = (*Repository)(nil)
+var _ ports.ScheduleRepository = (*Repository)(nil)
 
 // CreateDiagnosticSchedule creates a new diagnostic schedule
 func (repo *Repository) CreateDiagnosticSchedule(ctx context.Context, arg db.Create_Diagnostic_ScheduleParams) (*db.DiagnosticSchedule, error) {

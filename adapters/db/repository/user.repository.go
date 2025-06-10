@@ -5,21 +5,11 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/medicue/adapters/db"
+	"github.com/medicue/core/ports"
 )
 
-// UserRepository abstracts user DB operations
-//go:generate mockgen -destination=../../mocks/mock_user_repository.go -package=mocks . UserRepository
-
-type UserRepository interface {
-	GetUsers(ctx context.Context, params db.GetUsersParams) ([]*db.User, error)
-	CreateUser(ctx context.Context, user db.CreateUserParams) (*db.CreateUserRow, error)
-	GetUser(ctx context.Context, id string) (*db.User, error)
-	GetUserByEmail(ctx context.Context, email string) (*db.User, error)
-	UpdateUser(ctx context.Context, user db.UpdateUserParams) (*db.UpdateUserRow, error)
-}
-
-// Ensure Repository implements UserRepository
-var _ UserRepository = (*Repository)(nil)
+// Ensure Repository implements ports.UserRepository
+var _ ports.UserRepository = (*Repository)(nil)
 
 // GetUsers retrieves a paginated list of users from the database.
 func (repo *Repository) GetUsers(ctx context.Context, params db.GetUsersParams) ([]*db.User, error) {
