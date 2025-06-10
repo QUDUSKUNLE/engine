@@ -17,12 +17,12 @@ INSERT INTO diagnostic_schedules (
   diagnostic_centre_id,
   schedule_time,
   test_type,
-  schedule_status,
+  -- schedule_status,
   doctor,
   acceptance_status,
   notes
 ) VALUES (
-   $1, $2, $3, $4, $5, $6, $7, $8
+   $1, $2, $3, $4, $5, $6, $7
 ) RETURNING id, user_id, diagnostic_centre_id, schedule_time, test_type, schedule_status, doctor, acceptance_status, notes, rejection_note, created_at, updated_at
 `
 
@@ -31,7 +31,6 @@ type Create_Diagnostic_ScheduleParams struct {
 	DiagnosticCentreID string                   `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
 	ScheduleTime       pgtype.Timestamptz       `db:"schedule_time" json:"schedule_time"`
 	TestType           TestType                 `db:"test_type" json:"test_type"`
-	ScheduleStatus     ScheduleStatus           `db:"schedule_status" json:"schedule_status"`
 	Doctor             string                   `db:"doctor" json:"doctor"`
 	AcceptanceStatus   ScheduleAcceptanceStatus `db:"acceptance_status" json:"acceptance_status"`
 	Notes              pgtype.Text              `db:"notes" json:"notes"`
@@ -44,7 +43,6 @@ func (q *Queries) Create_Diagnostic_Schedule(ctx context.Context, arg Create_Dia
 		arg.DiagnosticCentreID,
 		arg.ScheduleTime,
 		arg.TestType,
-		arg.ScheduleStatus,
 		arg.Doctor,
 		arg.AcceptanceStatus,
 		arg.Notes,

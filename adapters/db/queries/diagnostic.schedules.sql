@@ -5,12 +5,12 @@ INSERT INTO diagnostic_schedules (
   diagnostic_centre_id,
   schedule_time,
   test_type,
-  schedule_status,
+  -- schedule_status,
   doctor,
   acceptance_status,
   notes
 ) VALUES (
-   $1, $2, $3, $4, $5, $6, $7, $8
+   $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
 
 -- Get Diagnostic Schedule

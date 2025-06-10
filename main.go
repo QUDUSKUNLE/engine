@@ -28,6 +28,10 @@ import (
 // @host localhost:8080
 // @BasePath /v1
 func main() {
+	if err := utils.InitLogger(); err != nil {
+		panic(err)
+	}
+	defer utils.Logger.Sync()
 	// Get Port number from the loaded .env file
 	cfg, err := config.LoadConfig("MEDICUE")
 	if err != nil {

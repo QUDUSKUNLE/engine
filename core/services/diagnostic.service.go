@@ -88,7 +88,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 
 func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) error {
 	ctx := context.Request().Context()
-	query, ok := context.Get("validatedQueryDTO").(*domain.SearchDiagnosticCentreQueryDTO)
+	query, ok := context.Get("validatedQueryParamDTO").(*domain.SearchDiagnosticCentreQueryDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -167,8 +167,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotAcceptable, err, context)
 	}
-	fmt.Println(body, response, "&&&&&&&&&&&&&&")
-	return utils.ResponseMessage(http.StatusNoContent, "ok", context)
+	return utils.ResponseMessage(http.StatusNoContent, response, context)
 }
 
 // Helper to build diagnostic centre response

@@ -41,7 +41,8 @@ func ValidationAdaptor(xx *echo.Echo) *echo.Echo {
 func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc func(interface{}) error, setKey string) error {
 	dto := dtoFactory()
 	if err := bindFunc(dto); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
+		// 
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid request data: %v", err))
 	}
 	if err := c.Validate(dto); err != nil {
 		return err
@@ -56,7 +57,7 @@ func BodyValidationInterceptorFor(dtoFactory func() interface{}) echo.Middleware
 		return func(c echo.Context) error {
 			switch c.Request().Method {
 			case http.MethodGet, http.MethodDelete:
-				if err := bindAndValidateDTO(c, dtoFactory, c.Bind, "validatedQueryDTO"); err != nil {
+				if err := bindAndValidateDTO(c, dtoFactory, c.Bind, "validatedQueryParamDTO"); err != nil {
 					return err
 				}
 			case http.MethodPost, http.MethodPut:

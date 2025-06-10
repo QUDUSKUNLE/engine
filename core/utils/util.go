@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/big"
-		"net/http"
+	"net/http"
 	"os"
 	"time"
 
@@ -16,12 +16,15 @@ import (
 	"github.com/medicue/core/domain"
 )
 
-func ErrorResponse(status int, message error, context echo.Context) error {
-	return context.JSON(status, echo.Map{"error": message.Error()})
+var validate = validator.New()
+
+func ErrorResponse(status int, err error, c echo.Context) error {
+	// Optionally log the error here
+	return c.JSON(status, echo.Map{"error": err.Error()})
 }
 
-func ResponseMessage(status int, message interface{}, context echo.Context) error {
-	return context.JSON(status, echo.Map{"data": message})
+func ResponseMessage(status int, message interface{}, c echo.Context) error {
+	return c.JSON(status, echo.Map{"data": message})
 }
 
 // GenerateToken generates a JWT token for the given user
@@ -63,11 +66,14 @@ func GenerateRandomPassword(length int) string {
 	return string(password)
 }
 
-func currentUser(context echo.Context) (*domain.CurrentUserDTO, error) {
-	user := context.Get("user").(*jwt.Token)
-	claims, ok := user.Claims.(*domain.JwtCustomClaimsDTO)
+func CurrentUser(c echo.Context) (*domain.CurrentUserDTO, error) {
+	userToken, ok := c.Get("user").(*jwt.Token)
+	if !ok || userToken == nil {
+		return nil, errors.New("user token is missing or invalid")
+	}
+	claims, ok := userToken.Claims.(*domain.JwtCustomClaimsDTO)
 	if !ok {
-		return nil, errors.New("token is required")
+		return nil, errors.New("token claims are invalid")
 	}
 	return &domain.CurrentUserDTO{
 		UserID:       claims.UserID,
@@ -76,12 +82,11 @@ func currentUser(context echo.Context) (*domain.CurrentUserDTO, error) {
 	}, nil
 }
 
-func PrivateMiddlewareContext(context echo.Context, userType string) (*domain.CurrentUserDTO, error) {
-	user, err := currentUser(context)
+func PrivateMiddlewareContext(c echo.Context, userType string) (*domain.CurrentUserDTO, error) {
+	user, err := CurrentUser(c)
 	if err != nil {
 		return nil, err
 	}
-	// Check user type
 	if user.UserType != db.UserEnum(userType) {
 		return nil, errors.New("unauthorized to perform this operation")
 	}
@@ -96,30 +101,28 @@ func MarshalField(field interface{}) ([]byte, error) {
 // ValidateParams validates URL or query params bound to a struct
 func ValidateParams(c echo.Context, params interface{}) error {
 	if err := c.Bind(params); err != nil {
-		return echo.NewHTTPError(400, "Invalid params")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid params")
 	}
-	if err := validator.New().Struct(params); err != nil {
-		return echo.NewHTTPError(400, err.Error())
+	if err := validate.Struct(params); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return nil
 }
 
 // Helper to marshal JSON fields and handle errors
-func MarshalJSONField(field interface{}, context echo.Context) ([]byte, error) {
+func MarshalJSONField(field interface{}, c echo.Context) ([]byte, error) {
 	data, err := json.Marshal(field)
 	if err != nil {
-		ErrorResponse(http.StatusInternalServerError, err, context)
-		return nil, err
+		return nil, ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 	return data, nil
 }
 
 // Unmarshal to JSON
-func UnmarshalJSONField(data []byte, v interface{}, context echo.Context) error {
+func UnmarshalJSONField(data []byte, v interface{}, c echo.Context) error {
 	err := json.Unmarshal(data, v)
 	if err != nil {
-		ErrorResponse(http.StatusInternalServerError, err, context)
-		return err
+		return ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 	return nil
 }
