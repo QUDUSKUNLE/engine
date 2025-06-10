@@ -1,0 +1,124 @@
+basePath: /v1
+host: localhost:8080
+info:
+  contact: {}
+  description: Medicue API
+  title: Medicue
+  version: "1.0"
+paths:
+  /diagnostic_centres:
+    get:
+      parameters:
+      - description: Latitude
+        in: query
+        name: latitude
+        required: true
+        type: number
+      - description: Longitude
+        in: query
+        name: longitude
+        required: true
+        type: number
+      - description: Doctor
+        in: query
+        name: doctor
+        type: string
+      - description: Available Test
+        in: query
+        name: available_tests
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Search for diagnostic centres
+      tags:
+      - DiagnosticCentre
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new diagnostic centre
+      tags:
+      - DiagnosticCentre
+  /diagnostic_centres/{diagnostic_centre_id}:
+    get:
+      parameters:
+      - description: Diagnostic Centre ID
+        in: path
+        name: diagnostic_centre_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a diagnostic centre by ID
+      tags:
+      - DiagnosticCentre
+  /v1/diagnostic_centre_manager:
+    post:
+      consumes:
+      - application/json
+      description: Create a new diagnostic centre manager
+      produces:
+      - application/json
+      responses: {}
+      summary: Create a diagnostic centre manager
+      tags:
+      - User
+  /v1/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a token
+      produces:
+      - application/json
+      responses: {}
+      summary: User login
+      tags:
+      - User
+  /v1/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      produces:
+      - application/json
+      responses: {}
+      summary: Register a new user
+      tags:
+      - User
+swagger: "2.0"

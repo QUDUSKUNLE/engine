@@ -22,9 +22,9 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// @title Bahsoon Africa API
+// @title Medicue
 // @version 1.0
-// @description Bahsoon Africa API
+// @description Medicue API
 // @host localhost:8080
 // @BasePath /v1
 func main() {
@@ -37,18 +37,6 @@ func main() {
 	e := echo.New()
 	// Plug echo int validationAdaptor
 	e = middlewares.ValidationAdaptor(e)
-
-	e.Use(echoprometheus.NewMiddleware("Medicue"))
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "time=${time}, remote_ip=${remote_ip}, latency=${latency}, method=${method}, uri=${uri}, status=${status}, host=${host}\n",
-	}))
-	// Recover servers when break down
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{cfg.AllowOrigins},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
-	}))
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(10))))
 
 	store, err := db.DatabaseConnection(cfg.DB_URL)
 	if err != nil {
@@ -91,6 +79,29 @@ func main() {
 	e.GET("/metrics", echoprometheus.NewHandler())
 
 	e.HTTPErrorHandler = utils.CustomHTTPErrorHandler
+
+	// Add secure headers
+	e.Use(middleware.SecureWithConfig(middleware.SecureConfig{
+		XSSProtection:         "1; mode=block",
+		ContentTypeNosniff:    "nosniff",
+		XFrameOptions:         "DENY",
+		HSTSMaxAge:            3600,
+		ContentSecurityPolicy: "default-src 'self'",
+	}))
+	// Limit request body size to 2MB
+	e.Use(middleware.BodyLimit("2M"))
+	// Improved CORS config: restrict to trusted origins and methods
+	e.Use(echoprometheus.NewMiddleware("Medicue"))
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{cfg.AllowOrigins},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+		AllowCredentials: true,
+	}))
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "time=${time}, remote_ip=${remote_ip}, latency=${latency}, method=${method}, uri=${uri}, status=${status}, host=${host}\n",
+	}))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(10))))
 
 	// Start the server on port 8080
 	if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {

@@ -52,7 +52,13 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 			method:  http.MethodGet,
 			path:    "/diagnostic_centres",
 			handler: handler.SearchDiagnosticCentre,
-			factory: func() interface{} { return &domain.SearchDiagnosticCentreParamDTO{} },
+			factory: func() interface{} { return &domain.SearchDiagnosticCentreQueryDTO{} },
+		},
+		{
+			method:  http.MethodPut,
+			path:    "/diagnostic_centres/:diagnostic_centre_id",
+			handler: handler.UpdateDiagnosticCentre,
+			factory: func() interface{} { return &domain.UpdateDiagnosticBodyDTO{} },
 		},
 	}
 
@@ -66,6 +72,12 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 			)
 		case http.MethodGet:
 			public.GET(
+				r.path,
+				r.handler,
+				middlewares.BodyValidationInterceptorFor(r.factory),
+			)
+		case http.MethodPut:
+			public.PUT(
 				r.path,
 				r.handler,
 				middlewares.BodyValidationInterceptorFor(r.factory),

@@ -1,0 +1,93 @@
+-- ENUM types for schedule status, test type, and acceptance status
+CREATE TYPE schedule_status AS ENUM (
+  'SCHEDULED',
+  'COMPLETED',
+  'CANCELED'
+);
+
+CREATE TYPE test_type AS ENUM (
+  'BLOOD_TEST',
+  'URINE_TEST',
+  'X_RAY',
+  'MRI',
+  'CT_SCAN',
+  'ULTRASOUND',
+  'ECG',
+  'COVID_TEST',
+  'DNA_TEST',
+  'ALLERGY_TEST',
+  'GENETIC_TEST',
+  'EEG',
+  'BIOPSY',
+  'SKIN_TEST',
+  'IMMUNOLOGY_TEST',
+  'HORMONE_TEST',
+  'VIRAL_TEST',
+  'BACTERIAL_TEST',
+  'PARASITIC_TEST',
+  'FUNGAL_TEST',
+  'MOLECULAR_TEST',
+  'TOXICOLOGY_TEST',
+  'ECHO',
+  'COVID_19_TEST',
+  'BLOOD_SUGAR_TEST',
+  'LIPID_PROFILE',
+  'HEMOGLOBIN_TEST',
+  'THYROID_TEST',
+  'LIVER_FUNCTION_TEST',
+  'KIDNEY_FUNCTION_TEST',
+  'URIC_ACID_TEST',
+  'VITAMIN_D_TEST',
+  'VITAMIN_B12_TEST',
+  'HEMOGRAM',
+  'COMPLETE_BLOOD_COUNT',
+  'BLOOD_GROUPING',
+  'HEPATITIS_B_TEST',
+  'HEPATITIS_C_TEST',
+  'HIV_TEST',
+  'MALARIA_TEST',
+  'DENGUE_TEST',
+  'TYPHOID_TEST',
+  'COVID_19_ANTIBODY_TEST',
+  'COVID_19_RAPID_ANTIGEN_TEST',
+  'COVID_19_RT_PCR_TEST',
+  'PREGNANCY_TEST',
+  'OTHER'
+);
+
+CREATE TYPE schedule_acceptance_status AS ENUM (
+  'PENDING',
+  'ACCEPTED',
+  'REJECTED'
+);
+
+-- Create the diagnostic_schedules table
+CREATE TABLE diagnostic_schedules (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL,
+    diagnostic_centre_id UUID NOT NULL REFERENCES diagnostic_centres(id),
+    schedule_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    test_type test_type NOT NULL DEFAULT 'OTHER',
+    schedule_status schedule_status NOT NULL DEFAULT 'SCHEDULED',
+    doctor TEXT CHECK (doctor IN ('Male', 'Female')) NOT NULL DEFAULT 'Male',
+    acceptance_status schedule_acceptance_status NOT NULL DEFAULT 'PENDING',
+    notes TEXT,
+    rejection_note TEXT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    UNIQUE (user_id, diagnostic_centre_id, test_type, schedule_time),
+    CHECK (schedule_time >= NOW())
+);
+
+-- Indexes for faster lookups
+CREATE INDEX IF NOT EXISTS idx_diagnostic_schedules_id_user_id
+    ON diagnostic_schedules (id, user_id);
+
+CREATE INDEX IF NOT EXISTS idx_diagnostic_schedules_id_centre_user
+    ON diagnostic_schedules (id, diagnostic_centre_id, user_id);
+
+CREATE INDEX IF NOT EXISTS idx_diagnostic_schedules_status
+    ON diagnostic_schedules (schedule_status);
+
+CREATE INDEX IF NOT EXISTS idx_diagnostic_schedules_centre_status_time
+    ON diagnostic_schedules (diagnostic_centre_id, schedule_status, schedule_time DESC);

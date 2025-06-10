@@ -19,3 +19,10 @@ migrate-up:
 
 migrate-down:
 	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgres://abumuhsinah:abumuhsinah@localhost:5432/medicue?sslmode=disable" down
+
+force-migrate:
+	@if [ -z "$(V)" ]; then \
+		echo "error: please specify version argument V"; \
+		exit 1; \
+	fi; \
+	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgres://abumuhsinah:abumuhsinah@localhost:5432/medicue?sslmode=disable" force $(V)

@@ -256,6 +256,321 @@ func AllDoctorValues() []Doctor {
 	}
 }
 
+type ScheduleAcceptanceStatus string
+
+const (
+	ScheduleAcceptanceStatusPENDING  ScheduleAcceptanceStatus = "PENDING"
+	ScheduleAcceptanceStatusACCEPTED ScheduleAcceptanceStatus = "ACCEPTED"
+	ScheduleAcceptanceStatusREJECTED ScheduleAcceptanceStatus = "REJECTED"
+)
+
+func (e *ScheduleAcceptanceStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ScheduleAcceptanceStatus(s)
+	case string:
+		*e = ScheduleAcceptanceStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ScheduleAcceptanceStatus: %T", src)
+	}
+	return nil
+}
+
+type NullScheduleAcceptanceStatus struct {
+	ScheduleAcceptanceStatus ScheduleAcceptanceStatus `json:"schedule_acceptance_status"`
+	Valid                    bool                     `json:"valid"` // Valid is true if ScheduleAcceptanceStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullScheduleAcceptanceStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ScheduleAcceptanceStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ScheduleAcceptanceStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullScheduleAcceptanceStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ScheduleAcceptanceStatus), nil
+}
+
+func (e ScheduleAcceptanceStatus) Valid() bool {
+	switch e {
+	case ScheduleAcceptanceStatusPENDING,
+		ScheduleAcceptanceStatusACCEPTED,
+		ScheduleAcceptanceStatusREJECTED:
+		return true
+	}
+	return false
+}
+
+func AllScheduleAcceptanceStatusValues() []ScheduleAcceptanceStatus {
+	return []ScheduleAcceptanceStatus{
+		ScheduleAcceptanceStatusPENDING,
+		ScheduleAcceptanceStatusACCEPTED,
+		ScheduleAcceptanceStatusREJECTED,
+	}
+}
+
+type ScheduleStatus string
+
+const (
+	ScheduleStatusSCHEDULED ScheduleStatus = "SCHEDULED"
+	ScheduleStatusCOMPLETED ScheduleStatus = "COMPLETED"
+	ScheduleStatusCANCELED  ScheduleStatus = "CANCELED"
+)
+
+func (e *ScheduleStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ScheduleStatus(s)
+	case string:
+		*e = ScheduleStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ScheduleStatus: %T", src)
+	}
+	return nil
+}
+
+type NullScheduleStatus struct {
+	ScheduleStatus ScheduleStatus `json:"schedule_status"`
+	Valid          bool           `json:"valid"` // Valid is true if ScheduleStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullScheduleStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ScheduleStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ScheduleStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullScheduleStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ScheduleStatus), nil
+}
+
+func (e ScheduleStatus) Valid() bool {
+	switch e {
+	case ScheduleStatusSCHEDULED,
+		ScheduleStatusCOMPLETED,
+		ScheduleStatusCANCELED:
+		return true
+	}
+	return false
+}
+
+func AllScheduleStatusValues() []ScheduleStatus {
+	return []ScheduleStatus{
+		ScheduleStatusSCHEDULED,
+		ScheduleStatusCOMPLETED,
+		ScheduleStatusCANCELED,
+	}
+}
+
+type TestType string
+
+const (
+	TestTypeBLOODTEST               TestType = "BLOOD_TEST"
+	TestTypeURINETEST               TestType = "URINE_TEST"
+	TestTypeXRAY                    TestType = "X_RAY"
+	TestTypeMRI                     TestType = "MRI"
+	TestTypeCTSCAN                  TestType = "CT_SCAN"
+	TestTypeULTRASOUND              TestType = "ULTRASOUND"
+	TestTypeECG                     TestType = "ECG"
+	TestTypeCOVIDTEST               TestType = "COVID_TEST"
+	TestTypeDNATEST                 TestType = "DNA_TEST"
+	TestTypeALLERGYTEST             TestType = "ALLERGY_TEST"
+	TestTypeGENETICTEST             TestType = "GENETIC_TEST"
+	TestTypeEEG                     TestType = "EEG"
+	TestTypeBIOPSY                  TestType = "BIOPSY"
+	TestTypeSKINTEST                TestType = "SKIN_TEST"
+	TestTypeIMMUNOLOGYTEST          TestType = "IMMUNOLOGY_TEST"
+	TestTypeHORMONETEST             TestType = "HORMONE_TEST"
+	TestTypeVIRALTEST               TestType = "VIRAL_TEST"
+	TestTypeBACTERIALTEST           TestType = "BACTERIAL_TEST"
+	TestTypePARASITICTEST           TestType = "PARASITIC_TEST"
+	TestTypeFUNGALTEST              TestType = "FUNGAL_TEST"
+	TestTypeMOLECULARTEST           TestType = "MOLECULAR_TEST"
+	TestTypeTOXICOLOGYTEST          TestType = "TOXICOLOGY_TEST"
+	TestTypeECHO                    TestType = "ECHO"
+	TestTypeCOVID19TEST             TestType = "COVID_19_TEST"
+	TestTypeBLOODSUGARTEST          TestType = "BLOOD_SUGAR_TEST"
+	TestTypeLIPIDPROFILE            TestType = "LIPID_PROFILE"
+	TestTypeHEMOGLOBINTEST          TestType = "HEMOGLOBIN_TEST"
+	TestTypeTHYROIDTEST             TestType = "THYROID_TEST"
+	TestTypeLIVERFUNCTIONTEST       TestType = "LIVER_FUNCTION_TEST"
+	TestTypeKIDNEYFUNCTIONTEST      TestType = "KIDNEY_FUNCTION_TEST"
+	TestTypeURICACIDTEST            TestType = "URIC_ACID_TEST"
+	TestTypeVITAMINDTEST            TestType = "VITAMIN_D_TEST"
+	TestTypeVITAMINB12TEST          TestType = "VITAMIN_B12_TEST"
+	TestTypeHEMOGRAM                TestType = "HEMOGRAM"
+	TestTypeCOMPLETEBLOODCOUNT      TestType = "COMPLETE_BLOOD_COUNT"
+	TestTypeBLOODGROUPING           TestType = "BLOOD_GROUPING"
+	TestTypeHEPATITISBTEST          TestType = "HEPATITIS_B_TEST"
+	TestTypeHEPATITISCTEST          TestType = "HEPATITIS_C_TEST"
+	TestTypeHIVTEST                 TestType = "HIV_TEST"
+	TestTypeMALARIATEST             TestType = "MALARIA_TEST"
+	TestTypeDENGUETEST              TestType = "DENGUE_TEST"
+	TestTypeTYPHOIDTEST             TestType = "TYPHOID_TEST"
+	TestTypeCOVID19ANTIBODYTEST     TestType = "COVID_19_ANTIBODY_TEST"
+	TestTypeCOVID19RAPIDANTIGENTEST TestType = "COVID_19_RAPID_ANTIGEN_TEST"
+	TestTypeCOVID19RTPCRTEST        TestType = "COVID_19_RT_PCR_TEST"
+	TestTypePREGNANCYTEST           TestType = "PREGNANCY_TEST"
+	TestTypeOTHER                   TestType = "OTHER"
+)
+
+func (e *TestType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TestType(s)
+	case string:
+		*e = TestType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TestType: %T", src)
+	}
+	return nil
+}
+
+type NullTestType struct {
+	TestType TestType `json:"test_type"`
+	Valid    bool     `json:"valid"` // Valid is true if TestType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTestType) Scan(value interface{}) error {
+	if value == nil {
+		ns.TestType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TestType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTestType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TestType), nil
+}
+
+func (e TestType) Valid() bool {
+	switch e {
+	case TestTypeBLOODTEST,
+		TestTypeURINETEST,
+		TestTypeXRAY,
+		TestTypeMRI,
+		TestTypeCTSCAN,
+		TestTypeULTRASOUND,
+		TestTypeECG,
+		TestTypeCOVIDTEST,
+		TestTypeDNATEST,
+		TestTypeALLERGYTEST,
+		TestTypeGENETICTEST,
+		TestTypeEEG,
+		TestTypeBIOPSY,
+		TestTypeSKINTEST,
+		TestTypeIMMUNOLOGYTEST,
+		TestTypeHORMONETEST,
+		TestTypeVIRALTEST,
+		TestTypeBACTERIALTEST,
+		TestTypePARASITICTEST,
+		TestTypeFUNGALTEST,
+		TestTypeMOLECULARTEST,
+		TestTypeTOXICOLOGYTEST,
+		TestTypeECHO,
+		TestTypeCOVID19TEST,
+		TestTypeBLOODSUGARTEST,
+		TestTypeLIPIDPROFILE,
+		TestTypeHEMOGLOBINTEST,
+		TestTypeTHYROIDTEST,
+		TestTypeLIVERFUNCTIONTEST,
+		TestTypeKIDNEYFUNCTIONTEST,
+		TestTypeURICACIDTEST,
+		TestTypeVITAMINDTEST,
+		TestTypeVITAMINB12TEST,
+		TestTypeHEMOGRAM,
+		TestTypeCOMPLETEBLOODCOUNT,
+		TestTypeBLOODGROUPING,
+		TestTypeHEPATITISBTEST,
+		TestTypeHEPATITISCTEST,
+		TestTypeHIVTEST,
+		TestTypeMALARIATEST,
+		TestTypeDENGUETEST,
+		TestTypeTYPHOIDTEST,
+		TestTypeCOVID19ANTIBODYTEST,
+		TestTypeCOVID19RAPIDANTIGENTEST,
+		TestTypeCOVID19RTPCRTEST,
+		TestTypePREGNANCYTEST,
+		TestTypeOTHER:
+		return true
+	}
+	return false
+}
+
+func AllTestTypeValues() []TestType {
+	return []TestType{
+		TestTypeBLOODTEST,
+		TestTypeURINETEST,
+		TestTypeXRAY,
+		TestTypeMRI,
+		TestTypeCTSCAN,
+		TestTypeULTRASOUND,
+		TestTypeECG,
+		TestTypeCOVIDTEST,
+		TestTypeDNATEST,
+		TestTypeALLERGYTEST,
+		TestTypeGENETICTEST,
+		TestTypeEEG,
+		TestTypeBIOPSY,
+		TestTypeSKINTEST,
+		TestTypeIMMUNOLOGYTEST,
+		TestTypeHORMONETEST,
+		TestTypeVIRALTEST,
+		TestTypeBACTERIALTEST,
+		TestTypePARASITICTEST,
+		TestTypeFUNGALTEST,
+		TestTypeMOLECULARTEST,
+		TestTypeTOXICOLOGYTEST,
+		TestTypeECHO,
+		TestTypeCOVID19TEST,
+		TestTypeBLOODSUGARTEST,
+		TestTypeLIPIDPROFILE,
+		TestTypeHEMOGLOBINTEST,
+		TestTypeTHYROIDTEST,
+		TestTypeLIVERFUNCTIONTEST,
+		TestTypeKIDNEYFUNCTIONTEST,
+		TestTypeURICACIDTEST,
+		TestTypeVITAMINDTEST,
+		TestTypeVITAMINB12TEST,
+		TestTypeHEMOGRAM,
+		TestTypeCOMPLETEBLOODCOUNT,
+		TestTypeBLOODGROUPING,
+		TestTypeHEPATITISBTEST,
+		TestTypeHEPATITISCTEST,
+		TestTypeHIVTEST,
+		TestTypeMALARIATEST,
+		TestTypeDENGUETEST,
+		TestTypeTYPHOIDTEST,
+		TestTypeCOVID19ANTIBODYTEST,
+		TestTypeCOVID19RAPIDANTIGENTEST,
+		TestTypeCOVID19RTPCRTEST,
+		TestTypePREGNANCYTEST,
+		TestTypeOTHER,
+	}
+}
+
 type UserEnum string
 
 const (
@@ -336,6 +651,21 @@ type DiagnosticCentre struct {
 	AdminID              string             `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+}
+
+type DiagnosticSchedule struct {
+	ID                 string                   `db:"id" json:"id"`
+	UserID             string                   `db:"user_id" json:"user_id"`
+	DiagnosticCentreID string                   `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	ScheduleTime       pgtype.Timestamptz       `db:"schedule_time" json:"schedule_time"`
+	TestType           TestType                 `db:"test_type" json:"test_type"`
+	ScheduleStatus     ScheduleStatus           `db:"schedule_status" json:"schedule_status"`
+	Doctor             string                   `db:"doctor" json:"doctor"`
+	AcceptanceStatus   ScheduleAcceptanceStatus `db:"acceptance_status" json:"acceptance_status"`
+	Notes              pgtype.Text              `db:"notes" json:"notes"`
+	RejectionNote      pgtype.Text              `db:"rejection_note" json:"rejection_note"`
+	CreatedAt          pgtype.Timestamptz       `db:"created_at" json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz       `db:"updated_at" json:"updated_at"`
 }
 
 type User struct {

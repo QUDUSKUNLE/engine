@@ -56,10 +56,10 @@ func BodyValidationInterceptorFor(dtoFactory func() interface{}) echo.Middleware
 		return func(c echo.Context) error {
 			switch c.Request().Method {
 			case http.MethodGet, http.MethodDelete:
-				if err := bindAndValidateDTO(c, dtoFactory, c.Bind, "validatedQueryParamsDTO"); err != nil {
+				if err := bindAndValidateDTO(c, dtoFactory, c.Bind, "validatedQueryDTO"); err != nil {
 					return err
 				}
-			case http.MethodPost:
+			case http.MethodPost, http.MethodPut:
 				bodyBytes, err := io.ReadAll(c.Request().Body)
 				if err != nil {
 					return echo.NewHTTPError(http.StatusBadRequest, "Failed to read request body")

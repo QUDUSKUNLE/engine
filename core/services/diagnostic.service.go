@@ -13,7 +13,20 @@ import (
 	"github.com/medicue/core/utils"
 )
 
-func (service *ServicesHandler) CreateDiagnsoticCentre(context echo.Context) error {
+// Helper to unmarshal address and contact, and build response
+func buildDiagnosticCentreResponseFromRow(row *db.DiagnosticCentre, c echo.Context) (map[string]interface{}, error) {
+	var address domain.Address
+	if err := utils.UnmarshalJSONField(row.Address, &address, c); err != nil {
+		return nil, err
+	}
+	var contact domain.Contact
+	if err := utils.UnmarshalJSONField(row.Contact, &contact, c); err != nil {
+		return nil, err
+	}
+	return buildDiagnosticCentreResponse(row, address, contact), nil
+}
+
+func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) error {
 	ctx := context.Request().Context()
 	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
 	if err != nil {
@@ -48,15 +61,10 @@ func (service *ServicesHandler) CreateDiagnsoticCentre(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	var address domain.Address
-	if err := utils.UnmarshalJSONField(response.Address, &address, context); err != nil {
-		return err
+	res, err := buildDiagnosticCentreResponseFromRow(response, context)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
-	var contact domain.Contact
-	if err := utils.UnmarshalJSONField(response.Contact, &contact, context); err != nil {
-		return err
-	}
-	res := buildDiagnosticCentreResponse(response, address, contact)
 	return utils.ResponseMessage(http.StatusCreated, res, context)
 }
 
@@ -71,33 +79,28 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	var address domain.Address
-	if err := utils.UnmarshalJSONField(response.Address, &address, context); err != nil {
-		return err
+	res, err := buildDiagnosticCentreResponseFromRow(response, context)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
-	var contact domain.Contact
-	if err := utils.UnmarshalJSONField(response.Contact, &contact, context); err != nil {
-		return err
-	}
-	res := buildDiagnosticCentreResponse(response, address, contact)
 	return utils.ResponseMessage(http.StatusOK, res, context)
 }
 
 func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) error {
 	ctx := context.Request().Context()
-	queryParams, ok := context.Get("validatedQueryParamsDTO").(*domain.SearchDiagnosticCentreParamDTO)
+	query, ok := context.Get("validatedQueryDTO").(*domain.SearchDiagnosticCentreQueryDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
 	params := db.Get_Nearest_Diagnostic_CentresParams{
-		Radians:   queryParams.Latitude,
-		Radians_2: queryParams.Longitude,
+		Radians:   query.Latitude,
+		Radians_2: query.Longitude,
 	}
-	if queryParams.Doctor != "" {
-		params.Doctors = []string{queryParams.Doctor}
+	if query.Doctor != "" {
+		params.Doctors = []string{query.Doctor}
 	}
-	if queryParams.Test != "" {
-		params.AvailableTests = []string{queryParams.Test}
+	if query.Test != "" {
+		params.AvailableTests = []string{query.Test}
 	}
 	response, err := service.repositoryService.GetNearestDiagnosticCentres(ctx, params)
 	if err != nil {
@@ -105,33 +108,67 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	}
 	result := make([]map[string]interface{}, 0, len(response))
 	for _, v := range response {
-		var address domain.Address
-		if err := utils.UnmarshalJSONField(v.Address, &address, context); err != nil {
-			return err
-		}
-		var contact domain.Contact
-		if err := utils.UnmarshalJSONField(v.Contact, &contact, context); err != nil {
-			return err
-		}
 		// Map v to a DiagnosticCentre struct
 		diagnosticCentre := &db.DiagnosticCentre{
-			ID:                  v.ID,
+			ID:                   v.ID,
 			DiagnosticCentreName: v.DiagnosticCentreName,
-			Latitude:            v.Latitude,
-			Longitude:           v.Longitude,
-			Address:             v.Address,
-			Contact:             v.Contact,
-			Doctors:             v.Doctors,
-			AvailableTests:      v.AvailableTests,
-			CreatedAt:           v.CreatedAt,
-			UpdatedAt:           v.UpdatedAt,
+			Latitude:             v.Latitude,
+			Longitude:            v.Longitude,
+			Address:              v.Address,
+			Contact:              v.Contact,
+			Doctors:              v.Doctors,
+			AvailableTests:       v.AvailableTests,
+			CreatedAt:            v.CreatedAt,
+			UpdatedAt:            v.UpdatedAt,
 		}
-		item := buildDiagnosticCentreResponse(diagnosticCentre, address, contact)
+		item, err := buildDiagnosticCentreResponseFromRow(diagnosticCentre, context)
+		if err != nil {
+			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		}
 		item["distance"] = v.DistanceKm
 		item["distance_unit"] = "km"
 		result = append(result, item)
 	}
 	return utils.ResponseMessage(http.StatusOK, result, context)
+}
+
+func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) error {
+	ctx := context.Request().Context()
+	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+	body, ok := context.Get("validatedBodyDTO").(*domain.UpdateDiagnosticBodyDTO)
+	if !ok {
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
+	}
+	param := context.Param("diagnostic_centre_id")
+	addressBytes, err := utils.MarshalJSONField(body.Address, context)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+	contactBytes, err := utils.MarshalJSONField(body.Contact, context)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+	response, err := service.repositoryService.UpdateDiagnosticCentreByOwner(ctx,
+		db.Update_Diagnostic_Centre_ByOwnerParams{
+			ID:                   param,
+			CreatedBy:            currentUser.UserID.String(),
+			DiagnosticCentreName: body.DiagnosticCentreName,
+			Latitude:             pgtype.Float8{Float64: body.Latitude, Valid: true},
+			Longitude:            pgtype.Float8{Float64: body.Longitude, Valid: true},
+			Address:              addressBytes,
+			Contact:              contactBytes,
+			Doctors:              body.Doctors,
+			AvailableTests:       body.AvailableTests,
+			AdminID:              body.ADMINID.String(),
+		})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusNotAcceptable, err, context)
+	}
+	fmt.Println(body, response, "&&&&&&&&&&&&&&")
+	return utils.ResponseMessage(http.StatusNoContent, "ok", context)
 }
 
 // Helper to build diagnostic centre response

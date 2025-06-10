@@ -14,8 +14,11 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error)
 	// Inserts a new diagnostic record into the diagnostic_centres table.
 	Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagnostic_CentreParams) (*DiagnosticCentre, error)
+	// Create a diagnostic schedule
+	Create_Diagnostic_Schedule(ctx context.Context, arg Create_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	// Deletes a diagnosticCentre only by the created_by.
 	Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Delete_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
+	Delete_Diagnostic_Schedule(ctx context.Context, arg Delete_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
 	GetUser(ctx context.Context, id string) (*User, error)
 	GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error)
@@ -26,6 +29,12 @@ type Querier interface {
 	Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*DiagnosticCentre, error)
 	// GetADiagnosticCentreByOwner :one
 	Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
+	// Get Diagnostic Schedule
+	Get_Diagnostic_Schedule(ctx context.Context, arg Get_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
+	// Get Diagnostic Schedules
+	Get_Diagnostic_Schedules(ctx context.Context, arg Get_Diagnostic_SchedulesParams) ([]*DiagnosticSchedule, error)
+	Get_Diagnsotic_Schedule_By_Centre(ctx context.Context, arg Get_Diagnsotic_Schedule_By_CentreParams) (*DiagnosticSchedule, error)
+	Get_Diagnsotic_Schedules_By_Centre(ctx context.Context, arg Get_Diagnsotic_Schedules_By_CentreParams) ([]*DiagnosticSchedule, error)
 	// Retrieves the nearest diagnostic centres based on latitude and longitude.
 	Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Nearest_Diagnostic_CentresParams) ([]*Get_Nearest_Diagnostic_CentresRow, error)
 	// Retrieves all diagnostic records for a specific owner.
@@ -39,6 +48,9 @@ type Querier interface {
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error)
 	// Updates a diagnostic centre by the owner.
 	Update_Diagnostic_Centre_ByOwner(ctx context.Context, arg Update_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
+	// Update a diagnostic schedule
+	Update_Diagnostic_Schedule(ctx context.Context, arg Update_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
+	Update_Diagnostic_Schedule_By_Centre(ctx context.Context, arg Update_Diagnostic_Schedule_By_CentreParams) (*DiagnosticSchedule, error)
 }
 
 var _ Querier = (*Queries)(nil)
