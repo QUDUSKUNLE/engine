@@ -109,6 +109,7 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 			method:  http.MethodGet,
 			path:    "/diagnostic_schedules",
 			handler: handler.GetSchedules,
+			factory: func() interface{} { return &domain.GetDiagnosticSchedulesQueryDTO{} },
 		},
 	}
 

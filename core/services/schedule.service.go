@@ -77,10 +77,21 @@ func (service *ServicesHandler) GetDiagnosticSchedules(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
+	query, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticSchedulesQueryDTO)
+	if !ok {
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
+	}
+	var Limit, Offset int32
+	if query.Limit == 0 {
+		Limit = utils.Limit
+	}
+	if query.Offset == 0 {
+		Offset = utils.Offset
+	}
 	req := db.Get_Diagnostic_SchedulesParams{
 		UserID: currentUser.UserID.String(),
-		Limit:  50,
-		Offset: 0,
+		Limit:  Limit,
+		Offset: Offset,
 	}
 	response, err := service.ScheduleRepo.GetDiagnosticSchedules(context.Request().Context(), req)
 	if err != nil {
@@ -162,11 +173,10 @@ func (service *ServicesHandler) GetDiagnosticSchedulesByCentre(context echo.Cont
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
-	var Limit int32
+	var Limit, Offset int32
 	if param.Limit == 0 {
 		Limit = utils.Limit
 	}
-	var Offset int32
 	if param.Offset == 0 {
 		Offset = utils.Offset
 	}

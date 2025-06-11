@@ -27,6 +27,10 @@ type (
 	GetDiagnosticScheduleParamDTO struct {
 		ScheduleID uuid.UUID `param:"schedule_id" validate:"uuid,required"`
 	}
+	GetDiagnosticSchedulesQueryDTO struct {
+		Limit              int32     `query:"limit" validate:"omitempty"`
+		Offset             int32     `query:"offset" validate:"omitempty"`
+	}
 	GetDiagnosticSchedulesByCentreParamDTO struct {
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id" validate:"uuid,required"`
 		Limit              int32     `query:"limit" validate:"omitempty"`
