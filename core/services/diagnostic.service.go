@@ -27,12 +27,11 @@ func buildDiagnosticCentreResponseFromRow(row *db.DiagnosticCentre, c echo.Conte
 }
 
 func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) error {
-	ctx := context.Request().Context()
 	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	dto, ok := context.Get("validatedBodyDTO").(*domain.CreateDiagnosticDTO)
+	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.CreateDiagnosticDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -57,7 +56,8 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		CreatedBy:            currentUser.UserID.String(),
 		AdminID:              dto.AdminId.String(),
 	}
-	response, err := service.DiagnosticCentreRepo.CreateDiagnosticCentre(ctx, params)
+	response, err := service.DiagnosticCentreRepo.CreateDiagnosticCentre(
+		context.Request().Context(), params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -69,13 +69,12 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 }
 
 func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error {
-	ctx := context.Request().Context()
 	var params domain.GetDiagnosticParamDTO
 	if err := utils.ValidateParams(context, &params); err != nil {
 		fmt.Println(err.Error())
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
-	response, err := service.DiagnosticCentreRepo.GetDiagnosticCentre(ctx, params.DiagnosticCentreID)
+	response, err := service.DiagnosticCentreRepo.GetDiagnosticCentre(context.Request().Context(), params.DiagnosticCentreID)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -87,8 +86,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 }
 
 func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) error {
-	ctx := context.Request().Context()
-	query, ok := context.Get("validatedQueryParamDTO").(*domain.SearchDiagnosticCentreQueryDTO)
+	query, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.SearchDiagnosticCentreQueryDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -102,7 +100,7 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	if query.Test != "" {
 		params.AvailableTests = []string{query.Test}
 	}
-	response, err := service.DiagnosticCentreRepo.GetNearestDiagnosticCentres(ctx, params)
+	response, err := service.DiagnosticCentreRepo.GetNearestDiagnosticCentres(context.Request().Context(), params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -133,16 +131,15 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 }
 
 func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) error {
-	ctx := context.Request().Context()
 	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	body, ok := context.Get("validatedBodyDTO").(*domain.UpdateDiagnosticBodyDTO)
+	body, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticBodyDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
-	param := context.Param("diagnostic_centre_id")
+	param := context.Param(utils.DiagnosticCentreID)
 	addressBytes, err := utils.MarshalJSONField(body.Address, context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
@@ -151,7 +148,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	response, err := service.DiagnosticCentreRepo.UpdateDiagnosticCentreByOwner(ctx,
+	response, err := service.DiagnosticCentreRepo.UpdateDiagnosticCentreByOwner(context.Request().Context(),
 		db.Update_Diagnostic_Centre_ByOwnerParams{
 			ID:                   param,
 			CreatedBy:            currentUser.UserID.String(),

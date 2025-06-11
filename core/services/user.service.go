@@ -12,7 +12,7 @@ import (
 )
 
 func (service *ServicesHandler) Create(context echo.Context) error {
-	dto, ok := context.Get("validatedBodyDTO").(*domain.UserRegisterDTO)
+	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UserRegisterDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -37,7 +37,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
-	dto, ok := context.Get("validatedBodyDTO").(*domain.DiagnosticCentreManagerRegisterDTO)
+	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.DiagnosticCentreManagerRegisterDTO)
 	// Check if there are appropriate UserEnumDiagnosticCentreManager
 	if !ok || dto.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
@@ -63,9 +63,8 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 }
 
 func (service *ServicesHandler) Login(context echo.Context) error {
-	ctx := context.Request().Context()
-	dto := context.Get("validatedBodyDTO").(*domain.UserSignInDTO)
-	response, err := service.UserRepo.GetUserByEmail(ctx, dto.Email)
+	dto := context.Get(utils.ValidatedBodyDTO).(*domain.UserSignInDTO)
+	response, err := service.UserRepo.GetUserByEmail(context.Request().Context(), dto.Email)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}

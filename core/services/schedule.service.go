@@ -17,7 +17,7 @@ func (service *ServicesHandler) CreateSchedule(context echo.Context) error {
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	dto, ok := context.Get("validatedBodyDTO").(*domain.CreateScheduleDTO)
+	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.CreateScheduleDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -28,11 +28,11 @@ func (service *ServicesHandler) CreateSchedule(context echo.Context) error {
 		// Try parsing as RFC3339 with or without milliseconds
 		parsed, parseErr := time.Parse(time.RFC3339Nano, dto.ScheduleTime)
 		if parseErr != nil {
-			return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid schedule time format, expected RFC3339 or RFC3339Nano"), context)
+			return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.ErrScheduleTimeFormatRFC3339), context)
 		}
 		err = scheduleTime.Scan(parsed)
 		if err != nil {
-			return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid schedule time format after parsing"), context)
+			return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.ErrScheduleTimeFormatParsing), context)
 		}
 	}
 	params := db.Create_Diagnostic_ScheduleParams{
@@ -56,7 +56,8 @@ func (service *ServicesHandler) GetDiagnosticSchedule(context echo.Context) erro
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	param, ok := context.Get("validatedQueryParamDTO").(*domain.GetDiagnosticScheduleParamDTO)
+	param, ok := context.Get(
+		utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticScheduleParamDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -93,7 +94,7 @@ func (service *ServicesHandler) UpdateDiagnosticSchedule(context echo.Context) e
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	dto, ok := context.Get("validatedBodyDTO").(*domain.UpdateScheduleDTO)
+	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateScheduleDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -103,14 +104,14 @@ func (service *ServicesHandler) UpdateDiagnosticSchedule(context echo.Context) e
 		// Try parsing as RFC3339 with or without milliseconds
 		parsed, parseErr := time.Parse(time.RFC3339Nano, dto.ScheduleTime)
 		if parseErr != nil {
-			return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid schedule time format, expected RFC3339 or RFC3339Nano"), context)
+			return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.ErrScheduleTimeFormatRFC3339), context)
 		}
 		err = scheduleTime.Scan(parsed)
 		if err != nil {
-			return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid schedule time format after parsing"), context)
+			return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.ErrScheduleTimeFormatParsing), context)
 		}
 	}
-	schedule_id := context.Param("schedule_id")
+	schedule_id := context.Param(utils.ScheduleID)
 	body := db.Update_Diagnostic_ScheduleParams{
 		ID:             schedule_id,
 		ScheduleTime:   scheduleTime,
@@ -136,7 +137,7 @@ func (service *ServicesHandler) GetDiagnosticScheduleByCentre(context echo.Conte
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	param, ok := context.Get("validatedQueryParamDTO").(*domain.GetDiagnosticScheduleByCentreParamDTO)
+	param, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticScheduleByCentreParamDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
@@ -157,15 +158,22 @@ func (service *ServicesHandler) GetDiagnosticSchedulesByCentre(context echo.Cont
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
-	param, ok := context.Get("validatedQueryParamDTO").(*domain.GetDiagnosticSchedulesByCentreParamDTO)
+	param, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticSchedulesByCentreParamDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
-
+	var Limit int32
+	if param.Limit == 0 {
+		Limit = utils.Limit
+	}
+	var Offset int32
+	if param.Offset == 0 {
+		Offset = utils.Offset
+	}
 	req := db.Get_Diagnsotic_Schedules_By_CentreParams{
 		DiagnosticCentreID: param.DiagnosticCentreID.String(),
-		Offset:             0,
-		Limit:              50,
+		Offset:             Offset,
+		Limit:              Limit,
 	}
 	response, err := service.ScheduleRepo.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
 	if err != nil {
@@ -175,17 +183,18 @@ func (service *ServicesHandler) GetDiagnosticSchedulesByCentre(context echo.Cont
 }
 
 func (service *ServicesHandler) UpdateDiagnosticScheduleByCentre(context echo.Context) error {
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
+	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	body, ok := context.Get("validatedBodyDTO").(*domain.UpdateDiagnosticScheduleByCentreDTO)
+	body, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticScheduleByCentreDTO)
 	if !ok {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
-	schedule_id := context.Param("schedule_id")
+	schedule_id := context.Param(utils.ScheduleID)
+	diagnostic_centre_id := context.Param(utils.DiagnosticCentreID)
 	req := db.Update_Diagnostic_Schedule_By_CentreParams{
-		DiagnosticCentreID: currentUser.DiagnosticID.String(),
+		DiagnosticCentreID: diagnostic_centre_id,
 		AcceptanceStatus:   body.AcceptanceStatus,
 		ID:                 schedule_id,
 	}
