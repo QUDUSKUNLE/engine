@@ -256,6 +256,85 @@ func AllDoctorValues() []Doctor {
 	}
 }
 
+type DocumentType string
+
+const (
+	DocumentTypeLABREPORT        DocumentType = "LAB_REPORT"
+	DocumentTypePRESCRIPTION     DocumentType = "PRESCRIPTION"
+	DocumentTypeDISCHARGESUMMARY DocumentType = "DISCHARGE_SUMMARY"
+	DocumentTypeIMAGING          DocumentType = "IMAGING"
+	DocumentTypeVACCINATION      DocumentType = "VACCINATION"
+	DocumentTypeALLERGY          DocumentType = "ALLERGY"
+	DocumentTypeSURGERY          DocumentType = "SURGERY"
+	DocumentTypeCHRONICCONDITION DocumentType = "CHRONIC_CONDITION"
+	DocumentTypeFAMILYHISTORY    DocumentType = "FAMILY_HISTORY"
+)
+
+func (e *DocumentType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DocumentType(s)
+	case string:
+		*e = DocumentType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DocumentType: %T", src)
+	}
+	return nil
+}
+
+type NullDocumentType struct {
+	DocumentType DocumentType `json:"document_type"`
+	Valid        bool         `json:"valid"` // Valid is true if DocumentType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDocumentType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DocumentType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DocumentType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDocumentType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DocumentType), nil
+}
+
+func (e DocumentType) Valid() bool {
+	switch e {
+	case DocumentTypeLABREPORT,
+		DocumentTypePRESCRIPTION,
+		DocumentTypeDISCHARGESUMMARY,
+		DocumentTypeIMAGING,
+		DocumentTypeVACCINATION,
+		DocumentTypeALLERGY,
+		DocumentTypeSURGERY,
+		DocumentTypeCHRONICCONDITION,
+		DocumentTypeFAMILYHISTORY:
+		return true
+	}
+	return false
+}
+
+func AllDocumentTypeValues() []DocumentType {
+	return []DocumentType{
+		DocumentTypeLABREPORT,
+		DocumentTypePRESCRIPTION,
+		DocumentTypeDISCHARGESUMMARY,
+		DocumentTypeIMAGING,
+		DocumentTypeVACCINATION,
+		DocumentTypeALLERGY,
+		DocumentTypeSURGERY,
+		DocumentTypeCHRONICCONDITION,
+		DocumentTypeFAMILYHISTORY,
+	}
+}
+
 type ScheduleAcceptanceStatus string
 
 const (
@@ -666,6 +745,27 @@ type DiagnosticSchedule struct {
 	RejectionNote      pgtype.Text              `db:"rejection_note" json:"rejection_note"`
 	CreatedAt          pgtype.Timestamptz       `db:"created_at" json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz       `db:"updated_at" json:"updated_at"`
+}
+
+type MedicalRecord struct {
+	ID              string             `db:"id" json:"id"`
+	UserID          string             `db:"user_id" json:"user_id"`
+	UploaderID      string             `db:"uploader_id" json:"uploader_id"`
+	UploaderType    UserEnum           `db:"uploader_type" json:"uploader_type"`
+	ScheduleID      string             `db:"schedule_id" json:"schedule_id"`
+	Title           string             `db:"title" json:"title"`
+	DocumentType    DocumentType       `db:"document_type" json:"document_type"`
+	FilePath        string             `db:"file_path" json:"file_path"`
+	FileType        pgtype.Text        `db:"file_type" json:"file_type"`
+	DocumentDate    pgtype.Date        `db:"document_date" json:"document_date"`
+	UploadedAt      pgtype.Timestamp   `db:"uploaded_at" json:"uploaded_at"`
+	ProviderName    pgtype.Text        `db:"provider_name" json:"provider_name"`
+	Specialty       pgtype.Text        `db:"specialty" json:"specialty"`
+	IsShared        pgtype.Bool        `db:"is_shared" json:"is_shared"`
+	SharedUntil     pgtype.Timestamp   `db:"shared_until" json:"shared_until"`
+	CreatedAt       pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	UploaderAdminID pgtype.UUID        `db:"uploader_admin_id" json:"uploader_admin_id"`
 }
 
 type User struct {

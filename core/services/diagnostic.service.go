@@ -6,58 +6,25 @@ import (
 
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/domain"
 	"github.com/medicue/core/utils"
 )
 
-// Helper to unmarshal address and contact, and build response
-func buildDiagnosticCentreResponseFromRow(row *db.DiagnosticCentre, c echo.Context) (map[string]interface{}, error) {
-	var address domain.Address
-	if err := utils.UnmarshalJSONField(row.Address, &address, c); err != nil {
-		return nil, err
-	}
-	var contact domain.Contact
-	if err := utils.UnmarshalJSONField(row.Contact, &contact, c); err != nil {
-		return nil, err
-	}
-	return buildDiagnosticCentreResponse(row, address, contact), nil
-}
-
 func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) error {
 	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.CreateDiagnosticDTO)
-	if !ok {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
-	}
-
-	addressBytes, err := utils.MarshalJSONField(dto.Address, context)
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateDiagnosticDTO)
+	params, err := buildCreateDiagnosticCentreParams(context, dto)
 	if err != nil {
 		return err
 	}
-	contactBytes, err := utils.MarshalJSONField(dto.Contact, context)
-	if err != nil {
-		return err
-	}
-
-	params := db.Create_Diagnostic_CentreParams{
-		DiagnosticCentreName: dto.DiagnosticCentreName,
-		Latitude:             pgtype.Float8{Float64: dto.Latitude, Valid: true},
-		Longitude:            pgtype.Float8{Float64: dto.Longitude, Valid: true},
-		Address:              addressBytes,
-		Contact:              contactBytes,
-		Doctors:              dto.Doctors,
-		AvailableTests:       dto.AvailableTests,
-		CreatedBy:            currentUser.UserID.String(),
-		AdminID:              dto.AdminId.String(),
-	}
-	response, err := service.DiagnosticCentreRepo.CreateDiagnosticCentre(
-		context.Request().Context(), params)
+	params.CreatedBy = currentUser.UserID.String()
+	response, err := service.diagnosticRepo.CreateDiagnosticCentre(
+		context.Request().Context(), *params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -74,7 +41,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 		fmt.Println(err.Error())
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
-	response, err := service.DiagnosticCentreRepo.GetDiagnosticCentre(context.Request().Context(), params.DiagnosticCentreID)
+	response, err := service.diagnosticRepo.GetDiagnosticCentre(context.Request().Context(), params.DiagnosticCentreID)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -86,10 +53,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 }
 
 func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) error {
-	query, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.SearchDiagnosticCentreQueryDTO)
-	if !ok {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
-	}
+	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.SearchDiagnosticCentreQueryDTO)
 	params := db.Get_Nearest_Diagnostic_CentresParams{
 		Radians:   query.Latitude,
 		Radians_2: query.Longitude,
@@ -100,25 +64,14 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	if query.Test != "" {
 		params.AvailableTests = []string{query.Test}
 	}
-	response, err := service.DiagnosticCentreRepo.GetNearestDiagnosticCentres(context.Request().Context(), params)
+	response, err := service.diagnosticRepo.GetNearestDiagnosticCentres(context.Request().Context(), params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
 	result := make([]map[string]interface{}, 0, len(response))
 	for _, v := range response {
 		// Map v to a DiagnosticCentre struct
-		diagnosticCentre := &db.DiagnosticCentre{
-			ID:                   v.ID,
-			DiagnosticCentreName: v.DiagnosticCentreName,
-			Latitude:             v.Latitude,
-			Longitude:            v.Longitude,
-			Address:              v.Address,
-			Contact:              v.Contact,
-			Doctors:              v.Doctors,
-			AvailableTests:       v.AvailableTests,
-			CreatedAt:            v.CreatedAt,
-			UpdatedAt:            v.UpdatedAt,
-		}
+		diagnosticCentre := buildDiagnosticCentre(*v)
 		item, err := buildDiagnosticCentreResponseFromRow(diagnosticCentre, context)
 		if err != nil {
 			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
@@ -135,52 +88,17 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	body, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticBodyDTO)
-	if !ok {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
-	}
+	body, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticBodyDTO)
 	param := context.Param(utils.DiagnosticCentreID)
-	addressBytes, err := utils.MarshalJSONField(body.Address, context)
+	dto, err := buildUpdateDiagnosticCentreByOwnerParams(context, body)
 	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+		return err
 	}
-	contactBytes, err := utils.MarshalJSONField(body.Contact, context)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, context)
-	}
-	response, err := service.DiagnosticCentreRepo.UpdateDiagnosticCentreByOwner(context.Request().Context(),
-		db.Update_Diagnostic_Centre_ByOwnerParams{
-			ID:                   param,
-			CreatedBy:            currentUser.UserID.String(),
-			DiagnosticCentreName: body.DiagnosticCentreName,
-			Latitude:             pgtype.Float8{Float64: body.Latitude, Valid: true},
-			Longitude:            pgtype.Float8{Float64: body.Longitude, Valid: true},
-			Address:              addressBytes,
-			Contact:              contactBytes,
-			Doctors:              body.Doctors,
-			AvailableTests:       body.AvailableTests,
-			AdminID:              body.ADMINID.String(),
-		})
+	dto.ID = param
+	dto.CreatedBy = currentUser.UserID.String()
+	response, err := service.diagnosticRepo.UpdateDiagnosticCentreByOwner(context.Request().Context(), *dto)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotAcceptable, err, context)
 	}
 	return utils.ResponseMessage(http.StatusNoContent, response, context)
-}
-
-// Helper to build diagnostic centre response
-func buildDiagnosticCentreResponse(response *db.DiagnosticCentre, address domain.Address, contact domain.Contact) map[string]interface{} {
-	return map[string]interface{}{
-		"diagnostic_centre_id":   response.ID,
-		"diagnostic_centre_name": response.DiagnosticCentreName,
-		"latitude":               response.Latitude,
-		"longitude":              response.Longitude,
-		"address":                address,
-		"contact":                contact,
-		"doctors":                response.Doctors,
-		"available_tests":        response.AvailableTests,
-		"created_by":             response.CreatedBy,
-		"admin_id":               response.AdminID,
-		"created_at":             response.CreatedAt,
-		"updated_at":             response.UpdatedAt,
-	}
 }

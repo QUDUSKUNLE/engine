@@ -111,40 +111,35 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 			handler: handler.GetSchedules,
 			factory: func() interface{} { return &domain.GetDiagnosticSchedulesQueryDTO{} },
 		},
+		// Record Upload
+		{
+			method:  http.MethodPost,
+			path:    "/medical_records",
+			handler: handler.CreateMedicalRecord,
+			factory: func() interface{} { return &domain.CreateMedicalRecordDTO{} },
+		},
 	}
 
 	for _, r := range routes {
 		switch r.method {
 		case http.MethodPost:
-			if r.factory != nil {
-				public.POST(
-					r.path,
-					r.handler,
-					middlewares.BodyValidationInterceptorFor(r.factory),
-				)
-			} else {
-				public.POST(r.path, r.handler)
-			}
+			public.POST(
+				r.path,
+				r.handler,
+				middlewares.BodyValidationInterceptorFor(r.factory),
+			)
 		case http.MethodGet:
-			if r.factory != nil {
-				public.GET(
-					r.path,
-					r.handler,
-					middlewares.BodyValidationInterceptorFor(r.factory),
-				)
-			} else {
-				public.GET(r.path, r.handler)
-			}
+			public.GET(
+				r.path,
+				r.handler,
+				middlewares.BodyValidationInterceptorFor(r.factory),
+			)
 		case http.MethodPut:
-			if r.factory != nil {
-				public.PUT(
-					r.path,
-					r.handler,
-					middlewares.BodyValidationInterceptorFor(r.factory),
-				)
-			} else {
-				public.PUT(r.path, r.handler)
-			}
+			public.PUT(
+				r.path,
+				r.handler,
+				middlewares.BodyValidationInterceptorFor(r.factory),
+			)
 			// Add more HTTP methods as needed
 		}
 	}

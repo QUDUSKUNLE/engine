@@ -10,7 +10,7 @@ INSERT INTO diagnostic_schedules (
   acceptance_status,
   notes
 ) VALUES (
-   $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
 
 -- Get Diagnostic Schedule

@@ -11,6 +11,8 @@ import (
 )
 
 type Querier interface {
+	// Create a Medical Record
+	CreateMedicalRecord(ctx context.Context, arg CreateMedicalRecordParams) (*MedicalRecord, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error)
 	// Inserts a new diagnostic record into the diagnostic_centres table.
 	Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagnostic_CentreParams) (*DiagnosticCentre, error)
@@ -20,6 +22,17 @@ type Querier interface {
 	Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Delete_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 	Delete_Diagnostic_Schedule(ctx context.Context, arg Delete_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
+	// Get a Medical Record
+	GetMedicalRecord(ctx context.Context, arg GetMedicalRecordParams) (*GetMedicalRecordRow, error)
+	// Get Medical Records
+	// Retrieves a paginated list of medical records for a specific user, ordered by creation date (most recent first).
+	GetMedicalRecords(ctx context.Context, arg GetMedicalRecordsParams) ([]*GetMedicalRecordsRow, error)
+	// Get an Uploader Medical Record
+	// Retrieves a medical record by its ID and uploader ID.
+	GetUploaderMedicalRecord(ctx context.Context, arg GetUploaderMedicalRecordParams) (*GetUploaderMedicalRecordRow, error)
+	// Get Uploader Medical Records
+	// Retrieves a paginated list of medical records uploaded by a specific uploader, explicitly ordered by creation date in descending order (most recent first).
+	GetUploaderMedicalRecords(ctx context.Context, arg GetUploaderMedicalRecordsParams) ([]*GetUploaderMedicalRecordsRow, error)
 	GetUser(ctx context.Context, id string) (*User, error)
 	GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error)
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, error)
@@ -45,6 +58,9 @@ type Querier interface {
 	Search_Diagnostic_Centres(ctx context.Context, arg Search_Diagnostic_CentresParams) ([]*DiagnosticCentre, error)
 	// SearchDiagnosticWith Doctor type
 	Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*DiagnosticCentre, error)
+	// Uploader Update a Medical Record
+	// Updates a medical record by uploader, allowing partial updates to fields. Only the uploader can update their own records. Updates the 'updated_at' timestamp.
+	UpdateMedicalRecordByUploader(ctx context.Context, arg UpdateMedicalRecordByUploaderParams) (*MedicalRecord, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error)
 	// Updates a diagnostic centre by the owner.
 	Update_Diagnostic_Centre_ByOwner(ctx context.Context, arg Update_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)

@@ -1,19 +1,23 @@
 package services
 
 import (
+	"github.com/medicue/adapters/ex"
 	"github.com/medicue/core/ports"
 )
 
 type ServicesHandler struct {
-	UserRepo             ports.UserRepository
-	ScheduleRepo         ports.ScheduleRepository
-	DiagnosticCentreRepo ports.DiagnosticRepository
+	userRepo       ports.UserRepository
+	scheduleRepo   ports.ScheduleRepository
+	diagnosticRepo ports.DiagnosticRepository
+	recordRepo     ports.RecordRepository
+	fileRepo       ports.FileService
 }
-
-func ServicesAdapter(userRepo ports.UserRepository, scheduleRepo ports.ScheduleRepository, diagnosticCentreRepo ports.DiagnosticRepository) *ServicesHandler {
+func ServicesAdapter(useRepo ports.UserRepository, scheduleRepo ports.ScheduleRepository, diagnosticCentreRepo ports.DiagnosticRepository, record ports.RecordRepository) *ServicesHandler {
 	return &ServicesHandler{
-		UserRepo:             userRepo,
-		ScheduleRepo:         scheduleRepo,
-		DiagnosticCentreRepo: diagnosticCentreRepo,
+		userRepo:       useRepo,
+		scheduleRepo:   scheduleRepo,
+		diagnosticRepo: diagnosticCentreRepo,
+		recordRepo:     record,
+		fileRepo:       &ex.LocalFileService{},
 	}
 }

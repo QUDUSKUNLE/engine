@@ -42,7 +42,7 @@ type (
 func BuildNewUser(user UserRegisterDTO) (*db.User, error) {
 	Password, err := HashPassword(user.Password)
 	if err != nil {
-		return &db.User{}, err
+		return nil, err
 	}
 	return &db.User{
 		Email:    pgtype.Text{String: user.Email, Valid: true},

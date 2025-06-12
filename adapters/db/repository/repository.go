@@ -20,3 +20,7 @@ func NewScheduleRepository(store *db.Queries) ports.ScheduleRepository {
 func NewDiagnosticCentreRepository(store *db.Queries) ports.DiagnosticRepository {
 	return &Repository{database: store}
 }
+
+func NewRecordRepository(store *db.Queries) ports.RecordRepository {
+	return &Repository{database: store}
+}

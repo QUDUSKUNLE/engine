@@ -12,10 +12,7 @@ import (
 )
 
 func (service *ServicesHandler) Create(context echo.Context) error {
-	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UserRegisterDTO)
-	if !ok {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
-	}
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UserRegisterDTO)
 	newUser, err := domain.BuildNewUser(*dto)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
@@ -37,9 +34,9 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
-	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.DiagnosticCentreManagerRegisterDTO)
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.DiagnosticCentreManagerRegisterDTO)
 	// Check if there are appropriate UserEnumDiagnosticCentreManager
-	if !ok || dto.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER {
+	if dto.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
 	// Auto generate a password for the manager
@@ -63,8 +60,8 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 }
 
 func (service *ServicesHandler) Login(context echo.Context) error {
-	dto := context.Get(utils.ValidatedBodyDTO).(*domain.UserSignInDTO)
-	response, err := service.UserRepo.GetUserByEmail(context.Request().Context(), dto.Email)
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UserSignInDTO)
+	response, err := service.userRepo.GetUserByEmail(context.Request().Context(), dto.Email)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -90,7 +87,7 @@ func (service *ServicesHandler) createUserHelper(
 ) error {
 	for _, t := range allowedTypes {
 		if dto.UserType == t {
-			response, err := service.UserRepo.CreateUser(ctx.Request().Context(), dto)
+			response, err := service.userRepo.CreateUser(ctx.Request().Context(), dto)
 			if err != nil {
 				return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
 			}

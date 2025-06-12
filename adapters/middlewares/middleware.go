@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/medicue/adapters/db"
+	"github.com/medicue/core/domain"
 )
 
 // Custom validator
@@ -41,9 +45,32 @@ func ValidationAdaptor(xx *echo.Echo) *echo.Echo {
 func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc func(interface{}) error, setKey string) error {
 	dto := dtoFactory()
 	if err := bindFunc(dto); err != nil {
-		// 
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid request data: %v", err))
 	}
+
+	// Special handling for CreateMedicalRecordDTO: manually parse UUIDs and other fields from form-data
+	if v, ok := dto.(*domain.CreateMedicalRecordDTO); ok {
+		if userID := c.FormValue("user_id"); userID != "" {
+			v.UserID, _ = uuid.Parse(userID)
+		}
+		if uploaderID := c.FormValue("uploader_id"); uploaderID != "" {
+			v.UploaderID, _ = uuid.Parse(uploaderID)
+		}
+		if scheduleID := c.FormValue("schedule_id"); scheduleID != "" {
+			v.ScheduleID, _ = uuid.Parse(scheduleID)
+		}
+		if uploaderAdminID := c.FormValue("uploader_admin_id"); uploaderAdminID != "" {
+			v.UploaderAdminID, _ = uuid.Parse(uploaderAdminID)
+		}
+		v.Title = c.FormValue("title")
+		v.DocumentType = db.DocumentType(c.FormValue("document_type"))
+		v.UploadedAt = c.FormValue("uploaded_at")
+		v.ProviderName = c.FormValue("provider_name")
+		v.Specialty = c.FormValue("specialty")
+		v.IsShared = c.FormValue("is_shared") == "true"
+		v.SharedUntil = c.FormValue("shared_until")
+	}
+
 	if err := c.Validate(dto); err != nil {
 		return err
 	}
@@ -61,14 +88,24 @@ func BodyValidationInterceptorFor(dtoFactory func() interface{}) echo.Middleware
 					return err
 				}
 			case http.MethodPost, http.MethodPut:
-				bodyBytes, err := io.ReadAll(c.Request().Body)
-				if err != nil {
-					return echo.NewHTTPError(http.StatusBadRequest, "Failed to read request body")
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
-				bindFunc := func(dto interface{}) error {
-					return json.Unmarshal(bodyBytes, dto)
+				contentType := c.Request().Header.Get("Content-Type")
+				var bindFunc func(interface{}) error
+				if strings.HasPrefix(contentType, "application/json") {
+					bodyBytes, err := io.ReadAll(c.Request().Body)
+					if err != nil {
+						return echo.NewHTTPError(http.StatusBadRequest, "Failed to read request body")
+					}
+					c.Request().Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+					bindFunc = func(dto interface{}) error {
+						return json.Unmarshal(bodyBytes, dto)
+					}
+				} else {
+					if strings.HasPrefix(contentType, "multipart/form-data") {
+						if err := c.Request().ParseMultipartForm(32 << 20); err != nil {
+							return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse multipart form")
+						}
+					}
+					bindFunc = c.Bind // Use c.Bind for form-data and urlencoded
 				}
 				if err := bindAndValidateDTO(c, dtoFactory, bindFunc, "validatedBodyDTO"); err != nil {
 					return err
