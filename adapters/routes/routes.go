@@ -118,6 +118,36 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 			handler: handler.CreateMedicalRecord,
 			factory: func() interface{} { return &domain.CreateMedicalRecordDTO{} },
 		},
+		{
+			method:  http.MethodGet,
+			path:    "/medical_records/:record_id",
+			handler: handler.GetMedicalRecord,
+			factory: func() interface{} { return &domain.GetMedicalRecordParamsDTO{} },
+		},
+		{
+			method:  http.MethodGet,
+			path:    "/medical_records",
+			handler: handler.GetMedicalRecords,
+			factory: func() interface{} { return &domain.GetMedicalRecordsParamQueryDTO{} },
+		},
+		{
+			method:  http.MethodGet,
+			path:    "/medical_records/:record_id/diagnostic_centre/:diagnostic_centre_id",
+			handler: handler.GetUploaderMedicalRecord,
+			factory: func() interface{} { return &domain.GetUploaderMedicalRecordParamsDTO{} },
+		},
+		{
+			method:  http.MethodGet,
+			path:    "/medical_records/diagnostic_centre/:diagnostic_centre_id",
+			handler: handler.GetUploaderMedicalRecords,
+			factory: func() interface{} { return &domain.GetUploaderMedicalRecordsParamQueryDTO{} },
+		},
+		{
+			method:  http.MethodPut,
+			path:    "/medical_records",
+			handler: handler.UpdateMedicalRecord,
+			factory: func() interface{} { return &domain.UpdateMedicalRecordDTO{} },
+		},
 	}
 
 	for _, r := range routes {

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
@@ -13,16 +14,24 @@ import (
 )
 
 func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO, error) {
-	
-	d, _ := c.Get(utils.ValidatedBodyDTO).(*domain.CreateMedicalRecordDTO)
-	// Parse file
-	file, err := c.FormFile("file_upload")
+	d, ok := c.Get(utils.ValidatedBodyDTO).(*domain.CreateMedicalRecordDTO)
+	if !ok || d == nil {
+		return nil, c.JSON(http.StatusBadRequest, "Invalid DTO")
+	}
+
+	// If file content already exists in DTO, skip file parsing
+	if d.FileUpload.Content != nil {
+		return d, nil
+	}
+
+	// Parse file from multipart form
+	file, err := c.FormFile("file")
 	if err != nil {
-		return nil, c.JSON(http.StatusBadRequest, "File upload error")
+		return nil, c.JSON(http.StatusBadRequest, "File upload error: file is required")
 	}
 	src, err := file.Open()
 	if err != nil {
-		return nil, c.JSON(http.StatusBadRequest, "File open error")
+		return nil, c.JSON(http.StatusBadRequest, "File open error: "+err.Error())
 	}
 	defer src.Close()
 	content, err := io.ReadAll(src)
@@ -32,11 +41,13 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 	ext := filepath.Ext(file.Filename)
 
 	dto := &domain.CreateMedicalRecordDTO{
-		UserID:       d.UserID,
-		UploaderID:   d.UploaderID,
-		ScheduleID:   d.ScheduleID,
-		Title:        d.Title,
-		DocumentType: d.DocumentType,
+		UserID:          d.UserID,
+		UploaderID:      d.UploaderID,
+		UploaderAdminID: d.UploaderAdminID, // Copy UploaderAdminID
+		UploaderType:    d.UploaderType,    // Copy UploaderType
+		ScheduleID:      d.ScheduleID,
+		Title:           d.Title,
+		DocumentType:    d.DocumentType,
 		FileUpload: domain.File{
 			FileName: file.Filename,
 			FileSize: file.Size,
@@ -142,4 +153,23 @@ func buildDiagnosticCentre(value db.Get_Nearest_Diagnostic_CentresRow) *db.Diagn
 		CreatedAt:            value.CreatedAt,
 		UpdatedAt:            value.UpdatedAt,
 	}
+}
+
+// PaginationParams interface for any struct that has Limit and Offset fields
+type PaginationParams interface {
+	GetLimit() int32
+	GetOffset() int32
+	SetLimit(limit int32)
+	SetOffset(offset int32)
+}
+
+// SetDefaultPagination sets default values for any pagination parameters
+func SetDefaultPagination[T PaginationParams](params T) T {
+	if params.GetLimit() <= 0 {
+		params.SetLimit(50) // Default limit to 50 if not set or invalid
+	}
+	if params.GetOffset() < 0 {
+		params.SetOffset(0) // Default offset to 0 if negative
+	}
+	return params
 }

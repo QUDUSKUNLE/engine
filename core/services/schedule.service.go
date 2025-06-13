@@ -41,7 +41,7 @@ func (service *ServicesHandler) CreateSchedule(context echo.Context) error {
 		Doctor:             string(dto.Doctor),
 		Notes:              pgtype.Text{String: dto.Notes},
 	}
-	response, err := service.scheduleRepo.CreateDiagnosticSchedule(context.Request().Context(), params)
+	response, err := service.ScheduleRepo.CreateDiagnosticSchedule(context.Request().Context(), params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -59,7 +59,7 @@ func (service *ServicesHandler) GetDiagnosticSchedule(context echo.Context) erro
 		ID:     param.ScheduleID.String(),
 		UserID: currentUser.UserID.String(),
 	}
-	response, err := service.scheduleRepo.GetDiagnosticSchedule(context.Request().Context(), req)
+	response, err := service.ScheduleRepo.GetDiagnosticSchedule(context.Request().Context(), req)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -71,20 +71,19 @@ func (service *ServicesHandler) GetDiagnosticSchedules(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticSchedulesQueryDTO)
-	var Limit, Offset int32
-	if query.Limit == 0 {
-		Limit = utils.Limit
+	query, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticSchedulesQueryDTO)
+	if !ok || query == nil {
+		query = &domain.GetDiagnosticSchedulesQueryDTO{}
 	}
-	if query.Offset == 0 {
-		Offset = utils.Offset
-	}
+
+	query = SetDefaultPagination(query)
+
 	req := db.Get_Diagnostic_SchedulesParams{
 		UserID: currentUser.UserID.String(),
-		Limit:  Limit,
-		Offset: Offset,
+		Limit:  query.GetLimit(),
+		Offset: query.GetOffset(),
 	}
-	response, err := service.scheduleRepo.GetDiagnosticSchedules(context.Request().Context(), req)
+	response, err := service.ScheduleRepo.GetDiagnosticSchedules(context.Request().Context(), req)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -120,7 +119,7 @@ func (service *ServicesHandler) UpdateDiagnosticSchedule(context echo.Context) e
 		Doctor:         string(dto.Doctor),
 		UserID:         currentUser.UserID.String(),
 	}
-	response, err := service.scheduleRepo.UpdateDiagnosticSchedule(context.Request().Context(), body)
+	response, err := service.ScheduleRepo.UpdateDiagnosticSchedule(context.Request().Context(), body)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -141,7 +140,7 @@ func (service *ServicesHandler) GetDiagnosticScheduleByCentre(context echo.Conte
 		ID:                 param.ScheduleID.String(),
 		DiagnosticCentreID: param.DiagnosticCentreID.String(),
 	}
-	response, err := service.scheduleRepo.GetDiagnosticScheduleByCentre(context.Request().Context(), req)
+	response, err := service.ScheduleRepo.GetDiagnosticScheduleByCentre(context.Request().Context(), req)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -149,47 +148,81 @@ func (service *ServicesHandler) GetDiagnosticScheduleByCentre(context echo.Conte
 }
 
 func (service *ServicesHandler) GetDiagnosticSchedulesByCentre(context echo.Context) error {
+	// Authentication check
 	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
 	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
 	}
 
+	// Get and validate query parameters
 	param, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticSchedulesByCentreParamDTO)
-	var Limit, Offset int32
-	if param.Limit == 0 {
-		Limit = utils.Limit
-	}
-	if param.Offset == 0 {
-		Offset = utils.Offset
-	}
+
+	param = SetDefaultPagination(param)
 	req := db.Get_Diagnsotic_Schedules_By_CentreParams{
 		DiagnosticCentreID: param.DiagnosticCentreID.String(),
-		Offset:             Offset,
-		Limit:              Limit,
+		Offset:             param.GetOffset(),
+		Limit:              param.GetLimit(),
 	}
-	response, err := service.scheduleRepo.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
+	response, err := service.ScheduleRepo.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
 	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+		switch {
+		case errors.Is(err, utils.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, "No schedules found")
+		case errors.Is(err, utils.ErrDatabaseError):
+			context.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "Database error")
+		default:
+			context.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve schedules")
+		}
 	}
+
+	if len(response) == 0 {
+		return utils.ResponseMessage(http.StatusOK, []interface{}{}, context)
+	}
+
 	return utils.ResponseMessage(http.StatusOK, response, context)
 }
 
 func (service *ServicesHandler) UpdateDiagnosticScheduleByCentre(context echo.Context) error {
+	// Verify authentication and authorization
 	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
 	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
 	}
-	body, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticScheduleByCentreDTO)
+
+	// Get and validate request body
+	body, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticScheduleByCentreDTO)
+	if !ok || body == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, utils.InvalidRequestBody)
+	}
+
+	// Get and validate path parameters
 	schedule_id := context.Param(utils.ScheduleID)
 	diagnostic_centre_id := context.Param(utils.DiagnosticCentreID)
+	if schedule_id == "" || diagnostic_centre_id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, utils.MissingParameters)
+	}
+
 	req := db.Update_Diagnostic_Schedule_By_CentreParams{
 		DiagnosticCentreID: diagnostic_centre_id,
 		AcceptanceStatus:   body.AcceptanceStatus,
 		ID:                 schedule_id,
 	}
-	response, err := service.scheduleRepo.UpdateDiagnosticScheduleByCentre(context.Request().Context(), req)
+	response, err := service.ScheduleRepo.UpdateDiagnosticScheduleByCentre(context.Request().Context(), req)
 	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+		// Handle specific error cases
+		switch {
+		case errors.Is(err, utils.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, utils.ScheduleNotFound)
+		case errors.Is(err, utils.ErrPermissionDenied):
+			return echo.NewHTTPError(http.StatusForbidden, utils.PermissionDenied)
+		default:
+			// Log unexpected errors for debugging
+			context.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, utils.FailedToUpdateSchedule)
+		}
 	}
+
 	return utils.ResponseMessage(http.StatusOK, response, context)
 }

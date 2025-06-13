@@ -34,6 +34,8 @@ type (
 		Longitude float64 `query:"longitude"`
 		Doctor    string  `query:"doctor"`
 		Test      string  `query:"available_tests"`
+		Limit     int32   `query:"limit" validate:"omitempty,gte=0"`
+		Offset    int32   `query:"offset" validate:"omitempty,gte=0"`
 	}
 	UpdateDiagnosticParamDTO struct {
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id"`

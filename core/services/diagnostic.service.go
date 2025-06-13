@@ -2,8 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
-
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -13,20 +11,37 @@ import (
 )
 
 func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) error {
+	// Authentication & Authorization
 	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
 	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
 	}
+
+	// This validated at the middleware level
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateDiagnosticDTO)
+
+	// Build and validate parameters
 	params, err := buildCreateDiagnosticCentreParams(context, dto)
 	if err != nil {
-		return err
+		context.Logger().Error("Failed to build diagnostic centre params:", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
 	}
+
 	params.CreatedBy = currentUser.UserID.String()
-	response, err := service.diagnosticRepo.CreateDiagnosticCentre(
+
+	// Create diagnostic centre
+	response, err := service.DiagnosticRepo.CreateDiagnosticCentre(
 		context.Request().Context(), *params)
 	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+		context.Logger().Error("Failed to create diagnostic centre:", err)
+		switch {
+		case errors.Is(err, utils.ErrDatabaseError):
+			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
+		case errors.Is(err, utils.ErrInvalidInput):
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create diagnostic centre")
+		}
 	}
 	res, err := buildDiagnosticCentreResponseFromRow(response, context)
 	if err != nil {
@@ -36,14 +51,21 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 }
 
 func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error {
-	var params domain.GetDiagnosticParamDTO
-	if err := utils.ValidateParams(context, &params); err != nil {
-		fmt.Println(err.Error())
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
-	}
-	response, err := service.diagnosticRepo.GetDiagnosticCentre(context.Request().Context(), params.DiagnosticCentreID)
+	// This validated at the middleware level
+	params, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticParamDTO)
+
+	// Get diagnostic centre
+	response, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), params.DiagnosticCentreID)
 	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+		context.Logger().Error("Failed to get diagnostic centre:", err)
+		switch {
+		case errors.Is(err, utils.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, "Diagnostic centre not found")
+		case errors.Is(err, utils.ErrDatabaseError):
+			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve diagnostic centre")
+		}
 	}
 	res, err := buildDiagnosticCentreResponseFromRow(response, context)
 	if err != nil {
@@ -53,18 +75,29 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 }
 
 func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) error {
+	// Get and validate query parameters
+	// This validated at the middleware level
 	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.SearchDiagnosticCentreQueryDTO)
+
+	// Validate coordinates
+	if !isValidLatitude(query.Latitude) || !isValidLongitude(query.Longitude) {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid coordinates")
+	}
+
+	// Build search parameters
 	params := db.Get_Nearest_Diagnostic_CentresParams{
 		Radians:   query.Latitude,
 		Radians_2: query.Longitude,
 	}
+
+	// Add optional filters
 	if query.Doctor != "" {
 		params.Doctors = []string{query.Doctor}
 	}
 	if query.Test != "" {
 		params.AvailableTests = []string{query.Test}
 	}
-	response, err := service.diagnosticRepo.GetNearestDiagnosticCentres(context.Request().Context(), params)
+	response, err := service.DiagnosticRepo.GetNearestDiagnosticCentres(context.Request().Context(), params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -96,9 +129,19 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	}
 	dto.ID = param
 	dto.CreatedBy = currentUser.UserID.String()
-	response, err := service.diagnosticRepo.UpdateDiagnosticCentreByOwner(context.Request().Context(), *dto)
+	response, err := service.DiagnosticRepo.UpdateDiagnosticCentreByOwner(context.Request().Context(), *dto)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotAcceptable, err, context)
 	}
 	return utils.ResponseMessage(http.StatusNoContent, response, context)
+}
+
+// isValidLatitude checks if the latitude is within valid range (-90 to 90)
+func isValidLatitude(lat float64) bool {
+	return lat >= -90 && lat <= 90
+}
+
+// isValidLongitude checks if the longitude is within valid range (-180 to 180)
+func isValidLongitude(lon float64) bool {
+	return lon >= -180 && lon <= 180
 }

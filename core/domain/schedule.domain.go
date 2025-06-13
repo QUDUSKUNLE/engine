@@ -28,13 +28,13 @@ type (
 		ScheduleID uuid.UUID `param:"schedule_id" validate:"uuid,required"`
 	}
 	GetDiagnosticSchedulesQueryDTO struct {
-		Limit              int32     `query:"limit" validate:"omitempty"`
-		Offset             int32     `query:"offset" validate:"omitempty"`
+		Limit  int32 `query:"limit" validate:"omitempty,gte=0"`
+		Offset int32 `query:"offset" validate:"omitempty,gte=0"`
 	}
 	GetDiagnosticSchedulesByCentreParamDTO struct {
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id" validate:"uuid,required"`
-		Limit              int32     `query:"limit" validate:"omitempty"`
-		Offset             int32     `query:"offset" validate:"omitempty"`
+		Limit              int32     `query:"limit" validate:"omitempty,gte=0"`
+		Offset             int32     `query:"offset" validate:"omitempty,gte=0"`
 	}
 	GetDiagnosticScheduleByCentreParamDTO struct {
 		ScheduleID         uuid.UUID `param:"schedule_id" validate:"uuid,required"`
@@ -44,3 +44,43 @@ type (
 		AcceptanceStatus db.ScheduleAcceptanceStatus `json:"acceptance_status" validate:"oneof=PENDING ACCEPTED REJECTED,required"`
 	}
 )
+
+// GetLimit returns the limit value
+func (q *GetDiagnosticSchedulesQueryDTO) GetLimit() int32 {
+	return q.Limit
+}
+
+// GetOffset returns the offset value
+func (q *GetDiagnosticSchedulesQueryDTO) GetOffset() int32 {
+	return q.Offset
+}
+
+// GetLimit returns the limit value
+func (q *GetDiagnosticSchedulesByCentreParamDTO) GetLimit() int32 {
+	return q.Limit
+}
+
+// GetOffset returns the offset value
+func (q *GetDiagnosticSchedulesByCentreParamDTO) GetOffset() int32 {
+	return q.Offset
+}
+
+// SetLimit sets the Limit field.
+func (dto *GetDiagnosticSchedulesQueryDTO) SetLimit(limit int32) {
+	dto.Limit = limit
+}
+
+// SetOffset sets the Offset field.
+func (dto *GetDiagnosticSchedulesQueryDTO) SetOffset(offset int32) {
+	dto.Offset = offset
+}
+
+// GetOffset returns the offset value
+func (q *GetDiagnosticSchedulesByCentreParamDTO) SetOffset(offset int32) {
+	q.Offset = offset
+}
+
+// GetOffset returns the offset value
+func (q *GetDiagnosticSchedulesByCentreParamDTO) SetLimit(limit int32) {
+	q.Limit = limit
+}

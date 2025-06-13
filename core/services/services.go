@@ -6,18 +6,18 @@ import (
 )
 
 type ServicesHandler struct {
-	userRepo       ports.UserRepository
-	scheduleRepo   ports.ScheduleRepository
-	diagnosticRepo ports.DiagnosticRepository
-	recordRepo     ports.RecordRepository
-	fileRepo       ports.FileService
+	UserRepo       ports.UserRepository
+	ScheduleRepo   ports.ScheduleRepository
+	DiagnosticRepo ports.DiagnosticRepository
+	RecordRepo     ports.RecordRepository
+	FileRepo       ports.FileService
 }
 func ServicesAdapter(useRepo ports.UserRepository, scheduleRepo ports.ScheduleRepository, diagnosticCentreRepo ports.DiagnosticRepository, record ports.RecordRepository) *ServicesHandler {
 	return &ServicesHandler{
-		userRepo:       useRepo,
-		scheduleRepo:   scheduleRepo,
-		diagnosticRepo: diagnosticCentreRepo,
-		recordRepo:     record,
-		fileRepo:       &ex.LocalFileService{},
+		UserRepo:       useRepo,
+		ScheduleRepo:   scheduleRepo,
+		DiagnosticRepo: diagnosticCentreRepo,
+		RecordRepo:     record,
+		FileRepo:       &ex.LocalFileService{},
 	}
 }

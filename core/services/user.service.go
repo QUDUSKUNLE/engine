@@ -34,6 +34,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
+	// 	// This validated at the middleware level
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.DiagnosticCentreManagerRegisterDTO)
 	// Check if there are appropriate UserEnumDiagnosticCentreManager
 	if dto.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER {
@@ -61,7 +62,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 
 func (service *ServicesHandler) Login(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UserSignInDTO)
-	response, err := service.userRepo.GetUserByEmail(context.Request().Context(), dto.Email)
+	response, err := service.UserRepo.GetUserByEmail(context.Request().Context(), dto.Email)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -87,7 +88,7 @@ func (service *ServicesHandler) createUserHelper(
 ) error {
 	for _, t := range allowedTypes {
 		if dto.UserType == t {
-			response, err := service.userRepo.CreateUser(ctx.Request().Context(), dto)
+			response, err := service.UserRepo.CreateUser(ctx.Request().Context(), dto)
 			if err != nil {
 				return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
 			}
