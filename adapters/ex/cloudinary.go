@@ -10,24 +10,43 @@ import (
 
 	"github.com/cloudinary/cloudinary-go"
 	"github.com/cloudinary/cloudinary-go/api/uploader"
+	"github.com/medicue/core/utils"
 )
 
-func cloudinaryUploader(context context.Context, file []byte) (string, error) {
+func cloudinaryUploader(ctx context.Context, file []byte) (string, error) {
+	utils.Info("Initializing Cloudinary connection",
+		utils.LogField{Key: "cloud_name", Value: os.Getenv("CLOUDINARY_CLOUD_NAME")})
+
 	cld, err := cloudinary.NewFromParams(
 		os.Getenv("CLOUDINARY_CLOUD_NAME"),
 		os.Getenv("CLOUDINARY_API_KEY"),
 		os.Getenv("CLOUDINARY_API_SECRET"),
 	)
 	if err != nil {
-		fmt.Printf("Error handshaking cloudinary %s", err.Error())
+		utils.Error("Failed to initialize Cloudinary",
+			utils.LogField{Key: "error", Value: err.Error()})
 		return "", err
 	}
-	uploadResult, err := cld.Upload.Upload(context, strings.NewReader(string(file)), uploader.UploadParams{Folder: "halalmeat"})
+
+	utils.Info("Starting file upload to Cloudinary",
+		utils.LogField{Key: "file_size", Value: len(file)})
+
+	uploadResult, err := cld.Upload.Upload(ctx, strings.NewReader(string(file)), uploader.UploadParams{
+		Folder:       "medicue",
+		ResourceType: "auto",
+	})
 	if err != nil {
-		fmt.Printf("Error uploading %s to cloudinary", err.Error())
+		utils.Error("Failed to upload file to Cloudinary",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "file_size", Value: len(file)})
 		return "", err
 	}
-	fmt.Println("File uploaded successfully.")
+
+	utils.Info("File uploaded successfully to Cloudinary",
+		utils.LogField{Key: "public_id", Value: uploadResult.PublicID},
+		utils.LogField{Key: "resource_type", Value: uploadResult.ResourceType},
+		utils.LogField{Key: "size", Value: uploadResult.Bytes})
+
 	return uploadResult.SecureURL, nil
 }
 

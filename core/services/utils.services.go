@@ -1,10 +1,8 @@
 package services
 
 import (
+	"encoding/json"
 	"io"
-	"net/http"
-	"path/filepath"
-	"strings"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
@@ -13,53 +11,60 @@ import (
 	"github.com/medicue/core/utils"
 )
 
+// PaginationParams interface for any struct that has Limit and Offset fields
+type PaginationParams interface {
+	GetLimit() int32
+	GetOffset() int32
+	SetLimit(limit int32)
+	SetOffset(offset int32)
+}
+
 func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO, error) {
-	d, ok := c.Get(utils.ValidatedBodyDTO).(*domain.CreateMedicalRecordDTO)
-	if !ok || d == nil {
-		return nil, c.JSON(http.StatusBadRequest, "Invalid DTO")
-	}
-
-	// If file content already exists in DTO, skip file parsing
-	if d.FileUpload.Content != nil {
-		return d, nil
-	}
-
-	// Parse file from multipart form
+	// Get file from form
 	file, err := c.FormFile("file")
 	if err != nil {
-		return nil, c.JSON(http.StatusBadRequest, "File upload error: file is required")
+		utils.Error("Failed to get file from form",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return nil, err
 	}
+
+	// Read file content
 	src, err := file.Open()
 	if err != nil {
-		return nil, c.JSON(http.StatusBadRequest, "File open error: "+err.Error())
+		utils.Error("Failed to open uploaded file",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "filename", Value: file.Filename})
+		return nil, err
 	}
 	defer src.Close()
+
 	content, err := io.ReadAll(src)
 	if err != nil {
-		return nil, c.JSON(http.StatusBadRequest, "File read error")
+		utils.Error("Failed to read file content",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "filename", Value: file.Filename})
+		return nil, err
 	}
-	ext := filepath.Ext(file.Filename)
 
-	dto := &domain.CreateMedicalRecordDTO{
-		UserID:          d.UserID,
-		UploaderID:      d.UploaderID,
-		UploaderAdminID: d.UploaderAdminID, // Copy UploaderAdminID
-		UploaderType:    d.UploaderType,    // Copy UploaderType
-		ScheduleID:      d.ScheduleID,
-		Title:           d.Title,
-		DocumentType:    d.DocumentType,
-		FileUpload: domain.File{
-			FileName: file.Filename,
-			FileSize: file.Size,
-			Content:  content,
-		},
-		FileType:     strings.TrimPrefix(ext, "."),
-		UploadedAt:   d.UploadedAt,
-		ProviderName: d.ProviderName,
-		Specialty:    d.Specialty,
-		IsShared:     d.IsShared,
-		SharedUntil:  d.SharedUntil,
+	dto := &domain.CreateMedicalRecordDTO{}
+	if err := c.Bind(dto); err != nil {
+		utils.Error("Failed to bind medical record data",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return nil, err
 	}
+
+	// Add file information
+	dto.FileUpload = domain.File{
+		FileName: file.Filename,
+		FileSize: file.Size,
+		Content:  content,
+	}
+
+	utils.Info("Successfully built medical record DTO",
+		utils.LogField{Key: "filename", Value: file.Filename},
+		utils.LogField{Key: "file_size", Value: file.Size},
+		utils.LogField{Key: "user_id", Value: dto.UserID})
+
 	return dto, nil
 }
 
@@ -67,22 +72,35 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 func buildDiagnosticCentreResponseFromRow(row *db.DiagnosticCentre, c echo.Context) (map[string]interface{}, error) {
 	var address domain.Address
 	if err := utils.UnmarshalJSONField(row.Address, &address, c); err != nil {
+		utils.Error("Failed to unmarshal address",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: row.ID})
 		return nil, err
 	}
+
 	var contact domain.Contact
 	if err := utils.UnmarshalJSONField(row.Contact, &contact, c); err != nil {
+		utils.Error("Failed to unmarshal contact",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: row.ID})
 		return nil, err
 	}
+
 	return buildDiagnosticCentreResponse(row, address, contact), nil
 }
 
 func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.CreateDiagnosticDTO) (*db.Create_Diagnostic_CentreParams, error) {
 	addressBytes, err := utils.MarshalJSONField(value.Address, context)
 	if err != nil {
+		utils.Error("Failed to marshal address data",
+			utils.LogField{Key: "error", Value: err.Error()})
 		return nil, err
 	}
+
 	contactBytes, err := utils.MarshalJSONField(value.Contact, context)
 	if err != nil {
+		utils.Error("Failed to marshal contact data",
+			utils.LogField{Key: "error", Value: err.Error()})
 		return nil, err
 	}
 
@@ -96,20 +114,30 @@ func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.Creat
 		AvailableTests:       value.AvailableTests,
 		AdminID:              value.AdminId.String(),
 	}
+
+	utils.Info("Built diagnostic centre parameters",
+		utils.LogField{Key: "centre_name", Value: value.DiagnosticCentreName},
+		utils.LogField{Key: "admin_id", Value: value.AdminId})
+
 	return params, nil
 }
 
 func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domain.UpdateDiagnosticBodyDTO) (*db.Update_Diagnostic_Centre_ByOwnerParams, error) {
-
 	addressBytes, err := utils.MarshalJSONField(value.Address, context)
 	if err != nil {
+		utils.Error("Failed to marshal address data for update",
+			utils.LogField{Key: "error", Value: err.Error()})
 		return nil, err
 	}
+
 	contactBytes, err := utils.MarshalJSONField(value.Contact, context)
 	if err != nil {
+		utils.Error("Failed to marshal contact data for update",
+			utils.LogField{Key: "error", Value: err.Error()})
 		return nil, err
 	}
-	body := &db.Update_Diagnostic_Centre_ByOwnerParams{
+
+	params := &db.Update_Diagnostic_Centre_ByOwnerParams{
 		DiagnosticCentreName: value.DiagnosticCentreName,
 		Latitude:             pgtype.Float8{Float64: value.Latitude, Valid: true},
 		Longitude:            pgtype.Float8{Float64: value.Longitude, Valid: true},
@@ -119,7 +147,12 @@ func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domai
 		AvailableTests:       value.AvailableTests,
 		AdminID:              value.ADMINID.String(),
 	}
-	return body, nil
+
+	utils.Info("Built update diagnostic centre parameters",
+		utils.LogField{Key: "centre_name", Value: value.DiagnosticCentreName},
+		utils.LogField{Key: "admin_id", Value: value.ADMINID})
+
+	return params, nil
 }
 
 // Helper to build diagnostic centre response
@@ -140,36 +173,45 @@ func buildDiagnosticCentreResponse(response *db.DiagnosticCentre, address domain
 	}
 }
 
-func buildDiagnosticCentre(value db.Get_Nearest_Diagnostic_CentresRow) *db.DiagnosticCentre {
+func buildDiagnosticCentreFromValue(value *domain.CreateDiagnosticDTO) (*db.DiagnosticCentre, error) {
+	addressBytes, err := json.Marshal(value.Address)
+	if err != nil {
+		return nil, err
+	}
+	
+	contactBytes, err := json.Marshal(value.Contact)
+	if err != nil {
+		return nil, err
+	}
+
 	return &db.DiagnosticCentre{
-		ID:                   value.ID,
 		DiagnosticCentreName: value.DiagnosticCentreName,
-		Latitude:             value.Latitude,
-		Longitude:            value.Longitude,
-		Address:              value.Address,
-		Contact:              value.Contact,
+		Latitude:             pgtype.Float8{Float64: value.Latitude, Valid: true},
+		Longitude:            pgtype.Float8{Float64: value.Longitude, Valid: true},
+		Address:              addressBytes,
+		Contact:              contactBytes,
 		Doctors:              value.Doctors,
 		AvailableTests:       value.AvailableTests,
-		CreatedAt:            value.CreatedAt,
-		UpdatedAt:            value.UpdatedAt,
+	}, nil
+}
+
+// isValidUserType checks if the given user type is one of the allowed types
+func isValidUserType(allowedTypes []db.UserEnum, userType db.UserEnum) bool {
+	for _, t := range allowedTypes {
+		if t == userType {
+			return true
+		}
 	}
+	return false
 }
 
-// PaginationParams interface for any struct that has Limit and Offset fields
-type PaginationParams interface {
-	GetLimit() int32
-	GetOffset() int32
-	SetLimit(limit int32)
-	SetOffset(offset int32)
-}
-
-// SetDefaultPagination sets default values for any pagination parameters
-func SetDefaultPagination[T PaginationParams](params T) T {
+// SetDefaultPagination sets default values for pagination parameters if not provided
+func SetDefaultPagination(params PaginationParams) PaginationParams {
 	if params.GetLimit() <= 0 {
-		params.SetLimit(50) // Default limit to 50 if not set or invalid
+		params.SetLimit(10) // Default limit
 	}
 	if params.GetOffset() < 0 {
-		params.SetOffset(0) // Default offset to 0 if negative
+		params.SetOffset(0) // Default offset
 	}
 	return params
 }

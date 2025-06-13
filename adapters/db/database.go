@@ -14,4 +14,3 @@ func DatabaseConnection(DB_URL string) (*Queries, error) {
 	}
 	return New(database), nil
 }
-

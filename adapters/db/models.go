@@ -747,6 +747,15 @@ type DiagnosticSchedule struct {
 	UpdatedAt          pgtype.Timestamptz       `db:"updated_at" json:"updated_at"`
 }
 
+type EmailVerificationToken struct {
+	ID        string             `db:"id" json:"id"`
+	Email     string             `db:"email" json:"email"`
+	Token     string             `db:"token" json:"token"`
+	Used      pgtype.Bool        `db:"used" json:"used"`
+	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+}
+
 type MedicalRecord struct {
 	ID              string             `db:"id" json:"id"`
 	UserID          string             `db:"user_id" json:"user_id"`
@@ -768,13 +777,24 @@ type MedicalRecord struct {
 	UploaderAdminID pgtype.UUID        `db:"uploader_admin_id" json:"uploader_admin_id"`
 }
 
-type User struct {
+type PasswordResetToken struct {
 	ID        string             `db:"id" json:"id"`
-	Email     pgtype.Text        `db:"email" json:"email"`
-	Nin       pgtype.Text        `db:"nin" json:"nin"`
-	Password  string             `db:"password" json:"password"`
-	UserType  UserEnum           `db:"user_type" json:"user_type"`
+	Email     string             `db:"email" json:"email"`
+	Token     string             `db:"token" json:"token"`
+	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
+	Used      pgtype.Bool        `db:"used" json:"used"`
 	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	Fullname  pgtype.Text        `db:"fullname" json:"fullname"`
+}
+
+type User struct {
+	ID              string             `db:"id" json:"id"`
+	Email           pgtype.Text        `db:"email" json:"email"`
+	Nin             pgtype.Text        `db:"nin" json:"nin"`
+	Password        string             `db:"password" json:"password"`
+	UserType        UserEnum           `db:"user_type" json:"user_type"`
+	CreatedAt       pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Fullname        pgtype.Text        `db:"fullname" json:"fullname"`
+	EmailVerified   pgtype.Bool        `db:"email_verified" json:"email_verified"`
+	EmailVerifiedAt pgtype.Timestamptz `db:"email_verified_at" json:"email_verified_at"`
 }

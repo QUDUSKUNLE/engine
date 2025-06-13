@@ -11,8 +11,10 @@ import (
 )
 
 type Querier interface {
+	CreateEmailVerificationToken(ctx context.Context, arg CreateEmailVerificationTokenParams) (*EmailVerificationToken, error)
 	// Create a Medical Record
 	CreateMedicalRecord(ctx context.Context, arg CreateMedicalRecordParams) (*MedicalRecord, error)
+	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error)
 	// Inserts a new diagnostic record into the diagnostic_centres table.
 	Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagnostic_CentreParams) (*DiagnosticCentre, error)
@@ -22,11 +24,13 @@ type Querier interface {
 	Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Delete_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 	Delete_Diagnostic_Schedule(ctx context.Context, arg Delete_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
+	GetEmailVerificationToken(ctx context.Context, arg GetEmailVerificationTokenParams) (*EmailVerificationToken, error)
 	// Get a Medical Record
 	GetMedicalRecord(ctx context.Context, arg GetMedicalRecordParams) (*GetMedicalRecordRow, error)
 	// Get Medical Records
 	// Retrieves a paginated list of medical records for a specific user, ordered by creation date (most recent first).
 	GetMedicalRecords(ctx context.Context, arg GetMedicalRecordsParams) ([]*GetMedicalRecordsRow, error)
+	GetPasswordResetToken(ctx context.Context, token string) (*PasswordResetToken, error)
 	// Get an Uploader Medical Record
 	// Retrieves a medical record by its ID and uploader ID.
 	GetUploaderMedicalRecord(ctx context.Context, arg GetUploaderMedicalRecordParams) (*GetUploaderMedicalRecordRow, error)
@@ -52,6 +56,9 @@ type Querier interface {
 	Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Nearest_Diagnostic_CentresParams) ([]*Get_Nearest_Diagnostic_CentresRow, error)
 	// Retrieves all diagnostic records for a specific owner.
 	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*DiagnosticCentre, error)
+	MarkEmailAsVerified(ctx context.Context, email pgtype.Text) error
+	MarkEmailVerificationTokenUsed(ctx context.Context, arg MarkEmailVerificationTokenUsedParams) error
+	MarkResetTokenUsed(ctx context.Context, id string) error
 	// Retrieves all diagnostic records with pagination.
 	Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_Diagnostic_CentresParams) ([]*DiagnosticCentre, error)
 	// Searches diagnostic_centres by name with pagination.
@@ -62,6 +69,7 @@ type Querier interface {
 	// Updates a medical record by uploader, allowing partial updates to fields. Only the uploader can update their own records. Updates the 'updated_at' timestamp.
 	UpdateMedicalRecordByUploader(ctx context.Context, arg UpdateMedicalRecordByUploaderParams) (*MedicalRecord, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	// Updates a diagnostic centre by the owner.
 	Update_Diagnostic_Centre_ByOwner(ctx context.Context, arg Update_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 	// Update a diagnostic schedule

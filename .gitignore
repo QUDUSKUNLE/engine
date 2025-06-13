@@ -3,3 +3,4 @@ tmp
 bin
 # internal/pdf/**.pdf
 __debug_**
+logs

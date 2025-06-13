@@ -150,7 +150,7 @@ func (service *ServicesHandler) GetMedicalRecords(context echo.Context) error {
 	// This validated at the middleware level
 	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetMedicalRecordsParamQueryDTO)
 
-	query = SetDefaultPagination(query)
+	query = SetDefaultPagination(query).(*domain.GetMedicalRecordsParamQueryDTO)
 
 	response, err := service.RecordRepo.GetMedicalRecords(context.Request().Context(), db.GetMedicalRecordsParams{
 		UserID: user.UserID.String(),
@@ -197,7 +197,7 @@ func (service *ServicesHandler) GetUploaderMedicalRecords(context echo.Context) 
 	// This validated at the middleware level
 	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetUploaderMedicalRecordsParamQueryDTO)
 
-	query = SetDefaultPagination(query)
+	query = SetDefaultPagination(query).(*domain.GetUploaderMedicalRecordsParamQueryDTO)
 
 	response, err := service.RecordRepo.GetUploaderMedicalRecords(context.Request().Context(), db.GetUploaderMedicalRecordsParams{
 		UploaderID: query.UploaderID.String(),

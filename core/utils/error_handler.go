@@ -24,7 +24,14 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		msg = err.Error()
 	}
 
-	// You can add logging here if needed
+	// Log error with context
+	Error("HTTP request failed",
+		LogField{Key: "error", Value: msg},
+		LogField{Key: "status_code", Value: code},
+		LogField{Key: "method", Value: c.Request().Method},
+		LogField{Key: "path", Value: c.Request().URL.Path},
+		LogField{Key: "remote_ip", Value: c.RealIP()})
+
 	_ = c.JSON(code, map[string]interface{}{
 		"error": msg,
 	})

@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
+	"github.com/medicue/adapters/metrics"
 	"github.com/medicue/core/domain"
 	"github.com/medicue/core/utils"
 )
@@ -23,7 +24,9 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	// Build and validate parameters
 	params, err := buildCreateDiagnosticCentreParams(context, dto)
 	if err != nil {
-		context.Logger().Error("Failed to build diagnostic centre params:", err)
+		utils.Error("Failed to build diagnostic centre params",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID.String()})
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
 	}
 
@@ -33,7 +36,10 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	response, err := service.DiagnosticRepo.CreateDiagnosticCentre(
 		context.Request().Context(), *params)
 	if err != nil {
-		context.Logger().Error("Failed to create diagnostic centre:", err)
+		utils.Error("Failed to create diagnostic centre",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID.String()},
+			utils.LogField{Key: "diagnostic_centre", Value: params})
 		switch {
 		case errors.Is(err, utils.ErrDatabaseError):
 			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
@@ -57,7 +63,9 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 	// Get diagnostic centre
 	response, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), params.DiagnosticCentreID)
 	if err != nil {
-		context.Logger().Error("Failed to get diagnostic centre:", err)
+		utils.Error("Failed to get diagnostic centre",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: params.DiagnosticCentreID})
 		switch {
 		case errors.Is(err, utils.ErrNotFound):
 			return echo.NewHTTPError(http.StatusNotFound, "Diagnostic centre not found")
@@ -76,7 +84,6 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 
 func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) error {
 	// Get and validate query parameters
-	// This validated at the middleware level
 	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.SearchDiagnosticCentreQueryDTO)
 
 	// Validate coordinates
@@ -90,17 +97,25 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 		Radians_2: query.Longitude,
 	}
 
+	hasFilters := false
 	// Add optional filters
 	if query.Doctor != "" {
 		params.Doctors = []string{query.Doctor}
+		hasFilters = true
 	}
 	if query.Test != "" {
 		params.AvailableTests = []string{query.Test}
+		hasFilters = true
 	}
+
 	response, err := service.DiagnosticRepo.GetNearestDiagnosticCentres(context.Request().Context(), params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
+
+	// Record metrics for the search
+	metrics.RecordDiagnosticSearch(hasFilters, len(response))
+
 	result := make([]map[string]interface{}, 0, len(response))
 	for _, v := range response {
 		// Map v to a DiagnosticCentre struct
@@ -134,6 +149,20 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 		return utils.ErrorResponse(http.StatusNotAcceptable, err, context)
 	}
 	return utils.ResponseMessage(http.StatusNoContent, response, context)
+}
+
+// buildDiagnosticCentre converts a database row to a domain diagnostic centre
+func buildDiagnosticCentre(row db.Get_Nearest_Diagnostic_CentresRow) *db.DiagnosticCentre {
+	return &db.DiagnosticCentre{
+		ID: row.ID,
+		// Name:        row.Name,
+		Address:   row.Address,
+		Latitude:  row.Latitude,
+		Longitude: row.Longitude,
+		// CreatedBy:   row.CreatedBy,
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
+	}
 }
 
 // isValidLatitude checks if the latitude is within valid range (-90 to 90)

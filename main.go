@@ -28,7 +28,13 @@ import (
 // @host localhost:8080
 // @BasePath /v1
 func main() {
-	if err := utils.InitLogger(); err != nil {
+	// Initialize logger with custom configuration
+	logConfig := utils.LogConfig{
+		Level:       "debug", // Set to debug in development, info in production
+		OutputPath:  "logs/medicue.log",
+		Development: true, // Set to false in production
+	}
+	if err := utils.InitLogger(logConfig); err != nil {
 		panic(err)
 	}
 	defer utils.Logger.Sync()
@@ -39,6 +45,12 @@ func main() {
 	}
 	// Create a new echo instance
 	e := echo.New()
+
+	// Setup Prometheus metrics endpoint first, before any other middleware
+	e.GET("/metrics", echoprometheus.NewHandler())
+	e.Use(middlewares.PrometheusMiddleware)
+	e.Use(echoprometheus.NewMiddleware("Medicue"))
+
 	// Plug echo int validationAdaptor
 	e = middlewares.ValidationAdaptor(e)
 
@@ -83,7 +95,6 @@ func main() {
 	routes.RoutesAdaptor(v1, httpHandler)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	e.GET("/metrics", echoprometheus.NewHandler())
 
 	e.HTTPErrorHandler = utils.CustomHTTPErrorHandler
 
@@ -93,12 +104,11 @@ func main() {
 		ContentTypeNosniff:    "nosniff",
 		XFrameOptions:         "DENY",
 		HSTSMaxAge:            3600,
-		ContentSecurityPolicy: "default-src 'self'",
+		ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'",
 	}))
-	// Limit request body size to 2MB
-	e.Use(middleware.BodyLimit("2M"))
+	// Limit request body size to 25MB
+	e.Use(middleware.BodyLimit("25M"))
 	// Improved CORS config: restrict to trusted origins and methods
-	e.Use(echoprometheus.NewMiddleware("Medicue"))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{cfg.AllowOrigins},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
@@ -108,7 +118,13 @@ func main() {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "time=${time}, remote_ip=${remote_ip}, latency=${latency}, method=${method}, uri=${uri}, status=${status}, host=${host}\n",
 	}))
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(10))))
+	// Configure rate limiter with metrics endpoint excluded
+	e.Use(middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
+		Skipper: func(c echo.Context) bool {
+			return c.Path() == "/metrics" // Skip rate limiting for metrics endpoint
+		},
+		Store: middleware.NewRateLimiterMemoryStore(rate.Limit(10)),
+	}))
 
 	// Start the server on port 8080
 	if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {

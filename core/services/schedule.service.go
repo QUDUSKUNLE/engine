@@ -43,6 +43,10 @@ func (service *ServicesHandler) CreateSchedule(context echo.Context) error {
 	}
 	response, err := service.ScheduleRepo.CreateDiagnosticSchedule(context.Request().Context(), params)
 	if err != nil {
+		utils.Error("Failed to create diagnostic schedule",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: params.UserID},
+			utils.LogField{Key: "diagnostic_centre_id", Value: params.DiagnosticCentreID})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
 	return utils.ResponseMessage(http.StatusCreated, response, context)
@@ -76,7 +80,7 @@ func (service *ServicesHandler) GetDiagnosticSchedules(context echo.Context) err
 		query = &domain.GetDiagnosticSchedulesQueryDTO{}
 	}
 
-	query = SetDefaultPagination(query)
+	query = SetDefaultPagination(query).(*domain.GetDiagnosticSchedulesQueryDTO)
 
 	req := db.Get_Diagnostic_SchedulesParams{
 		UserID: currentUser.UserID.String(),
@@ -157,7 +161,7 @@ func (service *ServicesHandler) GetDiagnosticSchedulesByCentre(context echo.Cont
 	// Get and validate query parameters
 	param, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticSchedulesByCentreParamDTO)
 
-	param = SetDefaultPagination(param)
+	param = SetDefaultPagination(param).(*domain.GetDiagnosticSchedulesByCentreParamDTO)
 	req := db.Get_Diagnsotic_Schedules_By_CentreParams{
 		DiagnosticCentreID: param.DiagnosticCentreID.String(),
 		Offset:             param.GetOffset(),
@@ -169,10 +173,14 @@ func (service *ServicesHandler) GetDiagnosticSchedulesByCentre(context echo.Cont
 		case errors.Is(err, utils.ErrNotFound):
 			return echo.NewHTTPError(http.StatusNotFound, "No schedules found")
 		case errors.Is(err, utils.ErrDatabaseError):
-			context.Logger().Error(err)
+			utils.Error("Database error retrieving schedules",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "diagnostic_centre_id", Value: req.DiagnosticCentreID})
 			return echo.NewHTTPError(http.StatusInternalServerError, "Database error")
 		default:
-			context.Logger().Error(err)
+			utils.Error("Failed to retrieve schedules",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "diagnostic_centre_id", Value: req.DiagnosticCentreID})
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve schedules")
 		}
 	}
@@ -219,7 +227,10 @@ func (service *ServicesHandler) UpdateDiagnosticScheduleByCentre(context echo.Co
 			return echo.NewHTTPError(http.StatusForbidden, utils.PermissionDenied)
 		default:
 			// Log unexpected errors for debugging
-			context.Logger().Error(err)
+			utils.Error("Failed to update diagnostic schedule",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "diagnostic_centre_id", Value: diagnostic_centre_id},
+				utils.LogField{Key: "schedule_id", Value: schedule_id})
 			return echo.NewHTTPError(http.StatusInternalServerError, utils.FailedToUpdateSchedule)
 		}
 	}
