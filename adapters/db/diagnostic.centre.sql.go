@@ -112,12 +112,12 @@ SELECT
   available_tests,
   created_at,
   updated_at,
-  (
+  CAST(
     6371 * acos(
       cos(radians($1)) * cos(radians(latitude)) *
       cos(radians(longitude) - radians($2)) +
       sin(radians($1)) * sin(radians(latitude))
-    )
+    ) AS DOUBLE PRECISION
   ) AS distance_km 
 FROM diagnostic_centres
 WHERE
@@ -150,7 +150,7 @@ type Find_Nearest_Diagnostic_Centres_WhenRejectedRow struct {
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DistanceKm           int32              `db:"distance_km" json:"distance_km"`
+	DistanceKm           float64            `db:"distance_km" json:"distance_km"`
 }
 
 func (q *Queries) Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error) {
@@ -288,12 +288,12 @@ SELECT
   available_tests,
   created_at,
   updated_at,
-  (
+  CAST(
     6371 * acos(
       cos(radians($1)) * cos(radians(latitude)) *
       cos(radians(longitude) - radians($2)) +
       sin(radians($1)) * sin(radians(latitude))
-    )
+    ) AS DOUBLE PRECISION
   ) AS distance_km
 FROM
   diagnostic_centres
@@ -325,7 +325,7 @@ type Get_Nearest_Diagnostic_CentresRow struct {
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DistanceKm           int32              `db:"distance_km" json:"distance_km"`
+	DistanceKm           float64            `db:"distance_km" json:"distance_km"`
 }
 
 // Retrieves the nearest diagnostic centres based on latitude and longitude.

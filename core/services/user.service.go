@@ -190,7 +190,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		Token:     token,
 		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
 	}
-
+	fmt.Println(resetToken, "kunle@gmail.com")
 	if err := service.UserRepo.CreatePasswordResetToken(context.Request().Context(), resetToken); err != nil {
 		utils.Error("Failed to create password reset token",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -198,24 +198,24 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	// Prepare and send reset email
-	resetLink := fmt.Sprintf("%s/reset-password?token=%s", os.Getenv("APP_URL"), token)
-	emailBody := fmt.Sprintf(`
-		<h2>Password Reset Request</h2>
-		<p>Hi,</p>
-		<p>We received a request to reset your password. Click the link below to reset it:</p>
-		<p><a href="%s">Reset Password</a></p>
-		<p>This link will expire in 15 minutes.</p>
-		<p>If you didn't request this, you can safely ignore this email.</p>
-		<p>Best regards,<br/>Medicue Team</p>
-	`, resetLink)
+	// // Prepare and send reset email
+	// resetLink := fmt.Sprintf("%s/reset-password?token=%s", os.Getenv("APP_URL"), token)
+	// emailBody := fmt.Sprintf(`
+	// 	<h2>Password Reset Request</h2>
+	// 	<p>Hi,</p>
+	// 	<p>We received a request to reset your password. Click the link below to reset it:</p>
+	// 	<p><a href="%s">Reset Password</a></p>
+	// 	<p>This link will expire in 15 minutes.</p>
+	// 	<p>If you didn't request this, you can safely ignore this email.</p>
+	// 	<p>Best regards,<br/>Medicue Team</p>
+	// `, resetLink)
 
-	if err := service.emailService.Send(user.Email.String, "Reset Your Medicue Password", emailBody); err != nil {
-		utils.Error("Failed to send reset email",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: user.Email})
-		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to send reset email"), context)
-	}
+	// if err := service.emailService.Send(user.Email.String, "Reset Your Medicue Password", emailBody); err != nil {
+	// 	utils.Error("Failed to send reset email",
+	// 		utils.LogField{Key: "error", Value: err.Error()},
+	// 		utils.LogField{Key: "email", Value: user.Email})
+	// 	return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to send reset email"), context)
+	// }
 
 	utils.Info("Password reset token generated and email sent",
 		utils.LogField{Key: "user_id", Value: user.ID},

@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -23,26 +24,71 @@ func JWTConfig(secret string) echojwt.Config {
 			return new(domain.JwtCustomClaimsDTO)
 		},
 		SigningKey:    []byte(secret),
-		SigningMethod: jwt.SigningMethodHS256.Name,
+		SigningMethod: "HS256",
 		TokenLookup:   "header:Authorization",
+		BeforeFunc: func(c echo.Context) {
+			// Log sanitized auth header for debugging (only first few chars of token)
+			authHeader := c.Request().Header.Get("Authorization")
+			if authHeader != "" {
+				parts := strings.Split(authHeader, " ")
+				if len(parts) == 2 {
+					tokenPreview := parts[1]
+					if len(tokenPreview) > 10 {
+						tokenPreview = tokenPreview[:10] + "..."
+					}
+					utils.Debug("JWT token received",
+						utils.LogField{Key: "token_preview", Value: tokenPreview},
+						utils.LogField{Key: "scheme", Value: parts[0]})
+				}
+			}
+		},
 		ErrorHandler: func(c echo.Context, err error) error {
+			authHeader := c.Request().Header.Get("Authorization")
+
 			utils.Error("JWT authentication failed",
 				utils.LogField{Key: "error", Value: err.Error()},
 				utils.LogField{Key: "path", Value: c.Request().URL.Path},
 				utils.LogField{Key: "method", Value: c.Request().Method},
-				utils.LogField{Key: "remote_ip", Value: c.RealIP()})
+				utils.LogField{Key: "remote_ip", Value: c.RealIP()},
+				utils.LogField{Key: "has_auth_header", Value: authHeader != ""})
+
+			// Check Authorization header format first
+			if authHeader != "" {
+				parts := strings.Split(authHeader, " ")
+				if len(parts) != 2 {
+					return echo.NewHTTPError(http.StatusUnauthorized, "Invalid Authorization header format. Use 'Bearer <token>'")
+				}
+				if parts[0] != authScheme {
+					return echo.NewHTTPError(http.StatusUnauthorized, "Invalid Authorization scheme. Use 'Bearer'")
+				}
+				// If header exists but jwt.Error is missing, the token format is wrong
+				if err == nil {
+					return echo.NewHTTPError(http.StatusUnauthorized, "Malformed JWT token")
+				}
+			}
 
 			switch err {
 			case echojwt.ErrJWTMissing:
 				return echo.NewHTTPError(http.StatusUnauthorized, "Missing JWT token")
 			case echojwt.ErrJWTInvalid:
-				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid JWT token")
-			// echojwt.ErrJWTExpired does not exist; handle expiration by inspecting the error message
+				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid JWT token: token signature is invalid")
 			default:
-				if err != nil && (err.Error() == "token is expired" || err.Error() == "Token is expired") {
-					return echo.NewHTTPError(http.StatusUnauthorized, "Expired JWT token")
+				if err != nil {
+					errMsg := err.Error()
+					switch {
+					case errMsg == "token is expired" || errMsg == "Token is expired":
+						return echo.NewHTTPError(http.StatusUnauthorized, "Expired JWT token")
+					case strings.Contains(errMsg, "signing method"):
+						return echo.NewHTTPError(http.StatusUnauthorized, "Invalid JWT token: incorrect signing method")
+					case strings.Contains(errMsg, "claims"):
+						return echo.NewHTTPError(http.StatusUnauthorized, "Invalid JWT token: malformed claims")
+					case strings.Contains(errMsg, "token contains an invalid number of segments"):
+						return echo.NewHTTPError(http.StatusUnauthorized, "Malformed JWT token: invalid token format")
+					default:
+						return echo.NewHTTPError(http.StatusUnauthorized, "Malformed JWT token: "+errMsg)
+					}
 				}
-				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or malformed JWT")
+				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or missing JWT token")
 			}
 		},
 		SuccessHandler: func(c echo.Context) {

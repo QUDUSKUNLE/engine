@@ -93,12 +93,12 @@ SELECT
   available_tests,
   created_at,
   updated_at,
-  (
+  CAST(
     6371 * acos(
       cos(radians($1)) * cos(radians(latitude)) *
       cos(radians(longitude) - radians($2)) +
       sin(radians($1)) * sin(radians(latitude))
-    )
+    ) AS DOUBLE PRECISION
   ) AS distance_km
 FROM
   diagnostic_centres
@@ -123,12 +123,12 @@ SELECT
   available_tests,
   created_at,
   updated_at,
-  (
+  CAST(
     6371 * acos(
       cos(radians($1)) * cos(radians(latitude)) *
       cos(radians(longitude) - radians($2)) +
       sin(radians($1)) * sin(radians(latitude))
-    )
+    ) AS DOUBLE PRECISION
   ) AS distance_km 
 FROM diagnostic_centres
 WHERE

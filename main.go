@@ -73,8 +73,12 @@ func main() {
 			// List of /v1 routes that should NOT require JWT
 			key := fmt.Sprintf("%s %s", c.Request().Method, c.Path())
 			noAuthRoutes := map[string]bool{
-				"POST /v1/register":                                true,
 				"POST /v1/login":                                   true,
+				"POST /v1/register":                                true,
+				"POST /v1/verify_email":                            true,
+				"POST /v1/reset_password":                          true,
+				"POST /v1/resend_verification":                     true,
+				"POST /v1/request_password_reset":                  true,
 				"GET /v1/diagnostic_centres":                       true,
 				"GET /v1/diagnostic_centres/:diagnostic_centre_id": true,
 			}

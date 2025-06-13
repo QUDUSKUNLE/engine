@@ -47,14 +47,14 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 				},
 				{
 					method:      http.MethodPost,
-					path:        "/request-password-reset",
+					path:        "/request_password_reset",
 					handler:     handler.RequestPasswordReset,
 					factory:     func() interface{} { return &domain.RequestPasswordResetDTO{} },
 					description: "Request password reset",
 				},
 				{
 					method:      http.MethodPost,
-					path:        "/reset-password",
+					path:        "/reset_password",
 					handler:     handler.ResetPassword,
 					factory:     func() interface{} { return &domain.ResetPasswordDTO{} },
 					description: "Reset password",
@@ -89,14 +89,14 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 				},
 				{
 					method:      http.MethodPost,
-					path:        "/verify-email",
+					path:        "/verify_email",
 					handler:     handler.VerifyEmail,
 					factory:     func() interface{} { return &domain.EmailVerificationDTO{} },
 					description: "Verify user email address",
 				},
 				{
 					method:      http.MethodPost,
-					path:        "/resend-verification",
+					path:        "/resend_verification",
 					handler:     handler.ResendVerification,
 					factory:     func() interface{} { return &domain.ResendVerificationDTO{} },
 					description: "Resend email verification",
@@ -264,7 +264,7 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 func registerRoute(group *echo.Group, route routeConfig) {
 	utils.Info("Registering route",
 		utils.LogField{Key: "method", Value: route.method},
-		utils.LogField{Key: "path", Value: route.path},
+		utils.LogField{Key: "path", Value: "/v1" + route.path},
 		utils.LogField{Key: "description", Value: route.description})
 
 	switch route.method {

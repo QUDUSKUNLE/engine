@@ -154,14 +154,16 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 // buildDiagnosticCentre converts a database row to a domain diagnostic centre
 func buildDiagnosticCentre(row db.Get_Nearest_Diagnostic_CentresRow) *db.DiagnosticCentre {
 	return &db.DiagnosticCentre{
-		ID: row.ID,
-		// Name:        row.Name,
-		Address:   row.Address,
-		Latitude:  row.Latitude,
-		Longitude: row.Longitude,
-		// CreatedBy:   row.CreatedBy,
-		CreatedAt: row.CreatedAt,
-		UpdatedAt: row.UpdatedAt,
+		ID:                   row.ID,
+		DiagnosticCentreName: row.DiagnosticCentreName,
+		Latitude:             row.Latitude,
+		Longitude:            row.Longitude,
+		Address:              row.Address,
+		Contact:              row.Contact,
+		Doctors:              row.Doctors,
+		AvailableTests:       row.AvailableTests,
+		CreatedAt:            row.CreatedAt,
+		UpdatedAt:            row.UpdatedAt,
 	}
 }
 
