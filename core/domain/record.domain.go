@@ -58,6 +58,7 @@ type (
 		FileUpload      File            // Define File type below or import from the correct package
 		FilePath        string          `json:"file_path"`
 		FileType        string          `json:"file_type"`
+		DocumentDate    string          `json:"document_date"`
 		UploadedAt      string          `json:"uploaded_at"`
 		ProviderName    string          `json:"provider_name"`
 		Specialty       string          `json:"specialty"`

@@ -49,3 +49,7 @@ func (repo *Repository) SearchDiagnosticCentres(ctx context.Context, params db.S
 func (repo *Repository) SearchDiagnosticCentresByDoctor(ctx context.Context, params db.Search_Diagnostic_Centres_ByDoctorParams) ([]*db.DiagnosticCentre, error) {
 	return repo.database.Search_Diagnostic_Centres_ByDoctor(ctx, params)
 }
+
+func (repo *Repository) DeleteDiagnosticCentreByOwner(ctx context.Context, params db.Delete_Diagnostic_Centre_ByOwnerParams) (*db.DiagnosticCentre, error) {
+	return repo.database.Delete_Diagnostic_Centre_ByOwner(ctx, params)
+}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/adapters/metrics"
@@ -151,6 +152,297 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	return utils.ResponseMessage(http.StatusNoContent, response, context)
 }
 
+// DeleteDiagnosticCentre deletes a diagnostic center (owner only)
+func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) error {
+	// Authentication & Authorization check for owner
+	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	if err != nil {
+		if errors.Is(err, utils.ErrInvalidToken) || errors.Is(err, utils.ErrUnauthorized) {
+			return &echo.HTTPError{
+				Code:    http.StatusUnauthorized,
+				Message: utils.AuthenticationRequired,
+			}
+		}
+		return &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+
+	param := context.Param(utils.DiagnosticCentreID)
+	params := db.Delete_Diagnostic_Centre_ByOwnerParams{
+		ID:        param,
+		CreatedBy: currentUser.UserID.String(),
+	}
+
+	// First check if the diagnostic center exists and is owned by this user
+	_, err = service.DiagnosticRepo.GetDiagnosticCentreByOwner(context.Request().Context(), db.Get_Diagnostic_Centre_ByOwnerParams{
+		ID:        param,
+		CreatedBy: currentUser.UserID.String(),
+	})
+	if err != nil {
+		utils.Error("Failed to find diagnostic centre",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID.String()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: param})
+
+		if errors.Is(err, utils.ErrNotFound) {
+			return &echo.HTTPError{
+				Code:    http.StatusNotFound,
+				Message: "diagnostic centre not found",
+			}
+		}
+		return &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+
+	// Attempt to delete
+	response, err := service.DiagnosticRepo.DeleteDiagnosticCentreByOwner(context.Request().Context(), params)
+	if err != nil {
+		utils.Error("Failed to delete diagnostic centre",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID.String()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: param})
+		return &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to delete diagnostic centre",
+		}
+	}
+
+	// Return success response
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
+		"message": "Diagnostic centre deleted successfully",
+		"id":      response.ID,
+	}, context)
+}
+
+// GetDiagnosticCentresByOwner retrieves all diagnostic centers owned by the authenticated user
+func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context) error {
+	// Authentication & Authorization check for owner
+	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+
+	// Get and validate pagination parameters
+	params, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.PaginationQueryDTO)
+	params = SetDefaultPagination(params).(*domain.PaginationQueryDTO)
+
+	dbParams := db.List_Diagnostic_Centres_ByOwnerParams{
+		CreatedBy: currentUser.UserID.String(),
+		Limit:     params.GetLimit(),
+		Offset:    params.GetOffset(),
+	}
+
+	response, err := service.DiagnosticRepo.ListDiagnosticCentresByOwner(context.Request().Context(), dbParams)
+	if err != nil {
+		utils.Error("Failed to list diagnostic centres",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID.String()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	result := make([]map[string]interface{}, 0, len(response))
+	for _, centre := range response {
+		item, err := buildDiagnosticCentreResponseFromRow(centre, context)
+		if err != nil {
+			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		}
+		result = append(result, item)
+	}
+
+	return utils.ResponseMessage(http.StatusOK, result, context)
+}
+
+// GetDiagnosticCentreStats retrieves statistical information about a diagnostic centre
+func (service *ServicesHandler) GetDiagnosticCentreStats(context echo.Context) error {
+	// Authenticate and authorize user - first try owner, then manager
+	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	if err != nil {
+		_, err = utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
+		if err != nil {
+			return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		}
+	}
+
+	// Get diagnostic centre ID
+	param := context.Param(utils.DiagnosticCentreID)
+
+	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), param)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
+	}
+
+	// TODO: Get statistics from schedule and record repositories
+	// For now, return basic info
+	stats := map[string]interface{}{
+		"diagnostic_centre_id":   centre.ID,
+		"diagnostic_centre_name": centre.DiagnosticCentreName,
+		"total_doctors":          len(centre.Doctors),
+		"total_tests":            len(centre.AvailableTests),
+		// TODO: Add more statistics from schedules and records
+	}
+
+	return utils.ResponseMessage(http.StatusOK, stats, context)
+}
+
+// GetDiagnosticCentresByManager retrieves all diagnostic centres managed by the authenticated manager
+func (service *ServicesHandler) GetDiagnosticCentresByManager(context echo.Context) error {
+	// Authentication & Authorization check for manager
+	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+
+	// Get and validate pagination parameters
+	// params, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.PaginationQueryDTO)
+	// params = SetDefaultPagination(params).(*domain.PaginationQueryDTO)
+
+	// Build query parameters
+	dbParams := db.Get_Diagnostic_Centre_ByManagerParams{
+		ID:      "", // Will be filled by DB query
+		AdminID: currentUser.UserID.String(),
+	}
+
+	// Get diagnostic centres
+	centre, err := service.DiagnosticRepo.GetDiagnosticCentreByManager(context.Request().Context(), dbParams)
+	if err != nil {
+		utils.Error("Failed to get diagnostic centres by manager",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID.String()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	// Build response
+	result, err := buildDiagnosticCentreResponseFromRow(centre, context)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	return utils.ResponseMessage(http.StatusOK, []map[string]interface{}{result}, context)
+}
+
+// UpdateDiagnosticCentreManager updates the manager of a diagnostic centre
+func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Context) error {
+	// Authentication & Authorization check for owner
+	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+
+	// Get diagnostic centre ID and manager details
+	centreID := context.Param(utils.DiagnosticCentreID)
+	managerDetails, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticManagerDTO)
+
+	// Verify ownership
+	_, err = service.DiagnosticRepo.GetDiagnosticCentreByOwner(context.Request().Context(), db.Get_Diagnostic_Centre_ByOwnerParams{
+		ID:        centreID,
+		CreatedBy: currentUser.UserID.String(),
+	})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found or not owned by user"), context)
+	}
+
+	// Update manager
+	updateParams := db.Update_Diagnostic_Centre_ByOwnerParams{
+		ID:        centreID,
+		CreatedBy: currentUser.UserID.String(),
+		AdminID:   managerDetails.ManagerID,
+	}
+
+	response, err := service.DiagnosticRepo.UpdateDiagnosticCentreByOwner(context.Request().Context(), updateParams)
+	if err != nil {
+		utils.Error("Failed to update diagnostic centre manager",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: centreID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	result, err := buildDiagnosticCentreResponseFromRow(response, context)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	return utils.ResponseMessage(http.StatusOK, result, context)
+}
+
+// GetDiagnosticCentreSchedules retrieves all schedules for a diagnostic centre
+func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Context) error {
+	// Authentication & Authorization check - try owner first, then manager
+	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	if err != nil {
+		_, err = utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
+		if err != nil {
+			return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		}
+	}
+
+	// Get diagnostic centre ID and schedule params
+	centreID := context.Param(utils.DiagnosticCentreID)
+	params := &domain.GetDiagnosticSchedulesByCentreParamDTO{
+		DiagnosticCentreID: uuid.Must(uuid.Parse(centreID)),
+	}
+	params = SetDefaultPagination(params).(*domain.GetDiagnosticSchedulesByCentreParamDTO)
+
+	// Verify centre exists
+	if _, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), centreID); err != nil {
+		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
+	}
+
+	// Get schedules from schedule repository
+	req := db.Get_Diagnsotic_Schedules_By_CentreParams{
+		DiagnosticCentreID: centreID,
+		Offset:             params.GetOffset(),
+		Limit:              params.GetLimit(),
+	}
+
+	schedules, err := service.ScheduleRepo.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
+	if err != nil {
+		utils.Error("Failed to retrieve schedules",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: centreID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	return utils.ResponseMessage(http.StatusOK, schedules, context)
+}
+
+// GetDiagnosticCentreRecords retrieves medical records for a diagnostic centre
+func (service *ServicesHandler) GetDiagnosticCentreRecords(context echo.Context) error {
+	// Authentication & Authorization check - try owner first, then manager
+	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	if err != nil {
+		currentUser, err = utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
+		if err != nil {
+			return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		}
+	}
+
+	_ = currentUser // We don't need the user object right now
+
+	// Get diagnostic centre ID and filter params
+	centreID := context.Param(utils.DiagnosticCentreID)
+	params := &domain.GetDiagnosticRecordsParamDTO{
+		DiagnosticCentreID: uuid.Must(uuid.Parse(centreID)).String(),
+	}
+	params = SetDefaultPagination(params).(*domain.GetDiagnosticRecordsParamDTO)
+
+	if _, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), centreID); err != nil {
+		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
+	}
+
+	// TODO: Implement medical records repository methods and querying
+	// For now, return empty result with proper format
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
+		"records":  []interface{}{},
+		"total":    0,
+		"page":     params.Page,
+		"per_page": params.PerPage,
+	}, context)
+}
+
 // buildDiagnosticCentre converts a database row to a domain diagnostic centre
 func buildDiagnosticCentre(row db.Get_Nearest_Diagnostic_CentresRow) *db.DiagnosticCentre {
 	return &db.DiagnosticCentre{
@@ -165,14 +457,4 @@ func buildDiagnosticCentre(row db.Get_Nearest_Diagnostic_CentresRow) *db.Diagnos
 		CreatedAt:            row.CreatedAt,
 		UpdatedAt:            row.UpdatedAt,
 	}
-}
-
-// isValidLatitude checks if the latitude is within valid range (-90 to 90)
-func isValidLatitude(lat float64) bool {
-	return lat >= -90 && lat <= 90
-}
-
-// isValidLongitude checks if the longitude is within valid range (-180 to 180)
-func isValidLongitude(lon float64) bool {
-	return lon >= -180 && lon <= 180
 }

@@ -75,3 +75,141 @@ func (handler *HTTPHandler) SearchDiagnosticCentre(context echo.Context) error {
 func (handler *HTTPHandler) UpdateDiagnosticCentre(context echo.Context) error {
 	return handler.service.UpdateDiagnosticCentre(context)
 }
+
+// DeleteDiagnosticCentre godoc
+// @Summary Delete a diagnostic centre
+// @Description Delete an existing diagnostic centre (owner only)
+// @Tags DiagnosticCentre
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Success 200 {object} utils.SuccessResponse "Diagnostic centre deleted successfully"
+// @Failure 401 {object} utils.ErrorResponse "Authentication required"
+// @Failure 403 {object} utils.ErrorResponse "User is not the owner"
+// @Failure 404 {object} utils.ErrorResponse "Diagnostic centre not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /diagnostic_centres/{diagnostic_centre_id} [delete]
+func (handler *HTTPHandler) DeleteDiagnosticCentre(context echo.Context) error {
+	return handler.service.DeleteDiagnosticCentre(context)
+}
+
+// GetDiagnosticCentresByOwner godoc
+// @Summary List owner's diagnostic centres
+// @Description Get all diagnostic centres owned by the authenticated user
+// @Tags DiagnosticCentre
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param page query integer false "Page number" minimum(1) default(1)
+// @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
+// @Success 200 {array} domain.DiagnosticCentreResponse "List of diagnostic centres"
+// @Failure 401 {object} utils.ErrorResponse "Authentication required"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /diagnostic_centres/owner [get]
+func (handler *HTTPHandler) GetDiagnosticCentresByOwner(context echo.Context) error {
+	return handler.service.GetDiagnosticCentresByOwner(context)
+}
+
+// GetDiagnosticCentreStats godoc
+// @Summary Get diagnostic centre statistics
+// @Description Get statistical information about a diagnostic centre (appointments, tests, etc.)
+// @Tags DiagnosticCentre
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Success 200 {object} domain.DiagnosticCentreStats "Centre statistics"
+// @Failure 401 {object} utils.ErrorResponse "Authentication required"
+// @Failure 403 {object} utils.ErrorResponse "Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Diagnostic centre not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /diagnostic_centres/{diagnostic_centre_id}/stats [get]
+func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error {
+	return handler.service.GetDiagnosticCentreStats(context)
+}
+
+// GetDiagnosticCentresByManager godoc
+// @Summary List manager's diagnostic centres
+// @Description Get all diagnostic centres managed by the authenticated diagnostic centre manager
+// @Tags DiagnosticCentre
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param page query integer false "Page number" minimum(1) default(1)
+// @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
+// @Success 200 {array} domain.DiagnosticCentreResponse "List of diagnostic centres"
+// @Failure 401 {object} utils.ErrorResponse "Authentication required"
+// @Failure 403 {object} utils.ErrorResponse "User is not a manager"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /diagnostic_centres/manager [get]
+func (handler *HTTPHandler) GetDiagnosticCentresByManager(context echo.Context) error {
+	return handler.service.GetDiagnosticCentresByManager(context)
+}
+
+// UpdateDiagnosticCentreManager godoc
+// @Summary Update diagnostic centre manager
+// @Description Update or assign a new manager to a diagnostic centre (owner only)
+// @Tags DiagnosticCentre
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param manager_details body domain.UpdateDiagnosticManagerDTO true "Manager details"
+// @Success 200 {object} domain.DiagnosticCentreResponse "Manager updated successfully"
+// @Failure 400 {object} utils.ErrorResponse "Invalid input"
+// @Failure 401 {object} utils.ErrorResponse "Authentication required"
+// @Failure 403 {object} utils.ErrorResponse "Not authorized"
+// @Failure 404 {object} utils.ErrorResponse "Centre not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /diagnostic_centres/{diagnostic_centre_id}/manager [put]
+func (handler *HTTPHandler) UpdateDiagnosticCentreManager(context echo.Context) error {
+	return handler.service.UpdateDiagnosticCentreManager(context)
+}
+
+// GetDiagnosticCentreSchedules godoc
+// @Summary Get diagnostic centre schedules
+// @Description Get all schedules for a diagnostic centre with pagination and filtering
+// @Tags DiagnosticCentre
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param start_date query string false "Filter by start date (YYYY-MM-DD)" format(date)
+// @Param end_date query string false "Filter by end date (YYYY-MM-DD)" format(date)
+// @Param status query string false "Filter by status" Enums(PENDING,ACCEPTED,REJECTED)
+// @Param page query integer false "Page number" minimum(1) default(1)
+// @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
+// @Success 200 {array} domain.ScheduleResponse "List of schedules"
+// @Failure 401 {object} utils.ErrorResponse "Authentication required"
+// @Failure 403 {object} utils.ErrorResponse "Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Centre not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /diagnostic_centres/{diagnostic_centre_id}/schedules [get]
+func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) error {
+	return handler.service.GetDiagnosticCentreSchedules(context)
+}
+
+// GetDiagnosticCentreRecords godoc
+// @Summary Get diagnostic centre medical records
+// @Description Get all medical records uploaded by a diagnostic centre
+// @Tags DiagnosticCentre
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param start_date query string false "Filter by start date (YYYY-MM-DD)" format(date)
+// @Param end_date query string false "Filter by end date (YYYY-MM-DD)" format(date)
+// @Param document_type query string false "Filter by document type" Enums(LAB_REPORT,PRESCRIPTION,IMAGING,DISCHARGE_SUMMARY,OTHER)
+// @Param page query integer false "Page number" minimum(1) default(1)
+// @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
+// @Success 200 {array} db.MedicalRecord "List of medical records"
+// @Failure 401 {object} utils.ErrorResponse "Authentication required"
+// @Failure 403 {object} utils.ErrorResponse "Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Centre not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /diagnostic_centres/{diagnostic_centre_id}/records [get]
+func (handler *HTTPHandler) GetDiagnosticCentreRecords(context echo.Context) error {
+	return handler.service.GetDiagnosticCentreRecords(context)
+}

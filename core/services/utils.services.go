@@ -1,7 +1,6 @@
 package services
 
 import (
-	"encoding/json"
 	"io"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -173,28 +172,6 @@ func buildDiagnosticCentreResponse(response *db.DiagnosticCentre, address domain
 	}
 }
 
-func buildDiagnosticCentreFromValue(value *domain.CreateDiagnosticDTO) (*db.DiagnosticCentre, error) {
-	addressBytes, err := json.Marshal(value.Address)
-	if err != nil {
-		return nil, err
-	}
-	
-	contactBytes, err := json.Marshal(value.Contact)
-	if err != nil {
-		return nil, err
-	}
-
-	return &db.DiagnosticCentre{
-		DiagnosticCentreName: value.DiagnosticCentreName,
-		Latitude:             pgtype.Float8{Float64: value.Latitude, Valid: true},
-		Longitude:            pgtype.Float8{Float64: value.Longitude, Valid: true},
-		Address:              addressBytes,
-		Contact:              contactBytes,
-		Doctors:              value.Doctors,
-		AvailableTests:       value.AvailableTests,
-	}, nil
-}
-
 // isValidUserType checks if the given user type is one of the allowed types
 func isValidUserType(allowedTypes []db.UserEnum, userType db.UserEnum) bool {
 	for _, t := range allowedTypes {
@@ -214,4 +191,14 @@ func SetDefaultPagination(params PaginationParams) PaginationParams {
 		params.SetOffset(0) // Default offset
 	}
 	return params
+}
+
+// isValidLatitude checks if the latitude is within valid range (-90 to 90)
+func isValidLatitude(lat float64) bool {
+	return lat >= -90 && lat <= 90
+}
+
+// isValidLongitude checks if the longitude is within valid range (-180 to 180)
+func isValidLongitude(lon float64) bool {
+	return lon >= -180 && lon <= 180
 }

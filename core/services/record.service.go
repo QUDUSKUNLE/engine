@@ -216,5 +216,94 @@ func (service *ServicesHandler) GetUploaderMedicalRecords(context echo.Context) 
 
 // UpdateMedicalRecord updates an existing medical record by the uploader.
 func (service *ServicesHandler) UpdateMedicalRecord(context echo.Context) error {
-	return nil
+	ctx := context.Request().Context()
+
+	// Authentication & Authorization
+	uploader, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
+	}
+
+	// Get the validated DTO from context
+	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateMedicalRecordDTO)
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
+	}
+
+	// Set uploader admin ID from the authenticated user
+	dto.UploaderAdminID = uploader.UserID
+
+	// Parse SharedUntil string to time.Time if provided
+	var sharedUntilTime pgtype.Timestamp
+	if dto.SharedUntil != "" {
+		// Try RFC3339 format first (includes time)
+		t, err := time.Parse(time.RFC3339, dto.SharedUntil)
+		if err != nil {
+			// Fallback to date-only format
+			t, err = time.Parse("2006-01-02", dto.SharedUntil)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "Invalid date format. Expected RFC3339 or YYYY-MM-DD")
+			}
+		}
+		sharedUntilTime = pgtype.Timestamp{Time: t, Valid: true}
+	}
+
+	// Handle file upload if provided
+	var fileUrl string
+	if dto.FileUpload.Content != nil {
+		fileUrl, err = service.FileRepo.UploadFile(ctx, dto.FileUpload.Content)
+		if err != nil {
+			context.Logger().Error("File upload failed:", err)
+			return echo.NewHTTPError(http.StatusUnprocessableEntity, "Failed to upload file")
+		}
+	}
+
+	// Parse document date if provided
+	var documentDate pgtype.Date
+	if dto.DocumentDate != "" {
+		t, err := time.Parse("2006-01-02", dto.DocumentDate)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid document date format. Expected YYYY-MM-DD")
+		}
+		documentDate = pgtype.Date{Time: t, Valid: true}
+	}
+
+	// Create update parameters
+	updateParams := db.UpdateMedicalRecordByUploaderParams{
+		ID:              dto.RecordID.String(),
+		UploaderID:      dto.UploaderID.String(),
+		UploaderAdminID: pgtype.UUID{Bytes: dto.UploaderAdminID, Valid: true},
+		// FilePath:        fileUrl,
+		Title:           dto.Title,
+		DocumentType:    dto.DocumentType,
+		DocumentDate:    documentDate,
+		FileType:        pgtype.Text{String: dto.FileType, Valid: dto.FileType != ""},
+		ProviderName:    pgtype.Text{String: dto.ProviderName, Valid: dto.ProviderName != ""},
+		Specialty:       pgtype.Text{String: dto.Specialty, Valid: dto.Specialty != ""},
+		IsShared:        pgtype.Bool{Bool: dto.IsShared, Valid: true},
+		SharedUntil:     sharedUntilTime,
+	}
+
+	// Only update file path if a new file was uploaded
+	if fileUrl != "" {
+		updateParams.FilePath = fileUrl
+	}
+
+	// Update the record
+	record, err := service.RecordRepo.UpdateMedicalRecord(ctx, updateParams)
+	if err != nil {
+		context.Logger().Error("Failed to update medical record:", err)
+		switch {
+		case errors.Is(err, utils.ErrDatabaseError):
+			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
+		case errors.Is(err, utils.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, "Medical record not found")
+		case errors.Is(err, utils.ErrPermissionDenied):
+			return echo.NewHTTPError(http.StatusForbidden, "Not authorized to update this record")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update medical record")
+		}
+	}
+
+	return utils.ResponseMessage(http.StatusOK, record, context)
 }

@@ -83,6 +83,13 @@ func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc 
 		}
 	}
 
+	// Handle update medical records
+	if v, ok := dto.(*domain.UpdateMedicalRecordDTO); ok {
+		if err := handleUpdateMedicalRecordDTO(c, v); err != nil {
+			return err
+		}
+	}
+
 	if err := c.Validate(dto); err != nil {
 		return err
 	}
@@ -102,6 +109,38 @@ func handleMedicalRecordDTO(c echo.Context, dto *domain.CreateMedicalRecordDTO) 
 		"user_id":           &dto.UserID,
 		"uploader_id":       &dto.UploaderID,
 		"schedule_id":       &dto.ScheduleID,
+		"uploader_admin_id": &dto.UploaderAdminID,
+	}
+
+	for field, ptr := range fields {
+		if value := c.FormValue(field); value != "" {
+			parsed, err := uuid.Parse(value)
+			if err != nil {
+				utils.Error("Failed to parse UUID",
+					utils.LogField{Key: "field", Value: field},
+					utils.LogField{Key: "value", Value: value},
+					utils.LogField{Key: "error", Value: err.Error()})
+				return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid %s format", field))
+			}
+			*ptr = parsed
+		}
+	}
+
+	// Set other form values
+	dto.Title = c.FormValue("title")
+	dto.DocumentType = db.DocumentType(c.FormValue("document_type"))
+	dto.UploadedAt = c.FormValue("uploaded_at")
+	dto.ProviderName = c.FormValue("provider_name")
+	dto.Specialty = c.FormValue("specialty")
+	dto.IsShared = c.FormValue("is_shared") == "true"
+	dto.SharedUntil = c.FormValue("shared_until")
+
+	return nil
+}
+
+func handleUpdateMedicalRecordDTO(c echo.Context, dto *domain.UpdateMedicalRecordDTO) error {
+	fields := map[string]*uuid.UUID{
+		"uploader_id":       &dto.UploaderID,
 		"uploader_admin_id": &dto.UploaderAdminID,
 	}
 
