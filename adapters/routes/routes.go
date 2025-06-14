@@ -147,8 +147,8 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 					handler: handler.GetDiagnosticSchedulesByCentre,
 					factory: func() interface{} {
 						return &domain.GetDiagnosticSchedulesByCentreParamDTO{}
-
 					},
+					description: "Get a diagnostic centre schedules",
 				},
 				{
 					method:  http.MethodGet,
@@ -156,14 +156,15 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 					handler: handler.GetDiagnosticScheduleByCentre,
 					factory: func() interface{} {
 						return &domain.GetDiagnosticScheduleByCentreParamDTO{}
-
 					},
+					description: "Get a diagnostic centre schedule",
 				},
 				{
-					method:  http.MethodPut,
-					path:    "/diagnostic_centres/:diagnostic_centre_id/diagnostic_schedules/:schedule_id",
-					handler: handler.UpdateDiagnosticScheduleByCentre,
-					factory: func() interface{} { return &domain.UpdateDiagnosticScheduleByCentreDTO{} },
+					method:      http.MethodPut,
+					path:        "/diagnostic_centres/:diagnostic_centre_id/diagnostic_schedules/:schedule_id",
+					handler:     handler.UpdateDiagnosticScheduleByCentre,
+					factory:     func() interface{} { return &domain.UpdateDiagnosticScheduleByCentreDTO{} },
+					description: "Update a diagnostic centre schedule",
 				},
 			},
 		},
@@ -185,10 +186,11 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 					description: "Get schedule details",
 				},
 				{
-					method:  http.MethodPut,
-					path:    "/diagnostic_schedules/:schedule_id",
-					handler: handler.UpdateSchedule,
-					factory: func() interface{} { return &domain.UpdateScheduleDTO{} },
+					method:      http.MethodPut,
+					path:        "/diagnostic_schedules/:schedule_id",
+					handler:     handler.UpdateSchedule,
+					factory:     func() interface{} { return &domain.UpdateScheduleDTO{} },
+					description: "Update a schedule",
 				},
 				{
 					method:      http.MethodGet,
@@ -238,10 +240,11 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 					description: "Get uploader medical records by centre",
 				},
 				{
-					method:  http.MethodPut,
-					path:    "/medical_records",
-					handler: handler.UpdateMedicalRecord,
-					factory: func() interface{} { return &domain.UpdateMedicalRecordDTO{} },
+					method:      http.MethodPut,
+					path:        "/medical_records",
+					handler:     handler.UpdateMedicalRecord,
+					factory:     func() interface{} { return &domain.UpdateMedicalRecordDTO{} },
+					description: "Update a medical record",
 				},
 			},
 		},

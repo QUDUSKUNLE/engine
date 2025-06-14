@@ -23,9 +23,7 @@ func JWTConfig(secret string) echojwt.Config {
 		NewClaimsFunc: func(context echo.Context) jwt.Claims {
 			return new(domain.JwtCustomClaimsDTO)
 		},
-		SigningKey:    []byte(secret),
-		SigningMethod: "HS256",
-		TokenLookup:   "header:Authorization",
+		SigningKey: []byte(secret),
 		BeforeFunc: func(c echo.Context) {
 			// Log sanitized auth header for debugging (only first few chars of token)
 			authHeader := c.Request().Header.Get("Authorization")

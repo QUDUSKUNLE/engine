@@ -24,7 +24,6 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	if err != nil {
 		utils.Error("Failed to build new user",
 			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: dto.Email},
 			utils.LogField{Key: "user_type", Value: dto.UserType})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -71,8 +70,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	err = service.emailService.Send(createdUser.Email.String, subject, body)
 	if err != nil {
 		utils.Error("Failed to send verification email",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: createdUser.Email.String})
+			utils.LogField{Key: "error", Value: err.Error()})
 		// Don't return error here, user is still created
 	}
 
@@ -101,8 +99,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 	password, err := utils.GenerateRandomPassword(20)
 	if err != nil {
 		utils.Error("Failed to generate random password",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: dto.Email})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 	userDto := domain.UserRegisterDTO{
@@ -114,8 +111,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 	newUser, err := domain.BuildNewUser(userDto)
 	if err != nil {
 		utils.Error("Failed to build diagnostic centre manager",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: dto.Email})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
 
@@ -134,15 +130,14 @@ func (service *ServicesHandler) Login(context echo.Context) error {
 		context.Request().Context(), pgtype.Text{String: dto.Email, Valid: true})
 	if err != nil {
 		utils.Error("Login failed - user not found",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: dto.Email})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
 	// Verify password
 	if err := domain.ComparePassword(*user, dto.Password); err != nil {
 		utils.Error("Login failed - invalid password",
-			utils.LogField{Key: "email", Value: dto.Email})
+			utils.LogField{Key: "user_id", Value: user.ID})
 		return utils.ErrorResponse(http.StatusUnauthorized, errors.New(utils.InvalidRequest), context)
 	}
 
@@ -190,32 +185,12 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		Token:     token,
 		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
 	}
-	fmt.Println(resetToken, "kunle@gmail.com")
 	if err := service.UserRepo.CreatePasswordResetToken(context.Request().Context(), resetToken); err != nil {
 		utils.Error("Failed to create password reset token",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: user.ID})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
-
-	// // Prepare and send reset email
-	// resetLink := fmt.Sprintf("%s/reset-password?token=%s", os.Getenv("APP_URL"), token)
-	// emailBody := fmt.Sprintf(`
-	// 	<h2>Password Reset Request</h2>
-	// 	<p>Hi,</p>
-	// 	<p>We received a request to reset your password. Click the link below to reset it:</p>
-	// 	<p><a href="%s">Reset Password</a></p>
-	// 	<p>This link will expire in 15 minutes.</p>
-	// 	<p>If you didn't request this, you can safely ignore this email.</p>
-	// 	<p>Best regards,<br/>Medicue Team</p>
-	// `, resetLink)
-
-	// if err := service.emailService.Send(user.Email.String, "Reset Your Medicue Password", emailBody); err != nil {
-	// 	utils.Error("Failed to send reset email",
-	// 		utils.LogField{Key: "error", Value: err.Error()},
-	// 		utils.LogField{Key: "email", Value: user.Email})
-	// 	return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to send reset email"), context)
-	// }
 
 	utils.Info("Password reset token generated and email sent",
 		utils.LogField{Key: "user_id", Value: user.ID},
@@ -248,7 +223,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	if token.Email != dto.Email {
 		utils.Error("Email mismatch for reset token",
 			utils.LogField{Key: "token_id", Value: token.ID},
-			utils.LogField{Key: "provided_email", Value: dto.Email})
+			utils.LogField{Key: "created_at", Value: token.CreatedAt})
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid reset token"), context)
 	}
 
@@ -256,8 +231,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	hashedPassword, err := domain.HashPassword(dto.NewPassword)
 	if err != nil {
 		utils.Error("Failed to hash new password",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: dto.Email})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
@@ -267,8 +241,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 		Password: hashedPassword,
 	}); err != nil {
 		utils.Error("Failed to update password",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: dto.Email})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
@@ -298,8 +271,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	)
 	if err != nil {
 		utils.Error("Email verification failed - user not found",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: dto.Email})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("user not found"), context)
 	}
 
@@ -325,8 +297,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	)
 	if err != nil {
 		utils.Error("Resend verification failed - user not found",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: dto.Email})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("user not found"), context)
 	}
 
@@ -366,8 +337,7 @@ func (service *ServicesHandler) createUserHelper(
 	)
 	if err != nil && err != sql.ErrNoRows {
 		utils.Error("Failed to check existing user",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: arg.Email.String})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return nil, utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 	if existingUser != nil {
@@ -381,8 +351,7 @@ func (service *ServicesHandler) createUserHelper(
 	createdRow, err := service.UserRepo.CreateUser(context.Request().Context(), arg)
 	if err != nil {
 		utils.Error("Failed to create user",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "email", Value: arg.Email.String})
+			utils.LogField{Key: "error", Value: err.Error()})
 		return nil, utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
