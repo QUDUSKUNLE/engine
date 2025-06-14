@@ -81,6 +81,7 @@ func main() {
 				"POST /v1/request_password_reset":                  true,
 				"GET /v1/diagnostic_centres":                       true,
 				"GET /v1/diagnostic_centres/:diagnostic_centre_id": true,
+				"POST /v1/auth/google":                             true,
 			}
 			if noAuthRoutes[key] {
 				return next(c)

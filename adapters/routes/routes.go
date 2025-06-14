@@ -101,6 +101,13 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 					factory:     func() interface{} { return &domain.ResendVerificationDTO{} },
 					description: "Resend email verification",
 				},
+				{
+					method:      http.MethodPost,
+					path:        "/auth/google",
+					handler:     handler.GoogleLogin,
+					factory:     func() interface{} { return &domain.GoogleAuthDTO{} },
+					description: "Google OAuth login",
+				},
 			},
 		},
 		{

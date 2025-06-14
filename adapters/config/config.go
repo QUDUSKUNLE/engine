@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/medicue/core/utils"
 )
 
 func LoadEnvironmentVariable() error {
@@ -16,10 +17,14 @@ func LoadEnvironmentVariable() error {
 }
 
 type Config struct {
-	Port   string
-	DB_URL string
-	JwtKey string
+	Port         string
+	DB_URL       string
+	JwtKey       string
 	AllowOrigins string
+	// Google OAuth Configuration
+	GoogleClientID     string
+	GoogleClientSecret string
+	GoogleRedirectURL  string
 }
 
 func LoadConfig(serviceName string) (*Config, error) {
@@ -35,9 +40,18 @@ func LoadConfig(serviceName string) (*Config, error) {
 		config.DB_URL = os.Getenv("DB_URL")
 		config.JwtKey = os.Getenv("JWT_SECRET_KEY")
 		config.AllowOrigins = os.Getenv("ALLOW_ORIGINS")
+		config.GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
+		config.GoogleClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
+		config.GoogleRedirectURL = os.Getenv("GOOGLE_REDIRECT_URL")
+
 		// Validate required fields
 		if config.Port == "" {
 			return nil, fmt.Errorf("missing required environment variables: PORT")
+		}
+
+		// Validate Google OAuth config
+		if config.GoogleClientID == "" || config.GoogleClientSecret == "" {
+			utils.Warn("Google OAuth configuration is incomplete. Google login will be unavailable.")
 		}
 		return config, nil
 	default:

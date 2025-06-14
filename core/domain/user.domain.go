@@ -12,6 +12,20 @@ import (
 )
 
 type (
+	// GoogleAuthDTO represents the data sent by the frontend for Google auth
+	GoogleAuthDTO struct {
+		IDToken string `json:"id_token" validate:"required"`
+	}
+
+	// GoogleUserInfo represents the verified user info from Google
+	GoogleUserInfo struct {
+		Email         string `json:"email"`
+		EmailVerified bool   `json:"email_verified"`
+		Name          string `json:"name"`
+		Picture       string `json:"picture"`
+		GoogleID      string `json:"sub"`
+	}
+
 	UserRegisterDTO struct {
 		Email            string      `json:"email" validate:"email,required"`
 		Password         string      `json:"password" validate:"gte=6,lte=20,required"`

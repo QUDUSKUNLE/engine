@@ -16,6 +16,8 @@ import (
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/domain"
 	"github.com/medicue/core/utils"
+	"golang.org/x/oauth2"
+	oauth2v2 "google.golang.org/api/oauth2/v2"
 )
 
 func (service *ServicesHandler) Create(context echo.Context) error {
@@ -364,4 +366,96 @@ func (service *ServicesHandler) createUserHelper(
 	}
 
 	return user, nil
+}
+
+func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.GoogleAuthDTO)
+
+	// Initialize OAuth2 config
+	oauth2Config := &oauth2.Config{
+		ClientID: os.Getenv("GOOGLE_CLIENT_ID"),
+		// We only need the ID token, not the client secret since we're using the frontend flow
+	}
+
+	// Create OAuth2 service
+	oauth2Service, err := oauth2v2.New(oauth2.NewClient(context.Request().Context(), nil))
+	if err != nil {
+		utils.Error("Failed to create OAuth2 service",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	// Verify the ID token
+	tokenInfo, err := oauth2Service.Tokeninfo().IdToken(dto.IDToken).Do()
+	if err != nil {
+		utils.Error("Failed to verify Google ID token",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusUnauthorized, errors.New("invalid Google token"), context)
+	}
+
+	// Verify token issuer
+	if tokenInfo.IssuedTo != "accounts.google.com" && tokenInfo.IssuedTo != "https://accounts.google.com" {
+		utils.Error("Invalid token issuer",
+			utils.LogField{Key: "issuer", Value: tokenInfo.IssuedTo})
+		return utils.ErrorResponse(http.StatusUnauthorized, errors.New("invalid token issuer"), context)
+	}
+
+	// Verify audience
+	if tokenInfo.Audience != oauth2Config.ClientID {
+		utils.Error("Token was not issued for this app",
+			utils.LogField{Key: "audience", Value: tokenInfo.Audience})
+		return utils.ErrorResponse(http.StatusUnauthorized, errors.New("invalid token audience"), context)
+	}
+
+	// Check if user exists
+	user, err := service.UserRepo.GetUserByEmail(
+		context.Request().Context(),
+		pgtype.Text{String: tokenInfo.Email, Valid: true},
+	)
+
+	if err != nil && err != sql.ErrNoRows {
+		utils.Error("Database error while checking user",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "email", Value: tokenInfo.Email})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	if user == nil {
+		// Create new user
+		newUser := db.CreateUserParams{
+			// ID:            uuid.New().String(),
+			Email:         pgtype.Text{String: tokenInfo.Email, Valid: true},
+			Password:      "", // No password for Google users
+			UserType:      db.UserEnumUSER,
+		}
+
+		user, err = service.UserRepo.CreateUser(context.Request().Context(), newUser)
+		if err != nil {
+			utils.Error("Failed to create user from Google login",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "email", Value: tokenInfo.Email})
+			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		}
+	}
+
+	// Generate JWT token
+	userClaims := domain.CurrentUserDTO{
+		UserID:   uuid.MustParse(user.ID),
+		UserType: user.UserType,
+	}
+	token, err := utils.GenerateToken(userClaims)
+	if err != nil {
+		utils.Error("Failed to generate JWT token",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: user.ID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	utils.Info("User logged in with Google",
+		utils.LogField{Key: "user_id", Value: user.ID})
+
+	return utils.ResponseMessage(http.StatusOK, map[string]string{
+		"token": token,
+		"name":  tokenInfo.UserId,
+	}, context)
 }

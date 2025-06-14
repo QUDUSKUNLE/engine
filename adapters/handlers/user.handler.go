@@ -196,3 +196,19 @@ func (handler *HTTPHandler) VerifyEmail(context echo.Context) error {
 func (handler *HTTPHandler) ResendVerification(context echo.Context) error {
 	return handler.service.ResendVerification(context)
 }
+
+// GoogleLogin godoc
+// @Summary Login with Google
+// @Description Authenticate a user using Google OAuth
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param body body domain.GoogleAuthDTO true "Google ID token"
+// @Success 200 {object} map[string]string "token: JWT token for authentication"
+// @Failure 400 {object} utils.ErrorResponse "Invalid token"
+// @Failure 401 {object} utils.ErrorResponse "Authentication failed"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /v1/auth/google [post]
+func (handler *HTTPHandler) GoogleLogin(context echo.Context) error {
+	return handler.service.GoogleLogin(context)
+}
