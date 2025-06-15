@@ -717,6 +717,79 @@ func AllUserEnumValues() []UserEnum {
 	}
 }
 
+type Weekday string
+
+const (
+	WeekdayMonday    Weekday = "monday"
+	WeekdayTuesday   Weekday = "tuesday"
+	WeekdayWednesday Weekday = "wednesday"
+	WeekdayThursday  Weekday = "thursday"
+	WeekdayFriday    Weekday = "friday"
+	WeekdaySaturday  Weekday = "saturday"
+	WeekdaySunday    Weekday = "sunday"
+)
+
+func (e *Weekday) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Weekday(s)
+	case string:
+		*e = Weekday(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Weekday: %T", src)
+	}
+	return nil
+}
+
+type NullWeekday struct {
+	Weekday Weekday `json:"weekday"`
+	Valid   bool    `json:"valid"` // Valid is true if Weekday is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWeekday) Scan(value interface{}) error {
+	if value == nil {
+		ns.Weekday, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Weekday.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWeekday) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Weekday), nil
+}
+
+func (e Weekday) Valid() bool {
+	switch e {
+	case WeekdayMonday,
+		WeekdayTuesday,
+		WeekdayWednesday,
+		WeekdayThursday,
+		WeekdayFriday,
+		WeekdaySaturday,
+		WeekdaySunday:
+		return true
+	}
+	return false
+}
+
+func AllWeekdayValues() []Weekday {
+	return []Weekday{
+		WeekdayMonday,
+		WeekdayTuesday,
+		WeekdayWednesday,
+		WeekdayThursday,
+		WeekdayFriday,
+		WeekdaySaturday,
+		WeekdaySunday,
+	}
+}
+
 type DiagnosticCentre struct {
 	ID                   string             `db:"id" json:"id"`
 	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
@@ -730,6 +803,19 @@ type DiagnosticCentre struct {
 	AdminID              string             `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+}
+
+type DiagnosticCentreAvailability struct {
+	ID                 string             `db:"id" json:"id"`
+	DiagnosticCentreID string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	DayOfWeek          Weekday            `db:"day_of_week" json:"day_of_week"`
+	StartTime          pgtype.Time        `db:"start_time" json:"start_time"`
+	EndTime            pgtype.Time        `db:"end_time" json:"end_time"`
+	MaxAppointments    pgtype.Int4        `db:"max_appointments" json:"max_appointments"`
+	SlotDuration       pgtype.Interval    `db:"slot_duration" json:"slot_duration"`
+	BreakTime          pgtype.Interval    `db:"break_time" json:"break_time"`
+	CreatedAt          pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 type DiagnosticSchedule struct {

@@ -26,3 +26,13 @@ force-migrate:
 		exit 1; \
 	fi; \
 	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgres://abumuhsinah:abumuhsinah@localhost:5432/medicue?sslmode=disable" force $(V)
+
+migrate-rollback:
+	@if [ -z "$(V)" ]; then \
+		echo "error: please specify version argument V"; \
+		exit 1; \
+	fi; \
+	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgres://abumuhsinah:abumuhsinah@localhost:5432/medicue?sslmode=disable" goto $(V)
+
+migration-version:
+	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgres://abumuhsinah:abumuhsinah@localhost:5432/medicue?sslmode=disable" version
