@@ -69,7 +69,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 		<p>Best regards,<br/>Medicue Team</p>
 	`, os.Getenv("APP_URL"), verificationToken.Token, url.QueryEscape(createdUser.Email.String))
 
-	err = service.emailService.Send(createdUser.Email.String, subject, body)
+	err = service.notificationService.SendEmail(createdUser.Email.String, subject, body)
 	if err != nil {
 		utils.Error("Failed to send verification email",
 			utils.LogField{Key: "error", Value: err.Error()})

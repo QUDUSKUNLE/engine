@@ -6,15 +6,15 @@ import (
 )
 
 type ServicesHandler struct {
-	UserRepo         ports.UserRepository
-	ScheduleRepo     ports.ScheduleRepository
-	DiagnosticRepo   ports.DiagnosticRepository
-	RecordRepo       ports.RecordRepository
-	AvailabilityRepo ports.AvailabilityRepository
-	PaymentRepo      ports.PaymentRepository
-	AppointmentRepo  ports.AppointmentRepository
-	FileRepo         ports.FileService
-	emailService     ports.EmailService
+	UserRepo            ports.UserRepository
+	ScheduleRepo        ports.ScheduleRepository
+	DiagnosticRepo      ports.DiagnosticRepository
+	RecordRepo          ports.RecordRepository
+	AvailabilityRepo    ports.AvailabilityRepository
+	PaymentRepo         ports.PaymentRepository
+	AppointmentRepo     ports.AppointmentRepository
+	FileRepo            ports.FileService
+	notificationService ports.NotificationService
 }
 
 func ServicesAdapter(
@@ -27,14 +27,14 @@ func ServicesAdapter(
 	appointmentPort ports.AppointmentRepository,
 ) *ServicesHandler {
 	return &ServicesHandler{
-		UserRepo:         useRepo,
-		ScheduleRepo:     scheduleRepo,
-		DiagnosticRepo:   diagnosticCentreRepo,
-		AvailabilityRepo: availabilityRepo,
-		PaymentRepo:      paymentPort,
-		AppointmentRepo:  appointmentPort,
-		RecordRepo:       record,
-		FileRepo:         &ex.LocalFileService{},
-		emailService:     &ex.EmailAdapter{},
+		UserRepo:            useRepo,
+		ScheduleRepo:        scheduleRepo,
+		DiagnosticRepo:      diagnosticCentreRepo,
+		AvailabilityRepo:    availabilityRepo,
+		PaymentRepo:         paymentPort,
+		AppointmentRepo:     appointmentPort,
+		RecordRepo:          record,
+		FileRepo:            &ex.LocalFileService{},
+		notificationService: &ex.EmailAdapter{},
 	}
 }
