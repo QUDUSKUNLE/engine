@@ -64,8 +64,16 @@ func main() {
 	diagnosticRepo := repository.NewDiagnosticCentreRepository(store)
 	recordRepo := repository.NewRecordRepository(store)
 	availabilityRepo := repository.NewAvailabilityRepository(store)
+	paymentRepo := repository.NewPaymentRepository(store)
+	appointmentRepo := repository.NewApppointmentRepository(store)
 	core := services.ServicesAdapter(
-		userRepo, scheduleRepo, diagnosticRepo, availabilityRepo, recordRepo,
+		userRepo,
+		scheduleRepo,
+		diagnosticRepo,
+		availabilityRepo,
+		recordRepo,
+		paymentRepo,
+		appointmentRepo,
 	)
 	httpHandler := handlers.HttpAdapter(core)
 

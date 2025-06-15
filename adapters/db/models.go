@@ -11,6 +11,76 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AppointmentStatus string
+
+const (
+	AppointmentStatusPending     AppointmentStatus = "pending"
+	AppointmentStatusConfirmed   AppointmentStatus = "confirmed"
+	AppointmentStatusInProgress  AppointmentStatus = "in_progress"
+	AppointmentStatusCompleted   AppointmentStatus = "completed"
+	AppointmentStatusCancelled   AppointmentStatus = "cancelled"
+	AppointmentStatusRescheduled AppointmentStatus = "rescheduled"
+)
+
+func (e *AppointmentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AppointmentStatus(s)
+	case string:
+		*e = AppointmentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AppointmentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullAppointmentStatus struct {
+	AppointmentStatus AppointmentStatus `json:"appointment_status"`
+	Valid             bool              `json:"valid"` // Valid is true if AppointmentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAppointmentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.AppointmentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AppointmentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAppointmentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AppointmentStatus), nil
+}
+
+func (e AppointmentStatus) Valid() bool {
+	switch e {
+	case AppointmentStatusPending,
+		AppointmentStatusConfirmed,
+		AppointmentStatusInProgress,
+		AppointmentStatusCompleted,
+		AppointmentStatusCancelled,
+		AppointmentStatusRescheduled:
+		return true
+	}
+	return false
+}
+
+func AllAppointmentStatusValues() []AppointmentStatus {
+	return []AppointmentStatus{
+		AppointmentStatusPending,
+		AppointmentStatusConfirmed,
+		AppointmentStatusInProgress,
+		AppointmentStatusCompleted,
+		AppointmentStatusCancelled,
+		AppointmentStatusRescheduled,
+	}
+}
+
 type AvailableTests string
 
 const (
@@ -332,6 +402,137 @@ func AllDocumentTypeValues() []DocumentType {
 		DocumentTypeSURGERY,
 		DocumentTypeCHRONICCONDITION,
 		DocumentTypeFAMILYHISTORY,
+	}
+}
+
+type PaymentMethod string
+
+const (
+	PaymentMethodCard     PaymentMethod = "card"
+	PaymentMethodTransfer PaymentMethod = "transfer"
+	PaymentMethodCash     PaymentMethod = "cash"
+	PaymentMethodWallet   PaymentMethod = "wallet"
+)
+
+func (e *PaymentMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentMethod(s)
+	case string:
+		*e = PaymentMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentMethod: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentMethod struct {
+	PaymentMethod PaymentMethod `json:"payment_method"`
+	Valid         bool          `json:"valid"` // Valid is true if PaymentMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentMethod), nil
+}
+
+func (e PaymentMethod) Valid() bool {
+	switch e {
+	case PaymentMethodCard,
+		PaymentMethodTransfer,
+		PaymentMethodCash,
+		PaymentMethodWallet:
+		return true
+	}
+	return false
+}
+
+func AllPaymentMethodValues() []PaymentMethod {
+	return []PaymentMethod{
+		PaymentMethodCard,
+		PaymentMethodTransfer,
+		PaymentMethodCash,
+		PaymentMethodWallet,
+	}
+}
+
+type PaymentStatus string
+
+const (
+	PaymentStatusPending   PaymentStatus = "pending"
+	PaymentStatusSuccess   PaymentStatus = "success"
+	PaymentStatusFailed    PaymentStatus = "failed"
+	PaymentStatusRefunded  PaymentStatus = "refunded"
+	PaymentStatusCancelled PaymentStatus = "cancelled"
+)
+
+func (e *PaymentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentStatus(s)
+	case string:
+		*e = PaymentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentStatus struct {
+	PaymentStatus PaymentStatus `json:"payment_status"`
+	Valid         bool          `json:"valid"` // Valid is true if PaymentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentStatus), nil
+}
+
+func (e PaymentStatus) Valid() bool {
+	switch e {
+	case PaymentStatusPending,
+		PaymentStatusSuccess,
+		PaymentStatusFailed,
+		PaymentStatusRefunded,
+		PaymentStatusCancelled:
+		return true
+	}
+	return false
+}
+
+func AllPaymentStatusValues() []PaymentStatus {
+	return []PaymentStatus{
+		PaymentStatusPending,
+		PaymentStatusSuccess,
+		PaymentStatusFailed,
+		PaymentStatusRefunded,
+		PaymentStatusCancelled,
 	}
 }
 
@@ -790,6 +991,34 @@ func AllWeekdayValues() []Weekday {
 	}
 }
 
+type Appointment struct {
+	ID                    string             `db:"id" json:"id"`
+	PatientID             string             `db:"patient_id" json:"patient_id"`
+	ScheduleID            string             `db:"schedule_id" json:"schedule_id"`
+	DiagnosticCentreID    string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	AppointmentDate       pgtype.Timestamptz `db:"appointment_date" json:"appointment_date"`
+	TimeSlot              string             `db:"time_slot" json:"time_slot"`
+	Status                AppointmentStatus  `db:"status" json:"status"`
+	PaymentID             pgtype.UUID        `db:"payment_id" json:"payment_id"`
+	PaymentStatus         NullPaymentStatus  `db:"payment_status" json:"payment_status"`
+	PaymentAmount         pgtype.Numeric     `db:"payment_amount" json:"payment_amount"`
+	PaymentDate           pgtype.Timestamptz `db:"payment_date" json:"payment_date"`
+	CheckInTime           pgtype.Timestamptz `db:"check_in_time" json:"check_in_time"`
+	CompletionTime        pgtype.Timestamptz `db:"completion_time" json:"completion_time"`
+	Notes                 pgtype.Text        `db:"notes" json:"notes"`
+	CancellationReason    pgtype.Text        `db:"cancellation_reason" json:"cancellation_reason"`
+	CancelledBy           pgtype.UUID        `db:"cancelled_by" json:"cancelled_by"`
+	CancellationTime      pgtype.Timestamptz `db:"cancellation_time" json:"cancellation_time"`
+	CancellationFee       pgtype.Numeric     `db:"cancellation_fee" json:"cancellation_fee"`
+	OriginalAppointmentID pgtype.UUID        `db:"original_appointment_id" json:"original_appointment_id"`
+	ReschedulingReason    pgtype.Text        `db:"rescheduling_reason" json:"rescheduling_reason"`
+	RescheduledBy         pgtype.UUID        `db:"rescheduled_by" json:"rescheduled_by"`
+	ReschedulingTime      pgtype.Timestamptz `db:"rescheduling_time" json:"rescheduling_time"`
+	ReschedulingFee       pgtype.Numeric     `db:"rescheduling_fee" json:"rescheduling_fee"`
+	CreatedAt             pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+}
+
 type DiagnosticCentre struct {
 	ID                   string             `db:"id" json:"id"`
 	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
@@ -870,6 +1099,26 @@ type PasswordResetToken struct {
 	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
 	Used      pgtype.Bool        `db:"used" json:"used"`
 	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+}
+
+type Payment struct {
+	ID                 string             `db:"id" json:"id"`
+	AppointmentID      string             `db:"appointment_id" json:"appointment_id"`
+	PatientID          string             `db:"patient_id" json:"patient_id"`
+	DiagnosticCentreID string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	Amount             pgtype.Numeric     `db:"amount" json:"amount"`
+	Currency           string             `db:"currency" json:"currency"`
+	PaymentMethod      PaymentMethod      `db:"payment_method" json:"payment_method"`
+	PaymentStatus      PaymentStatus      `db:"payment_status" json:"payment_status"`
+	TransactionID      pgtype.Text        `db:"transaction_id" json:"transaction_id"`
+	PaymentMetadata    []byte             `db:"payment_metadata" json:"payment_metadata"`
+	PaymentDate        pgtype.Timestamptz `db:"payment_date" json:"payment_date"`
+	RefundAmount       pgtype.Numeric     `db:"refund_amount" json:"refund_amount"`
+	RefundReason       pgtype.Text        `db:"refund_reason" json:"refund_reason"`
+	RefundDate         pgtype.Timestamptz `db:"refund_date" json:"refund_date"`
+	RefundedBy         pgtype.UUID        `db:"refunded_by" json:"refunded_by"`
+	CreatedAt          pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 type User struct {

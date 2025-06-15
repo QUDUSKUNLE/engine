@@ -11,6 +11,8 @@ import (
 )
 
 type Querier interface {
+	CancelAppointment(ctx context.Context, arg CancelAppointmentParams) (*Appointment, error)
+	CreateAppointment(ctx context.Context, arg CreateAppointmentParams) (*Appointment, error)
 	CreateEmailVerificationToken(ctx context.Context, arg CreateEmailVerificationTokenParams) (*EmailVerificationToken, error)
 	// Create a Medical Record
 	CreateMedicalRecord(ctx context.Context, arg CreateMedicalRecordParams) (*MedicalRecord, error)
@@ -21,11 +23,15 @@ type Querier interface {
 	Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagnostic_CentreParams) (*DiagnosticCentre, error)
 	// Create a diagnostic schedule
 	Create_Diagnostic_Schedule(ctx context.Context, arg Create_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
+	Create_Payment(ctx context.Context, arg Create_PaymentParams) (*Payment, error)
+	DeleteAppointment(ctx context.Context, id string) error
 	Delete_Availability(ctx context.Context, arg Delete_AvailabilityParams) error
 	// Deletes a diagnosticCentre only by the created_by.
 	Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Delete_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 	Delete_Diagnostic_Schedule(ctx context.Context, arg Delete_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
+	GetAppointment(ctx context.Context, id string) (*Appointment, error)
+	GetCentreAppointments(ctx context.Context, arg GetCentreAppointmentsParams) ([]*Appointment, error)
 	GetEmailVerificationToken(ctx context.Context, arg GetEmailVerificationTokenParams) (*EmailVerificationToken, error)
 	// Get a Medical Record
 	GetMedicalRecord(ctx context.Context, arg GetMedicalRecordParams) (*GetMedicalRecordRow, error)
@@ -33,6 +39,7 @@ type Querier interface {
 	// Retrieves a paginated list of medical records for a specific user, ordered by creation date (most recent first).
 	GetMedicalRecords(ctx context.Context, arg GetMedicalRecordsParams) ([]*GetMedicalRecordsRow, error)
 	GetPasswordResetToken(ctx context.Context, token string) (*PasswordResetToken, error)
+	GetPatientAppointments(ctx context.Context, arg GetPatientAppointmentsParams) ([]*Appointment, error)
 	// This is just a helper query to make sqlc generate the Doctor type
 	GetSampleDoctor(ctx context.Context) (Doctor, error)
 	// This is just a helper query to make sqlc generate the Doctor type as array
@@ -61,17 +68,23 @@ type Querier interface {
 	Get_Diagnsotic_Schedules_By_Centre(ctx context.Context, arg Get_Diagnsotic_Schedules_By_CentreParams) ([]*DiagnosticSchedule, error)
 	// Retrieves the nearest diagnostic centres based on latitude and longitude.
 	Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Nearest_Diagnostic_CentresParams) ([]*Get_Nearest_Diagnostic_CentresRow, error)
+	Get_Payment(ctx context.Context, id string) (*Payment, error)
 	// Retrieves all diagnostic records for a specific owner.
 	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*DiagnosticCentre, error)
+	List_Payments(ctx context.Context, arg List_PaymentsParams) ([]*Payment, error)
 	MarkEmailAsVerified(ctx context.Context, email pgtype.Text) error
 	MarkEmailVerificationTokenUsed(ctx context.Context, arg MarkEmailVerificationTokenUsedParams) error
 	MarkResetTokenUsed(ctx context.Context, id string) error
+	Refund_Payment(ctx context.Context, arg Refund_PaymentParams) (*Payment, error)
+	RescheduleAppointment(ctx context.Context, arg RescheduleAppointmentParams) (*Appointment, error)
 	// Retrieves all diagnostic records with pagination.
 	Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_Diagnostic_CentresParams) ([]*DiagnosticCentre, error)
 	// Searches diagnostic_centres by name with pagination.
 	Search_Diagnostic_Centres(ctx context.Context, arg Search_Diagnostic_CentresParams) ([]*DiagnosticCentre, error)
 	// SearchDiagnosticWith Doctor type
 	Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*DiagnosticCentre, error)
+	UpdateAppointmentPayment(ctx context.Context, arg UpdateAppointmentPaymentParams) (*Appointment, error)
+	UpdateAppointmentStatus(ctx context.Context, arg UpdateAppointmentStatusParams) (*Appointment, error)
 	// Uploader Update a Medical Record
 	// Updates a medical record by uploader, allowing partial updates to fields. Only the uploader can update their own records. Updates the 'updated_at' timestamp.
 	UpdateMedicalRecordByUploader(ctx context.Context, arg UpdateMedicalRecordByUploaderParams) (*MedicalRecord, error)
@@ -84,6 +97,7 @@ type Querier interface {
 	Update_Diagnostic_Schedule(ctx context.Context, arg Update_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Update_Diagnostic_Schedule_By_Centre(ctx context.Context, arg Update_Diagnostic_Schedule_By_CentreParams) (*DiagnosticSchedule, error)
 	Update_Many_Availability(ctx context.Context, arg Update_Many_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
+	Update_Payment_Status(ctx context.Context, arg Update_Payment_StatusParams) (*Payment, error)
 }
 
 var _ Querier = (*Queries)(nil)
