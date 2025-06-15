@@ -52,6 +52,22 @@ func (h *HTTPHandler) UpdateAvailability(c echo.Context) error {
 	return nil
 }
 
+// @Summary Bulk update availability for a diagnostic centre
+// @Description Update multiple availability slots for the diagnostic centre
+// @Tags Availability
+// @Accept json
+// @Produce json
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID"
+// @Param availability body domain.UpdateManyAvailabilityDTO true "Updated availability information"
+// @Success 200 {array} domain.AvailabilitySlot
+// @Failure 400 {object} utils.ErrorResponse
+// @Failure 401 {object} utils.ErrorResponse
+// @Failure 404 {object} utils.ErrorResponse
+// @Router /api/v1/availability/{diagnostic_centre_id} [put]
+func (handler *HTTPHandler) UpdateManyAvailability(context echo.Context) error {
+	return handler.service.UpdateManyAvailability(context)
+}
+
 // @Summary Delete availability for a diagnostic centre
 // @Description Delete an availability slot for the diagnostic centre
 // @Tags Availability

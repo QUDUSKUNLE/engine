@@ -16,7 +16,7 @@ type Querier interface {
 	CreateMedicalRecord(ctx context.Context, arg CreateMedicalRecordParams) (*MedicalRecord, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error)
-	Create_Availability(ctx context.Context, arg Create_AvailabilityParams) (*DiagnosticCentreAvailability, error)
+	Create_Availability(ctx context.Context, arg Create_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
 	// Inserts a new diagnostic record into the diagnostic_centres table.
 	Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagnostic_CentreParams) (*DiagnosticCentre, error)
 	// Create a diagnostic schedule
@@ -83,6 +83,7 @@ type Querier interface {
 	// Update a diagnostic schedule
 	Update_Diagnostic_Schedule(ctx context.Context, arg Update_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Update_Diagnostic_Schedule_By_Centre(ctx context.Context, arg Update_Diagnostic_Schedule_By_CentreParams) (*DiagnosticSchedule, error)
+	Update_Many_Availability(ctx context.Context, arg Update_Many_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
 }
 
 var _ Querier = (*Queries)(nil)

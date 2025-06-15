@@ -11,7 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const create_Availability = `-- name: Create_Availability :one
+const create_Availability = `-- name: Create_Availability :many
+WITH availability_params AS (
+    SELECT 
+        unnest($1::uuid[]) as diagnostic_centre_id,
+        unnest($2::weekday[]) as day_of_week,
+        unnest($3::time[]) as start_time,
+        unnest($4::time[]) as end_time,
+        unnest($5::int[]) as max_appointments,
+        unnest($6::interval[]) as slot_duration,
+        unnest($7::interval[]) as break_time
+)
 INSERT INTO diagnostic_centre_availability (
     diagnostic_centre_id,
     day_of_week,
@@ -20,45 +30,58 @@ INSERT INTO diagnostic_centre_availability (
     max_appointments,
     slot_duration,
     break_time
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appointments, slot_duration, break_time, created_at, updated_at
+) 
+SELECT diagnostic_centre_id, day_of_week, start_time, end_time, max_appointments, slot_duration, break_time FROM availability_params
+RETURNING id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appointments, slot_duration, break_time, created_at, updated_at
 `
 
 type Create_AvailabilityParams struct {
-	DiagnosticCentreID string          `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	DayOfWeek          Weekday         `db:"day_of_week" json:"day_of_week"`
-	StartTime          pgtype.Time     `db:"start_time" json:"start_time"`
-	EndTime            pgtype.Time     `db:"end_time" json:"end_time"`
-	MaxAppointments    pgtype.Int4     `db:"max_appointments" json:"max_appointments"`
-	SlotDuration       pgtype.Interval `db:"slot_duration" json:"slot_duration"`
-	BreakTime          pgtype.Interval `db:"break_time" json:"break_time"`
+	Column1 []string          `db:"column_1" json:"column_1"`
+	Column2 []Weekday         `db:"column_2" json:"column_2"`
+	Column3 []pgtype.Time     `db:"column_3" json:"column_3"`
+	Column4 []pgtype.Time     `db:"column_4" json:"column_4"`
+	Column5 []int32           `db:"column_5" json:"column_5"`
+	Column6 []pgtype.Interval `db:"column_6" json:"column_6"`
+	Column7 []pgtype.Interval `db:"column_7" json:"column_7"`
 }
 
-func (q *Queries) Create_Availability(ctx context.Context, arg Create_AvailabilityParams) (*DiagnosticCentreAvailability, error) {
-	row := q.db.QueryRow(ctx, create_Availability,
-		arg.DiagnosticCentreID,
-		arg.DayOfWeek,
-		arg.StartTime,
-		arg.EndTime,
-		arg.MaxAppointments,
-		arg.SlotDuration,
-		arg.BreakTime,
+func (q *Queries) Create_Availability(ctx context.Context, arg Create_AvailabilityParams) ([]*DiagnosticCentreAvailability, error) {
+	rows, err := q.db.Query(ctx, create_Availability,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
 	)
-	var i DiagnosticCentreAvailability
-	err := row.Scan(
-		&i.ID,
-		&i.DiagnosticCentreID,
-		&i.DayOfWeek,
-		&i.StartTime,
-		&i.EndTime,
-		&i.MaxAppointments,
-		&i.SlotDuration,
-		&i.BreakTime,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return &i, err
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*DiagnosticCentreAvailability
+	for rows.Next() {
+		var i DiagnosticCentreAvailability
+		if err := rows.Scan(
+			&i.ID,
+			&i.DiagnosticCentreID,
+			&i.DayOfWeek,
+			&i.StartTime,
+			&i.EndTime,
+			&i.MaxAppointments,
+			&i.SlotDuration,
+			&i.BreakTime,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const delete_Availability = `-- name: Delete_Availability :exec
@@ -177,4 +200,78 @@ func (q *Queries) Update_Availability(ctx context.Context, arg Update_Availabili
 		&i.UpdatedAt,
 	)
 	return &i, err
+}
+
+const update_Many_Availability = `-- name: Update_Many_Availability :many
+WITH update_params AS (
+    SELECT 
+        unnest($1::uuid[]) as diagnostic_centre_id,
+        unnest($2::weekday[]) as day_of_week,
+        unnest($3::time[]) as start_time,
+        unnest($4::time[]) as end_time,
+        unnest($5::int[]) as max_appointments,
+        unnest($6::interval[]) as slot_duration,
+        unnest($7::interval[]) as break_time
+)
+UPDATE diagnostic_centre_availability AS dca
+SET
+    start_time = COALESCE(up.start_time, dca.start_time),
+    end_time = COALESCE(up.end_time, dca.end_time),
+    max_appointments = COALESCE(up.max_appointments, dca.max_appointments),
+    slot_duration = COALESCE(up.slot_duration, dca.slot_duration),
+    break_time = COALESCE(up.break_time, dca.break_time),
+    updated_at = CURRENT_TIMESTAMP
+FROM update_params up
+WHERE dca.diagnostic_centre_id = up.diagnostic_centre_id
+AND dca.day_of_week = up.day_of_week
+RETURNING dca.id, dca.diagnostic_centre_id, dca.day_of_week, dca.start_time, dca.end_time, dca.max_appointments, dca.slot_duration, dca.break_time, dca.created_at, dca.updated_at
+`
+
+type Update_Many_AvailabilityParams struct {
+	Column1 []string          `db:"column_1" json:"column_1"`
+	Column2 []Weekday         `db:"column_2" json:"column_2"`
+	Column3 []pgtype.Time     `db:"column_3" json:"column_3"`
+	Column4 []pgtype.Time     `db:"column_4" json:"column_4"`
+	Column5 []int32           `db:"column_5" json:"column_5"`
+	Column6 []pgtype.Interval `db:"column_6" json:"column_6"`
+	Column7 []pgtype.Interval `db:"column_7" json:"column_7"`
+}
+
+func (q *Queries) Update_Many_Availability(ctx context.Context, arg Update_Many_AvailabilityParams) ([]*DiagnosticCentreAvailability, error) {
+	rows, err := q.db.Query(ctx, update_Many_Availability,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*DiagnosticCentreAvailability
+	for rows.Next() {
+		var i DiagnosticCentreAvailability
+		if err := rows.Scan(
+			&i.ID,
+			&i.DiagnosticCentreID,
+			&i.DayOfWeek,
+			&i.StartTime,
+			&i.EndTime,
+			&i.MaxAppointments,
+			&i.SlotDuration,
+			&i.BreakTime,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

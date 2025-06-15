@@ -6,7 +6,7 @@ import (
 	"github.com/medicue/adapters/db"
 )
 
-func (r *Repository) CreateAvailability(ctx context.Context, req db.Create_AvailabilityParams) (*db.DiagnosticCentreAvailability, error) {
+func (r *Repository) CreateAvailability(ctx context.Context, req db.Create_AvailabilityParams) ([]*db.DiagnosticCentreAvailability, error) {
 	return r.database.Create_Availability(ctx, req)
 }
 
@@ -22,4 +22,8 @@ func (r *Repository) GetAvailability(ctx context.Context, params db.Get_Availabi
 
 func (r *Repository) UpdateAvailability(ctx context.Context, params db.Update_AvailabilityParams) (*db.DiagnosticCentreAvailability, error) {
 	return r.database.Update_Availability(ctx, params)
+}
+
+func (r *Repository) UpdateManyAvailability(ctx context.Context, arg db.Update_Many_AvailabilityParams) ([]*db.DiagnosticCentreAvailability, error) {
+	return r.database.Update_Many_Availability(ctx, arg)
 }

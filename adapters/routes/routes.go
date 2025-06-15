@@ -256,6 +256,93 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 			},
 		},
 		{
+			name: "Appointments",
+			routes: []routeConfig{
+				{
+					method:      http.MethodPost,
+					path:        "/appointments",
+					handler:     handler.CreateAppointment,
+					factory:     func() interface{} { return &domain.CreateAppointmentDTO{} },
+					description: "Book a new appointment",
+				},
+				{
+					method:      http.MethodGet,
+					path:        "/appointments/:appointment_id",
+					handler:     handler.GetAppointment,
+					factory:     func() interface{} { return &domain.GetAppointmentDTO{} },
+					description: "Get appointment details",
+				},
+				{
+					method:      http.MethodGet,
+					path:        "/appointments",
+					handler:     handler.ListAppointments,
+					factory:     func() interface{} { return &domain.ListAppointmentsDTO{} },
+					description: "List appointments with filters",
+				},
+				{
+					method:      http.MethodPut,
+					path:        "/appointments/:appointment_id",
+					handler:     handler.UpdateAppointment,
+					factory:     func() interface{} { return &domain.UpdateAppointmentDTO{} },
+					description: "Update appointment details",
+				},
+				{
+					method:      http.MethodPut,
+					path:        "/appointments/:appointment_id/cancel",
+					handler:     handler.CancelAppointment,
+					factory:     func() interface{} { return &domain.CancelAppointmentDTO{} },
+					description: "Cancel an appointment",
+				},
+				{
+					method:      http.MethodPut,
+					path:        "/appointments/:appointment_id/reschedule",
+					handler:     handler.RescheduleAppointment,
+					factory:     func() interface{} { return &domain.RescheduleAppointmentDTO{} },
+					description: "Reschedule an appointment",
+				},
+			},
+		},
+		{
+			name: "Payments",
+			routes: []routeConfig{
+				{
+					method:      http.MethodPost,
+					path:        "/payments",
+					handler:     handler.CreatePayment,
+					factory:     func() interface{} { return &domain.CreatePaymentDTO{} },
+					description: "Process a new payment",
+				},
+				{
+					method:      http.MethodGet,
+					path:        "/payments/:payment_id",
+					handler:     handler.GetPayment,
+					factory:     func() interface{} { return &domain.GetPaymentDTO{} },
+					description: "Get payment details",
+				},
+				{
+					method:      http.MethodGet,
+					path:        "/payments",
+					handler:     handler.ListPayments,
+					factory:     func() interface{} { return &domain.ListPaymentsDTO{} },
+					description: "List payments with filters",
+				},
+				{
+					method:      http.MethodPost,
+					path:        "/payments/:payment_id/refund",
+					handler:     handler.RefundPayment,
+					factory:     func() interface{} { return &domain.RefundPaymentDTO{} },
+					description: "Process payment refund",
+				},
+				{
+					method:      http.MethodPost,
+					path:        "/payments/webhook",
+					handler:     handler.PaymentWebhook,
+					factory:     func() interface{} { return &domain.PaymentWebhookDTO{} },
+					description: "Handle payment provider webhook",
+				},
+			},
+		},
+		{
 			name: "Availability",
 			routes: []routeConfig{
 				{
