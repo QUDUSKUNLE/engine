@@ -424,9 +424,9 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 		// Create new user
 		newUser := db.CreateUserParams{
 			// ID:            uuid.New().String(),
-			Email:         pgtype.Text{String: tokenInfo.Email, Valid: true},
-			Password:      "", // No password for Google users
-			UserType:      db.UserEnumUSER,
+			Email:    pgtype.Text{String: tokenInfo.Email, Valid: true},
+			Password: "", // No password for Google users
+			UserType: db.UserEnumUSER,
 		}
 
 		user, err = service.UserRepo.CreateUser(context.Request().Context(), newUser)
