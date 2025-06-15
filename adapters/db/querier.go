@@ -16,10 +16,12 @@ type Querier interface {
 	CreateMedicalRecord(ctx context.Context, arg CreateMedicalRecordParams) (*MedicalRecord, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error)
+	Create_Availability(ctx context.Context, arg Create_AvailabilityParams) (*DiagnosticCentreAvailability, error)
 	// Inserts a new diagnostic record into the diagnostic_centres table.
 	Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagnostic_CentreParams) (*DiagnosticCentre, error)
 	// Create a diagnostic schedule
 	Create_Diagnostic_Schedule(ctx context.Context, arg Create_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
+	Delete_Availability(ctx context.Context, arg Delete_AvailabilityParams) error
 	// Deletes a diagnosticCentre only by the created_by.
 	Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Delete_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 	Delete_Diagnostic_Schedule(ctx context.Context, arg Delete_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
@@ -44,6 +46,7 @@ type Querier interface {
 	GetUser(ctx context.Context, id string) (*User, error)
 	GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error)
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, error)
+	Get_Availability(ctx context.Context, arg Get_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
 	// Retrieves a single diagnostic record by its ID.
 	Get_Diagnostic_Centre(ctx context.Context, id string) (*DiagnosticCentre, error)
 	// GetDiagnosticCentreByManager
@@ -74,6 +77,7 @@ type Querier interface {
 	UpdateMedicalRecordByUploader(ctx context.Context, arg UpdateMedicalRecordByUploaderParams) (*MedicalRecord, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
+	Update_Availability(ctx context.Context, arg Update_AvailabilityParams) (*DiagnosticCentreAvailability, error)
 	// Updates a diagnostic centre by the owner.
 	Update_Diagnostic_Centre_ByOwner(ctx context.Context, arg Update_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 	// Update a diagnostic schedule

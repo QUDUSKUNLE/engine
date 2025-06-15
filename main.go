@@ -63,7 +63,10 @@ func main() {
 	scheduleRepo := repository.NewScheduleRepository(store)
 	diagnosticRepo := repository.NewDiagnosticCentreRepository(store)
 	recordRepo := repository.NewRecordRepository(store)
-	core := services.ServicesAdapter(userRepo, scheduleRepo, diagnosticRepo, recordRepo)
+	availabilityRepo := repository.NewAvailabilityRepository(store)
+	core := services.ServicesAdapter(
+		userRepo, scheduleRepo, diagnosticRepo, availabilityRepo, recordRepo,
+	)
 	httpHandler := handlers.HttpAdapter(core)
 
 	v1 := e.Group("/v1")

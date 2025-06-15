@@ -255,6 +255,39 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 				},
 			},
 		},
+		{
+			name: "Availability",
+			routes: []routeConfig{
+				{
+					method:      http.MethodPost,
+					path:        "/availability",
+					handler:     handler.CreateAvailability,
+					factory:     func() interface{} { return &domain.CreateAvailabilityDTO{} },
+					description: "Create diagnostic centre availability",
+				},
+				{
+					method:      http.MethodGet,
+					path:        "/availability/:diagnostic_centre_id",
+					handler:     handler.GetAvailability,
+					factory:     func() interface{} { return &domain.GetAvailabilityDTO{} },
+					description: "Get diagnostic centre availability",
+				},
+				{
+					method:      http.MethodPut,
+					path:        "/availability/:diagnostic_centre_id/:day_of_week",
+					handler:     handler.UpdateAvailability,
+					factory:     func() interface{} { return &domain.UpdateAvailabilityDTO{} },
+					description: "Update diagnostic centre availability",
+				},
+				{
+					method:      http.MethodDelete,
+					path:        "/availability/:diagnostic_centre_id/:day_of_week",
+					handler:     handler.DeleteAvailability,
+					factory:     func() interface{} { return nil },
+					description: "Delete diagnostic centre availability",
+				},
+			},
+		},
 	}
 
 	// Register all routes with logging

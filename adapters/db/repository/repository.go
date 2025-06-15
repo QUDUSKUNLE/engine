@@ -24,3 +24,7 @@ func NewDiagnosticCentreRepository(store *db.Queries) ports.DiagnosticRepository
 func NewRecordRepository(store *db.Queries) ports.RecordRepository {
 	return &Repository{database: store}
 }
+
+func NewAvailabilityRepository(store *db.Queries) ports.AvailabilityRepository {
+	return &Repository{database: store}
+}
