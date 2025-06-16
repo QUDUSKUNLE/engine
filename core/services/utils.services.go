@@ -2,7 +2,9 @@ package services
 
 import (
 	"io"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
@@ -201,4 +203,34 @@ func isValidLatitude(lat float64) bool {
 // isValidLongitude checks if the longitude is within valid range (-180 to 180)
 func isValidLongitude(lon float64) bool {
 	return lon >= -180 && lon <= 180
+}
+
+// Helper functions for type conversions
+func toTimestamptz(t time.Time) pgtype.Timestamptz {
+	var ts pgtype.Timestamptz
+	ts.Time = t
+	ts.Valid = !t.IsZero()
+	return ts
+}
+
+func toText(s string) pgtype.Text {
+	var text pgtype.Text
+	text.String = s
+	text.Valid = s != ""
+	return text
+}
+
+func toNumeric(n float64) pgtype.Numeric {
+	var num pgtype.Numeric
+	_ = num.Scan(n)
+	return num
+}
+
+func toUUID(id string) pgtype.UUID {
+	var uid pgtype.UUID
+	if parsed, err := uuid.Parse(id); err == nil {
+		uid.Bytes = parsed
+		uid.Valid = true
+	}
+	return uid
 }

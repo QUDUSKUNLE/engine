@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/labstack/echo-contrib/echoprometheus"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -38,11 +43,21 @@ func main() {
 		panic(err)
 	}
 	defer utils.Logger.Sync()
-	// Get Port number from the loaded .env file
+
+	// Load configuration
 	cfg, err := config.LoadConfig("MEDICUE")
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
+
+	// Initialize DB connection
+	store, err := db.DatabaseConnection(cfg.DB_URL)
+	if err != nil {
+		log.Fatalf("Error connecting to the database")
+	}
+
+
+
 	// Create a new echo instance
 	e := echo.New()
 
@@ -51,13 +66,8 @@ func main() {
 	e.Use(middlewares.PrometheusMiddleware)
 	e.Use(echoprometheus.NewMiddleware("Medicue"))
 
-	// Plug echo int validationAdaptor
+	// Plug echo into validationAdaptor
 	e = middlewares.ValidationAdaptor(e)
-
-	store, err := db.DatabaseConnection(cfg.DB_URL)
-	if err != nil {
-		log.Fatalf("Error connecting to the database")
-	}
 
 	userRepo := repository.NewUserRepository(store)
 	scheduleRepo := repository.NewScheduleRepository(store)
@@ -75,6 +85,14 @@ func main() {
 		paymentRepo,
 		appointmentRepo,
 	)
+		// Initialize CronConfig
+	cronConfig := config.GetConfig(userRepo, diagnosticRepo, appointmentRepo)
+	err = cronConfig.Start()
+	if err != nil {
+		log.Printf("Warning: Failed to start background services: %v", err)
+	}
+	defer cronConfig.Cleanup()
+
 	httpHandler := handlers.HttpAdapter(core)
 
 	v1 := e.Group("/v1")
@@ -107,11 +125,11 @@ func main() {
 			return echojwt.WithConfig(conn)(next)(c)
 		}
 	})
-	// Plug echo into PublicRoutesAdaptor
+
+	// Register routes
 	routes.RoutesAdaptor(v1, httpHandler)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-
 	e.HTTPErrorHandler = utils.CustomHTTPErrorHandler
 
 	// Add secure headers
@@ -122,8 +140,10 @@ func main() {
 		HSTSMaxAge:            3600,
 		ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'",
 	}))
+
 	// Limit request body size to 25MB
 	e.Use(middleware.BodyLimit("25M"))
+
 	// Improved CORS config: restrict to trusted origins and methods
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{cfg.AllowOrigins},
@@ -131,9 +151,11 @@ func main() {
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
 		AllowCredentials: true,
 	}))
+
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "time=${time}, remote_ip=${remote_ip}, latency=${latency}, method=${method}, uri=${uri}, status=${status}, host=${host}\n",
 	}))
+
 	// Configure rate limiter with metrics endpoint excluded
 	e.Use(middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
 		Skipper: func(c echo.Context) bool {
@@ -142,8 +164,20 @@ func main() {
 		Store: middleware.NewRateLimiterMemoryStore(rate.Limit(10)),
 	}))
 
-	// Start the server on port 8080
-	if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	// Start server with graceful shutdown
+	go func() {
+		if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal("shutting down the server")
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
 		log.Fatal(err)
 	}
 }

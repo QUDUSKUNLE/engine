@@ -21,10 +21,15 @@ type Config struct {
 	DB_URL       string
 	JwtKey       string
 	AllowOrigins string
+	AppUrl       string
 	// Google OAuth Configuration
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
+
+	// Email Service
+	SEND_GRID_API_KEY string
+	EMAIL_FROM_ADDRESS string
 }
 
 func LoadConfig(serviceName string) (*Config, error) {
@@ -43,6 +48,9 @@ func LoadConfig(serviceName string) (*Config, error) {
 		config.GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
 		config.GoogleClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
 		config.GoogleRedirectURL = os.Getenv("GOOGLE_REDIRECT_URL")
+		config.AppUrl = os.Getenv("APP_URL")
+		config.EMAIL_FROM_ADDRESS = os.Getenv("EMAIL_FROM_ADDRESS")
+		config.SEND_GRID_API_KEY = os.Getenv("SEND_GRID_API_KEY")
 
 		// Validate required fields
 		if config.Port == "" {

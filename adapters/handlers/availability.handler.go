@@ -80,6 +80,6 @@ func (handler *HTTPHandler) UpdateManyAvailability(context echo.Context) error {
 // @Failure 404 {object} utils.ErrorResponse
 // @Router /api/v1/availability/{diagnostic_centre_id}/{day_of_week} [delete]
 func (h *HTTPHandler) DeleteAvailability(c echo.Context) error {
-	
+
 	return nil
 }

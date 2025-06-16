@@ -1,47 +1,18 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
+	"github.com/medicue/adapters/ex/templates"
 	"github.com/medicue/core/domain"
 	"github.com/medicue/core/utils"
 )
-
-// Helper functions for type conversions
-func toTimestamptz(t time.Time) pgtype.Timestamptz {
-	var ts pgtype.Timestamptz
-	ts.Time = t
-	ts.Valid = !t.IsZero()
-	return ts
-}
-
-func toText(s string) pgtype.Text {
-	var text pgtype.Text
-	text.String = s
-	text.Valid = s != ""
-	return text
-}
-
-func toNumeric(n float64) pgtype.Numeric {
-	var num pgtype.Numeric
-	_ = num.Scan(n)
-	return num
-}
-
-func toUUID(id string) pgtype.UUID {
-	var uid pgtype.UUID
-	if parsed, err := uuid.Parse(id); err == nil {
-		uid.Bytes = parsed
-		uid.Valid = true
-	}
-	return uid
-}
 
 // CreateAppointment creates a new appointment
 func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
@@ -92,6 +63,9 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
+	// Send confirmation email asynchronously
+	go service.sendAppointmentConfirmationEmail(appointment)
+
 	return utils.ResponseMessage(http.StatusCreated, appointment, context)
 }
 
@@ -140,8 +114,8 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 	}
 
 	// Force patient ID to current user unless they are a centre manager
-	if currentUser.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER && 
-	   currentUser.UserType != db.UserEnumDIAGNOSTICCENTREOWNER {
+	if currentUser.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER &&
+		currentUser.UserType != db.UserEnumDIAGNOSTICCENTREOWNER {
 		dto.PatientID = currentUser.UserID.String()
 	}
 
@@ -157,8 +131,8 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 		Column2:            statuses, // Status array
 		AppointmentDate:    toTimestamptz(dto.FromDate),
 		AppointmentDate_2:  toTimestamptz(dto.ToDate),
-		Limit:             int32(dto.PageSize),
-		Offset:            int32((dto.Page - 1) * dto.PageSize),
+		Limit:              int32(dto.PageSize),
+		Offset:             int32((dto.Page - 1) * dto.PageSize),
 	}
 
 	appointments, err := service.AppointmentRepo.ListAppointments(context.Request().Context(), params)
@@ -199,12 +173,28 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 	}
 
 	// Cancel appointment
-	if err := service.AppointmentRepo.CancelAppointment(context.Request().Context(), dto.AppointmentID); err != nil {
+	_ = db.CancelAppointmentParams{
+		ID:                 dto.AppointmentID,
+		CancellationReason: toText(dto.Reason),
+		CancelledBy:        toUUID(currentUser.UserID.String()),
+		CancellationFee:    toNumeric(0), // Fee could be configured based on business rules
+	}
+
+	err = service.AppointmentRepo.CancelAppointment(context.Request().Context(), dto.AppointmentID)
+	if err != nil {
+		return err
+	}
+
+	cancelledAppointment, err := service.AppointmentRepo.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	if err != nil {
 		utils.Error("Failed to cancel appointment",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "appointment_id", Value: dto.AppointmentID})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
+
+	// Send cancellation email asynchronously
+	go service.sendAppointmentCancellationEmail(cancelledAppointment)
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{"message": "Appointment cancelled successfully"}, context)
 }
@@ -267,5 +257,157 @@ func (service *ServicesHandler) RescheduleAppointment(context echo.Context) erro
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
+	// Send reschedule email asynchronously
+	go service.sendAppointmentRescheduleEmail(rescheduledAppointment)
+
 	return utils.ResponseMessage(http.StatusOK, rescheduledAppointment, context)
+}
+
+// Helper functions to send appointment emails
+func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db.Appointment) {
+	// Get patient details by email
+	patient, err := service.UserRepo.GetUserByEmail(
+		context.Background(),
+		pgtype.Text{String: appointment.PatientID, Valid: true},
+	)
+	if err != nil {
+		utils.Error("Failed to get patient details for confirmation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	// Get centre details
+	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(
+		context.Background(),
+		appointment.DiagnosticCentreID,
+	)
+	if err != nil {
+		utils.Error("Failed to get centre details for confirmation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	data := templates.AppointmentEmailData{
+		EmailData: templates.EmailData{
+			AppName: "Medicue",
+			// AppURL:  os.Getenv("APP_URL"),
+		},
+		PatientName:     patient.Fullname.String,
+		AppointmentID:   appointment.ID,
+		AppointmentDate: appointment.AppointmentDate.Time,
+		TimeSlot:        appointment.TimeSlot,
+		CentreName:      centre.DiagnosticCentreName,
+		// Status:          appointment.Status,
+		Notes: appointment.Notes.String,
+	}
+
+	body, err := templates.GetAppointmentConfirmationTemplate(data)
+	if err != nil {
+		utils.Error("Failed to generate confirmation email template",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Confirmation", body); err != nil {
+		utils.Error("Failed to send confirmation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
+}
+
+func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db.Appointment) {
+	// Get patient details by email
+	patient, err := service.UserRepo.GetUserByEmail(
+		context.Background(),
+		pgtype.Text{String: appointment.PatientID, Valid: true},
+	)
+	if err != nil {
+		utils.Error("Failed to get patient details for cancellation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	// Get centre details
+	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(
+		context.Background(),
+		appointment.DiagnosticCentreID,
+	)
+	if err != nil {
+		utils.Error("Failed to get centre details for cancellation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	data := templates.AppointmentEmailData{
+		EmailData: templates.EmailData{
+			AppName: "Medicue",
+			// AppURL:  os.Getenv("APP_URL"),
+		},
+		PatientName:     patient.Fullname.String,
+		AppointmentID:   appointment.ID,
+		AppointmentDate: appointment.AppointmentDate.Time,
+		TimeSlot:        appointment.TimeSlot,
+		CentreName:      centre.DiagnosticCentreName,
+		// Status:          appointment.Status,
+	}
+
+	body, err := templates.GetAppointmentCancellationTemplate(data)
+	if err != nil {
+		utils.Error("Failed to generate cancellation email template",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Cancelled", body); err != nil {
+		utils.Error("Failed to send cancellation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
+}
+
+func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.Appointment) {
+	// Get patient details by email
+	patient, err := service.UserRepo.GetUserByEmail(
+		context.Background(),
+		pgtype.Text{String: appointment.PatientID, Valid: true},
+	)
+	if err != nil {
+		utils.Error("Failed to get patient details for reschedule email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	// Get centre details
+	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(
+		context.Background(),
+		appointment.DiagnosticCentreID,
+	)
+	if err != nil {
+		utils.Error("Failed to get centre details for reschedule email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	data := templates.AppointmentEmailData{
+		EmailData: templates.EmailData{
+			AppName: "Medicue",
+			// AppURL:  os.Getenv("APP_URL"),
+		},
+		PatientName:     patient.Fullname.String,
+		AppointmentID:   appointment.ID,
+		AppointmentDate: appointment.AppointmentDate.Time,
+		TimeSlot:        appointment.TimeSlot,
+		CentreName:      centre.DiagnosticCentreName,
+		// Status:          appointment.Status,
+	}
+
+	body, err := templates.GetAppointmentRescheduleTemplate(data)
+	if err != nil {
+		utils.Error("Failed to generate reschedule email template",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Rescheduled", body); err != nil {
+		utils.Error("Failed to send reschedule email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
 }

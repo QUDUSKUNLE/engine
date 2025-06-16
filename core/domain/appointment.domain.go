@@ -31,20 +31,20 @@ type GetAppointmentDTO struct {
 
 // ListAppointmentsDTO represents the query parameters for listing appointments
 type ListAppointmentsDTO struct {
-	DiagnosticCentreID string           `query:"diagnostic_centre_id" validate:"omitempty,uuid"`
-	PatientID          string           `query:"patient_id" validate:"omitempty,uuid"`
+	DiagnosticCentreID string            `query:"diagnostic_centre_id" validate:"omitempty,uuid"`
+	PatientID          string            `query:"patient_id" validate:"omitempty,uuid"`
 	Status             AppointmentStatus `query:"status" validate:"omitempty,oneof=pending confirmed in_progress completed cancelled rescheduled"`
-	FromDate           time.Time        `query:"from_date" validate:"omitempty"`
-	ToDate             time.Time        `query:"to_date" validate:"omitempty,gtefield=FromDate"`
-	Page               int              `query:"page" validate:"min=1"`
-	PageSize           int              `query:"page_size" validate:"min=1,max=100"`
+	FromDate           time.Time         `query:"from_date" validate:"omitempty"`
+	ToDate             time.Time         `query:"to_date" validate:"omitempty,gtefield=FromDate"`
+	Page               int               `query:"page" validate:"min=1"`
+	PageSize           int               `query:"page_size" validate:"min=1,max=100"`
 }
 
 // UpdateAppointmentDTO represents the request body for updating an appointment
 type UpdateAppointmentDTO struct {
-	AppointmentID string           `param:"appointment_id" validate:"required,uuid"`
+	AppointmentID string            `param:"appointment_id" validate:"required,uuid"`
 	Status        AppointmentStatus `json:"status" validate:"required,oneof=pending confirmed in_progress completed cancelled rescheduled"`
-	Notes         string           `json:"notes" validate:"max=500"`
+	Notes         string            `json:"notes" validate:"max=500"`
 }
 
 // CancelAppointmentDTO represents the request body for cancelling an appointment

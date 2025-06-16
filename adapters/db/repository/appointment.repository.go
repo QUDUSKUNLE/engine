@@ -35,6 +35,10 @@ func (repo *Repository) CancelAppointment(ctx context.Context, id string) error 
 	return repo.database.DeleteAppointment(ctx, id)
 }
 
+func (repo *Repository) MarkReminderSent(ctx context.Context, ID string) error {
+	return nil
+}
+
 // RescheduleAppointment reschedules an appointment to a new time
 func (repo *Repository) RescheduleAppointment(ctx context.Context, params db.RescheduleAppointmentParams) (*db.Appointment, error) {
 	return repo.database.RescheduleAppointment(ctx, params)

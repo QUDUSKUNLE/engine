@@ -14,4 +14,5 @@ type AppointmentRepository interface {
 	UpdateAppointment(ctx context.Context, params db.UpdateAppointmentPaymentParams) (*db.Appointment, error)
 	CancelAppointment(ctx context.Context, id string) error
 	RescheduleAppointment(ctx context.Context, params db.RescheduleAppointmentParams) (*db.Appointment, error)
+	MarkReminderSent(ctx context.Context, id string) error
 }
