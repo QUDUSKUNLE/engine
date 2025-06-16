@@ -3,7 +3,6 @@ package templates
 import (
 	"html/template"
 	"time"
-	// "time"
 )
 
 var baseTemplate *template.Template
