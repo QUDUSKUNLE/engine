@@ -420,9 +420,12 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 
 	// Update user profile
 	updateParams := db.UpdateUserParams{
-		ID:        currentUser.UserID.String(),
-		Fullname:  pgtype.Text{String: fmt.Sprintf("%s %s", dto.FirstName, dto.LastName), Valid: true},
+		ID:       currentUser.UserID.String(),
+		Fullname: pgtype.Text{String: fmt.Sprintf("%s %s", dto.FirstName, dto.LastName), Valid: true},
 		Nin:      pgtype.Text{String: dto.Nin, Valid: true},
+	}
+	if dto.PhoneNumber != "" {
+		updateParams.PhoneNumber = pgtype.Text{String: dto.PhoneNumber, Valid: true}
 	}
 
 	updatedUser, err := service.UserRepo.UpdateUser(context.Request().Context(), updateParams)
@@ -437,6 +440,30 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 		utils.LogField{Key: "user_id", Value: updatedUser.ID})
 
 	return utils.ResponseMessage(http.StatusOK, updatedUser, context)
+}
+
+func (service *ServicesHandler) GetProfile(context echo.Context) error {
+	// Get current user from context
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER, db.UserEnumDIAGNOSTICCENTREMANAGER, db.UserEnumDIAGNOSTICCENTREOWNER})
+	if err != nil {
+		utils.Error("Failed to get current user",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+
+	// Get user profile from database
+	user, err := service.UserRepo.GetUser(context.Request().Context(), currentUser.UserID.String())
+	if err != nil {
+		utils.Error("Failed to get user profile",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	utils.Info("User profile retrieved successfully",
+		utils.LogField{Key: "user_id", Value: user.ID})
+
+	return utils.ResponseMessage(http.StatusOK, user, context)
 }
 
 func generateResetToken() string {

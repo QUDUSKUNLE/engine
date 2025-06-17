@@ -261,6 +261,30 @@ func init() {
 	baseTemplate = template.Must(template.New("base").Funcs(templateFuncs).Parse(emailBaseLayout))
 }
 
+// GetAppointmentRequestTemplate generates email template for appointment requests
+func GetAppointmentRequestTemplate(data AppointmentEmailData) (string, error) {
+    tmpl := template.Must(template.New("appointment_request").Parse(`
+    Dear {{.PatientName}},
+
+    We have received your appointment request at {{.CentreName}}. 
+    
+    Appointment Details:
+    - Date: {{.AppointmentDate.Format "Monday, January 2, 2006"}}
+    - Time: {{.TimeSlot}}
+    - Appointment ID: {{.AppointmentID}}
+    
+    We will keep you updated on the status of your appointment.
+
+    Best regards,
+    {{.AppName}} Team
+    `))
+    var buf bytes.Buffer
+    if err := tmpl.Execute(&buf, data); err != nil {
+        return "", err
+    }
+    return buf.String(), nil
+}
+
 // GetAppointmentConfirmationTemplate returns the rendered appointment confirmation email template
 func GetAppointmentConfirmationTemplate(data AppointmentEmailData) (string, error) {
 	contentTmpl := template.Must(template.Must(baseTemplate.Clone()).New("content").Parse(appointmentConfirmationTmpl))

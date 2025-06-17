@@ -123,8 +123,7 @@ func (handler *HTTPHandler) ChangePassword(context echo.Context) error {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /v1/account/profile [get]
 func (handler *HTTPHandler) GetProfile(context echo.Context) error {
-	// return handler.service.GetProfile(context)
-	return nil
+	return handler.service.GetProfile(context)
 }
 
 // UpdateProfile godoc
@@ -142,7 +141,6 @@ func (handler *HTTPHandler) GetProfile(context echo.Context) error {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /v1/account/profile [put]
 func (handler *HTTPHandler) UpdateProfile(context echo.Context) error {
-	// return handler.service.UpdateProfile(context)
 	return handler.service.UpdateProfile(context)
 }
 

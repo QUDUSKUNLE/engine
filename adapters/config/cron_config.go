@@ -11,10 +11,9 @@ import (
 
 // CronConfig manages cron jobs and services configuration
 type CronConfig struct {
-	EmailService ports.NotificationService
-	ReminderJob  *jobs.ReminderJob
-	started      bool
-	mu           sync.Mutex
+	ReminderJob *jobs.ReminderJob
+	started     bool
+	mu          sync.Mutex
 }
 
 var (
@@ -30,6 +29,7 @@ func GetConfig(
 	appointmentPort ports.AppointmentRepository,
 ) *CronConfig {
 	once.Do(func() {
+		// Initialize email service
 		// Initialize email service
 		emailService := ex.NewSendGridEmailService()
 		if emailService == nil {
@@ -52,12 +52,10 @@ func GetConfig(
 		}
 
 		cfg = &CronConfig{
-			EmailService: emailService,
-			ReminderJob:  reminderJob,
-			started:      false,
+			ReminderJob: reminderJob,
+			started:     false,
 		}
 	})
-
 	return cfg
 }
 

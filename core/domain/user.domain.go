@@ -32,6 +32,7 @@ type (
 		ConfirmPassword  string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required"`
 		UserType         db.UserEnum `json:"user_type" validate:"required"`
 		DiagnosticCentre string      `json:"diagnostic_Centre"`
+		PhoneNumber      string      `json:"phone_number" validate:"omitempty,e164"`
 	}
 	DiagnosticCentreManagerRegisterDTO struct {
 		Email    string      `json:"email" validate:"email,required"`
@@ -85,9 +86,10 @@ type (
 	}
 
 	UpdateUserProfileDTO struct {
-		FirstName string `json:"first_name" validate:"required,min=3"`
-		LastName string `json:"last_name" validate:"required,min=3"`
-		Nin      string `json:"nin" validate:"omitempty,min=11"`
+		FirstName   string `json:"first_name" validate:"required,min=3"`
+		LastName    string `json:"last_name" validate:"required,min=3"`
+		Nin         string `json:"nin" validate:"omitempty,min=11"`
+		PhoneNumber string `json:"phone_number" validate:"omitempty,e164"`
 	}
 
 	GetUserProfileParamDTO struct {
@@ -123,11 +125,15 @@ func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {
 	if err != nil {
 		return db.CreateUserParams{}, err
 	}
-	return db.CreateUserParams{
+	params := db.CreateUserParams{
 		Email:    pgtype.Text{String: user.Email, Valid: true},
 		Password: password,
 		UserType: user.UserType,
-	}, nil
+	}
+	if user.PhoneNumber != "" {
+		params.PhoneNumber = pgtype.Text{String: user.PhoneNumber, Valid: true}
+	}
+	return params, nil
 }
 
 func ComparePassword(user db.User, pass string) error {

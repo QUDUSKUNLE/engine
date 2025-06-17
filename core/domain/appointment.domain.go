@@ -17,10 +17,10 @@ const (
 // CreateAppointmentDTO represents the request body for creating an appointment
 type CreateAppointmentDTO struct {
 	DiagnosticCentreID string    `json:"diagnostic_centre_id" validate:"required,uuid"`
-	PatientID          string    `json:"patient_id" validate:"required,uuid"`
-	ScheduleID         string    `json:"schedule_id" validate:"required,uuid"`
+	TestType           string    `json:"test_type" validate:"required"`
 	AppointmentDate    time.Time `json:"appointment_date" validate:"required"`
 	TimeSlot           string    `json:"time_slot" validate:"required"`
+	PreferredDoctor    string    `json:"preferred_doctor" validate:"omitempty,oneof=Male Female"`
 	Notes              string    `json:"notes" validate:"max=500"`
 }
 

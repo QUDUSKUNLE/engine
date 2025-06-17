@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -14,48 +15,79 @@ import (
 	"github.com/medicue/core/utils"
 )
 
-// CreateAppointment creates a new appointment
+// Helper functions and type definitions
+
+func toTimestamptz(t time.Time) pgtype.Timestamptz {
+	return pgtype.Timestamptz{Time: t, Valid: true}
+}
+
+func toText(s string) pgtype.Text {
+	return pgtype.Text{String: s, Valid: len(s) > 0}
+}
+
+// CreateAppointment creates a new appointment and associated schedule
 func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
-	// Authentication check for registered users
-	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	// Get authenticated user
+	currentUser, err := utils.CurrentUser(context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
-	// Get validated DTO
-	dto := context.Get(utils.ValidatedBodyDTO).(*domain.CreateAppointmentDTO)
+	// Parse appointment creation request
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateAppointmentDTO)
 
-	// Verify diagnostic centre exists
-	_, err = service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), dto.DiagnosticCentreID)
+	// Get diagnostic centre details
+	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(
+		context.Request().Context(),
+		dto.DiagnosticCentreID,
+	)
 	if err != nil {
+		utils.Error("Failed to get diagnostic centre details",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: dto.DiagnosticCentreID})
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
 	}
 
-	// Verify schedule exists and is valid
-	schedule, err := service.ScheduleRepo.GetDiagnosticScheduleByCentre(context.Request().Context(), db.Get_Diagnsotic_Schedule_By_CentreParams{
-		ID:                 dto.ScheduleID,
-		DiagnosticCentreID: dto.DiagnosticCentreID,
-	})
+	// Start transaction
+	tx, err := service.AppointmentRepo.BeginTx(context.Request().Context())
 	if err != nil {
-		return utils.ErrorResponse(http.StatusNotFound, errors.New("schedule not found"), context)
+		utils.Error("Failed to start transaction",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+	defer tx.Rollback(context.Request().Context())
+
+	// Create schedule with ACCEPTED status to auto-confirm appointments
+	scheduleParams := db.Create_Diagnostic_ScheduleParams{
+		UserID:             currentUser.UserID.String(),
+		DiagnosticCentreID: dto.DiagnosticCentreID,
+		ScheduleTime:       toTimestamptz(dto.AppointmentDate),
+		Doctor:             dto.PreferredDoctor,
+		TestType:           db.TestType(dto.TestType),
+		Notes:              toText(dto.Notes),
+		AcceptanceStatus:   db.ScheduleAcceptanceStatusACCEPTED,
 	}
 
-	if schedule.AcceptanceStatus != db.ScheduleAcceptanceStatusACCEPTED {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New("schedule is not accepted"), context)
+	schedule, err := tx.CreateSchedule(context.Request().Context(), scheduleParams)
+	if err != nil {
+		utils.Error("Failed to create schedule",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	// Create appointment
-	params := db.CreateAppointmentParams{
+	// Create appointment with confirmed status since schedule is auto-accepted
+	appointmentParams := db.CreateAppointmentParams{
 		PatientID:          currentUser.UserID.String(),
-		ScheduleID:         dto.ScheduleID,
+		ScheduleID:         schedule.ID,
 		DiagnosticCentreID: dto.DiagnosticCentreID,
 		AppointmentDate:    toTimestamptz(dto.AppointmentDate),
 		TimeSlot:           dto.TimeSlot,
-		Status:             db.AppointmentStatusPending,
+		Status:             db.AppointmentStatusConfirmed,
 		Notes:              toText(dto.Notes),
 	}
 
-	appointment, err := service.AppointmentRepo.CreateAppointment(context.Request().Context(), params)
+	appointment, err := tx.CreateAppointment(context.Request().Context(), appointmentParams)
 	if err != nil {
 		utils.Error("Failed to create appointment",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -63,10 +95,23 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	// Send confirmation email asynchronously
+	// Commit transaction
+	if err := tx.Commit(context.Request().Context()); err != nil {
+		utils.Error("Failed to commit transaction",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit transaction"), context)
+	}
+
+	// Send confirmation email to user asynchronously
 	go service.sendAppointmentConfirmationEmail(appointment)
 
-	return utils.ResponseMessage(http.StatusCreated, appointment, context)
+	// Send notification to diagnostic centre about new appointment asynchronously
+	go service.notifyDiagnosticCentreOfNewAppointment(appointment, centre)
+
+	return utils.ResponseMessage(http.StatusCreated, map[string]interface{}{
+		"message":     "Appointment created successfully",
+		"appointment": appointment,
+	}, context)
 }
 
 // GetAppointment retrieves an appointment by ID
@@ -287,39 +332,61 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 		return
 	}
 
+	// Get schedule details for test type
+	schedule, err := service.ScheduleRepo.GetDiagnosticScheduleByCentre(
+		context.Background(),
+		db.Get_Diagnsotic_Schedule_By_CentreParams{
+			ID:                 appointment.ScheduleID,
+			DiagnosticCentreID: appointment.DiagnosticCentreID,
+		},
+	)
+	if err != nil {
+		utils.Error("Failed to get schedule details for confirmation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
 	data := templates.AppointmentEmailData{
 		EmailData: templates.EmailData{
 			AppName: "Medicue",
-			// AppURL:  os.Getenv("APP_URL"),
 		},
 		PatientName:     patient.Fullname.String,
 		AppointmentID:   appointment.ID,
 		AppointmentDate: appointment.AppointmentDate.Time,
 		TimeSlot:        appointment.TimeSlot,
 		CentreName:      centre.DiagnosticCentreName,
-		// Status:          appointment.Status,
-		Notes: appointment.Notes.String,
+		TestType:        string(schedule.TestType),
+		Notes:           appointment.Notes.String,
 	}
 
-	body, err := templates.GetAppointmentConfirmationTemplate(data)
+	// Get email template
+	emailBody, err := templates.GetAppointmentConfirmationTemplate(data)
 	if err != nil {
 		utils.Error("Failed to generate confirmation email template",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return
 	}
 
-	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Confirmation", body); err != nil {
+	// Send email
+	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Confirmation", emailBody); err != nil {
 		utils.Error("Failed to send confirmation email",
 			utils.LogField{Key: "error", Value: err.Error()})
 	}
+
+	// Format SMS message
+	// smsMessage := fmt.Sprintf(
+	// 	"Your appointment at %s has been confirmed for %s at %s. Appointment ID: %s. Test type: %s",
+	// 	centre.DiagnosticCentreName,
+	// 	appointment.AppointmentDate.Time.Format("Monday, January 2, 2006"),
+	// 	appointment.TimeSlot,
+	// 	appointment.ID,
+	// 	schedule.TestType,
+	// )
 }
 
 func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db.Appointment) {
 	// Get patient details by email
-	patient, err := service.UserRepo.GetUserByEmail(
-		context.Background(),
-		pgtype.Text{String: appointment.PatientID, Valid: true},
-	)
+	patient, err := service.UserRepo.GetUser(context.Background(), appointment.PatientID)
 	if err != nil {
 		utils.Error("Failed to get patient details for cancellation email",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -340,7 +407,6 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 	data := templates.AppointmentEmailData{
 		EmailData: templates.EmailData{
 			AppName: "Medicue",
-			// AppURL:  os.Getenv("APP_URL"),
 		},
 		PatientName:     patient.Fullname.String,
 		AppointmentID:   appointment.ID,
@@ -365,10 +431,7 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 
 func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.Appointment) {
 	// Get patient details by email
-	patient, err := service.UserRepo.GetUserByEmail(
-		context.Background(),
-		pgtype.Text{String: appointment.PatientID, Valid: true},
-	)
+	patient, err := service.UserRepo.GetUser(context.Background(), appointment.PatientID)
 	if err != nil {
 		utils.Error("Failed to get patient details for reschedule email",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -389,7 +452,6 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 	data := templates.AppointmentEmailData{
 		EmailData: templates.EmailData{
 			AppName: "Medicue",
-			// AppURL:  os.Getenv("APP_URL"),
 		},
 		PatientName:     patient.Fullname.String,
 		AppointmentID:   appointment.ID,
@@ -409,5 +471,129 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Rescheduled", body); err != nil {
 		utils.Error("Failed to send reschedule email",
 			utils.LogField{Key: "error", Value: err.Error()})
+	}
+}
+
+// Helper functions to send appointment notifications
+
+// sendAppointmentRequestEmail sends an email to the patient about their appointment request
+func (service *ServicesHandler) sendAppointmentRequestEmail(appointment *db.Appointment) {
+	// Get patient details
+	patient, err := service.UserRepo.GetUser(context.Background(), appointment.PatientID)
+	if err != nil {
+		utils.Error("Failed to get patient details for request email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	// Get centre details
+	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Background(), appointment.DiagnosticCentreID)
+	if err != nil {
+		utils.Error("Failed to get centre details for request email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	data := templates.AppointmentEmailData{
+		EmailData: templates.EmailData{
+			AppName: "Medicue",
+		},
+		PatientName:     patient.Fullname.String,
+		AppointmentID:   appointment.ID,
+		AppointmentDate: appointment.AppointmentDate.Time,
+		TimeSlot:        appointment.TimeSlot,
+		CentreName:      centre.DiagnosticCentreName,
+		Status:          string(appointment.Status),
+		Notes:           appointment.Notes.String,
+	}
+
+	body, err := templates.GetAppointmentRequestTemplate(data)
+	if err != nil {
+		utils.Error("Failed to generate request email template",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Request Received", body); err != nil {
+		utils.Error("Failed to send request email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
+}
+
+// notifyDiagnosticCentreOfNewAppointment notifies the diagnostic centre about a new appointment
+func (service *ServicesHandler) notifyDiagnosticCentreOfNewAppointment(appointment *db.Appointment, centre *db.DiagnosticCentre) {
+	// Get schedule details to get test type and doctor preference
+	schedule, err := service.ScheduleRepo.GetDiagnosticScheduleByCentre(context.Background(), db.Get_Diagnsotic_Schedule_By_CentreParams{
+		ID:                 appointment.ScheduleID,
+		DiagnosticCentreID: appointment.DiagnosticCentreID,
+	})
+	if err != nil {
+		utils.Error("Failed to get schedule details for centre notification",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	// Get patient details
+	patient, err := service.UserRepo.GetUserByEmail(
+		context.Background(),
+		pgtype.Text{String: appointment.PatientID, Valid: true},
+	)
+	if err != nil {
+		utils.Error("Failed to get patient details for centre notification",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	// Extract contact information
+	var contact domain.Contact
+	if err := utils.UnmarshalJSONField(centre.Contact, &contact, nil); err != nil {
+		utils.Error("Failed to unmarshal centre contact",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	data := templates.AppointmentEmailData{
+		EmailData: templates.EmailData{
+			AppName: "Medicue",
+		},
+		StaffName:       contact.Email, // Use contact email as staff name
+		PatientName:     patient.Fullname.String,
+		AppointmentID:   appointment.ID,
+		AppointmentDate: appointment.AppointmentDate.Time,
+		TimeSlot:        appointment.TimeSlot,
+		CentreName:      centre.DiagnosticCentreName,
+		TestType:        string(schedule.TestType),
+		SpecialNotes:    schedule.Notes.String,
+		RequiredAction:  "New appointment confirmation received",
+	}
+
+	body, err := templates.GetStaffNotificationTemplate(data)
+	if err != nil {
+		utils.Error("Failed to generate staff notification template",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
+
+	// Send email to diagnostic centre's primary email
+	if err := service.notificationService.SendEmail(contact.Email, "New Appointment Confirmation", body); err != nil {
+		utils.Error("Failed to send centre notification email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
+
+	// If configured, also send SMS notifications to all phone numbers
+	for _, phone := range contact.Phone {
+		message := fmt.Sprintf(
+			"New appointment received for %s on %s at %s. Patient: %s. Test: %s",
+			centre.DiagnosticCentreName,
+			appointment.AppointmentDate.Time.Format("Jan 2, 2006"),
+			appointment.TimeSlot,
+			patient.Fullname.String,
+			schedule.TestType,
+		)
+		if err := service.notificationService.SendSMS(phone, message); err != nil {
+			utils.Error("Failed to send SMS notification",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "phone", Value: phone})
+		}
 	}
 }

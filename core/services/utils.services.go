@@ -2,7 +2,6 @@ package services
 
 import (
 	"io"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -215,20 +214,6 @@ func isValidLongitude(lon float64) bool {
 	return lon >= -180 && lon <= 180
 }
 
-// Helper functions for type conversions
-func toTimestamptz(t time.Time) pgtype.Timestamptz {
-	var ts pgtype.Timestamptz
-	ts.Time = t
-	ts.Valid = !t.IsZero()
-	return ts
-}
-
-func toText(s string) pgtype.Text {
-	var text pgtype.Text
-	text.String = s
-	text.Valid = s != ""
-	return text
-}
 
 func toNumeric(n float64) pgtype.Numeric {
 	var num pgtype.Numeric

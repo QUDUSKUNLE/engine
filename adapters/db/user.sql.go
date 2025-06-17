@@ -16,26 +16,29 @@ INSERT INTO users (
   email,
   nin,
   password,
-  user_type
+  user_type,
+  phone_number
 ) VALUES  (
-  $1, $2, $3, $4
-) RETURNING id, email, nin, user_type, created_at, updated_at
+  $1, $2, $3, $4, $5
+) RETURNING id, email, nin, user_type, phone_number, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	Email    pgtype.Text `db:"email" json:"email"`
-	Nin      pgtype.Text `db:"nin" json:"nin"`
-	Password string      `db:"password" json:"password"`
-	UserType UserEnum    `db:"user_type" json:"user_type"`
+	Email       pgtype.Text `db:"email" json:"email"`
+	Nin         pgtype.Text `db:"nin" json:"nin"`
+	Password    string      `db:"password" json:"password"`
+	UserType    UserEnum    `db:"user_type" json:"user_type"`
+	PhoneNumber pgtype.Text `db:"phone_number" json:"phone_number"`
 }
 
 type CreateUserRow struct {
-	ID        string             `db:"id" json:"id"`
-	Email     pgtype.Text        `db:"email" json:"email"`
-	Nin       pgtype.Text        `db:"nin" json:"nin"`
-	UserType  UserEnum           `db:"user_type" json:"user_type"`
-	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID          string             `db:"id" json:"id"`
+	Email       pgtype.Text        `db:"email" json:"email"`
+	Nin         pgtype.Text        `db:"nin" json:"nin"`
+	UserType    UserEnum           `db:"user_type" json:"user_type"`
+	PhoneNumber pgtype.Text        `db:"phone_number" json:"phone_number"`
+	CreatedAt   pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error) {
@@ -44,6 +47,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*Create
 		arg.Nin,
 		arg.Password,
 		arg.UserType,
+		arg.PhoneNumber,
 	)
 	var i CreateUserRow
 	err := row.Scan(
@@ -51,6 +55,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*Create
 		&i.Email,
 		&i.Nin,
 		&i.UserType,
+		&i.PhoneNumber,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -58,7 +63,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*Create
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at FROM users where id = $1
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users where id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (*User, error) {
@@ -75,12 +80,13 @@ func (q *Queries) GetUser(ctx context.Context, id string) (*User, error) {
 		&i.Fullname,
 		&i.EmailVerified,
 		&i.EmailVerifiedAt,
+		&i.PhoneNumber,
 	)
 	return &i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at FROM users WHERE email = $1
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error) {
@@ -97,12 +103,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (*User,
 		&i.Fullname,
 		&i.EmailVerified,
 		&i.EmailVerifiedAt,
+		&i.PhoneNumber,
 	)
 	return &i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at FROM users
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users
 ORDER BY id
 LIMIT $1 OFFSET $2
 `
@@ -132,6 +139,7 @@ func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, er
 			&i.Fullname,
 			&i.EmailVerified,
 			&i.EmailVerifiedAt,
+			&i.PhoneNumber,
 		); err != nil {
 			return nil, err
 		}
@@ -148,34 +156,43 @@ UPDATE users
 SET
   nin = COALESCE($2, nin),
   fullname = COALESCE($3, fullname),
+  phone_number = COALESCE($4, phone_number),
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, email, nin, user_type, created_at, updated_at
+RETURNING id, email, nin, user_type, phone_number, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	ID       string      `db:"id" json:"id"`
-	Nin      pgtype.Text `db:"nin" json:"nin"`
-	Fullname pgtype.Text `db:"fullname" json:"fullname"`
+	ID          string      `db:"id" json:"id"`
+	Nin         pgtype.Text `db:"nin" json:"nin"`
+	Fullname    pgtype.Text `db:"fullname" json:"fullname"`
+	PhoneNumber pgtype.Text `db:"phone_number" json:"phone_number"`
 }
 
 type UpdateUserRow struct {
-	ID        string             `db:"id" json:"id"`
-	Email     pgtype.Text        `db:"email" json:"email"`
-	Nin       pgtype.Text        `db:"nin" json:"nin"`
-	UserType  UserEnum           `db:"user_type" json:"user_type"`
-	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID          string             `db:"id" json:"id"`
+	Email       pgtype.Text        `db:"email" json:"email"`
+	Nin         pgtype.Text        `db:"nin" json:"nin"`
+	UserType    UserEnum           `db:"user_type" json:"user_type"`
+	PhoneNumber pgtype.Text        `db:"phone_number" json:"phone_number"`
+	CreatedAt   pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error) {
-	row := q.db.QueryRow(ctx, updateUser, arg.ID, arg.Nin, arg.Fullname)
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.ID,
+		arg.Nin,
+		arg.Fullname,
+		arg.PhoneNumber,
+	)
 	var i UpdateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.Nin,
 		&i.UserType,
+		&i.PhoneNumber,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

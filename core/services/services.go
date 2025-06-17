@@ -35,6 +35,6 @@ func ServicesAdapter(
 		AppointmentRepo:     appointmentPort,
 		RecordRepo:          record,
 		FileRepo:            &ex.LocalFileService{},
-		notificationService: &ex.EmailAdapter{},
+		notificationService: &ex.NotificationAdapter{},
 	}
 }

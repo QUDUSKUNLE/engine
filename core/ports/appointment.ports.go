@@ -8,6 +8,7 @@ import (
 
 // AppointmentRepository defines the interface for appointment data operations
 type AppointmentRepository interface {
+	BeginTx(ctx context.Context) (AppointmentTx, error)
 	CreateAppointment(ctx context.Context, appointment db.CreateAppointmentParams) (*db.Appointment, error)
 	GetAppointment(ctx context.Context, id string) (*db.Appointment, error)
 	ListAppointments(ctx context.Context, params db.GetCentreAppointmentsParams) ([]*db.Appointment, error)
@@ -15,4 +16,12 @@ type AppointmentRepository interface {
 	CancelAppointment(ctx context.Context, id string) error
 	RescheduleAppointment(ctx context.Context, params db.RescheduleAppointmentParams) (*db.Appointment, error)
 	MarkReminderSent(ctx context.Context, id string) error
+}
+
+// AppointmentTx represents a transaction for appointment operations
+type AppointmentTx interface {
+	CreateAppointment(ctx context.Context, appointment db.CreateAppointmentParams) (*db.Appointment, error)
+	CreateSchedule(ctx context.Context, schedule db.Create_Diagnostic_ScheduleParams) (*db.DiagnosticSchedule, error)
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
 }

@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/ports"
+	"context"
 )
 
 type Repository struct {
@@ -43,6 +44,11 @@ func NewPaymentRepository(
 	store *db.Queries,
 ) ports.PaymentRepository {
 	return &Repository{database: store}
+}
+
+func (r *Repository) BeginTx(ctx context.Context) (ports.AppointmentTx, error) {
+	// Implementation needed
+	return nil, nil
 }
 
 func NewApppointmentRepository(
