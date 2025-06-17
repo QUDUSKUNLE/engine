@@ -15,16 +15,6 @@ import (
 	"github.com/medicue/core/utils"
 )
 
-// Helper functions and type definitions
-
-func toTimestamptz(t time.Time) pgtype.Timestamptz {
-	return pgtype.Timestamptz{Time: t, Valid: true}
-}
-
-func toText(s string) pgtype.Text {
-	return pgtype.Text{String: s, Valid: len(s) > 0}
-}
-
 // CreateAppointment creates a new appointment and associated schedule
 func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	// Get authenticated user
@@ -39,7 +29,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	// Get diagnostic centre details
 	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(
 		context.Request().Context(),
-		dto.DiagnosticCentreID,
+		dto.DiagnosticCentreID.String(),
 	)
 	if err != nil {
 		utils.Error("Failed to get diagnostic centre details",
@@ -57,15 +47,15 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	}
 	defer tx.Rollback(context.Request().Context())
 
-	// Create schedule with ACCEPTED status to auto-confirm appointments
+	// Create schedule with PENDING status waiting for diagnostic centre acceptance
 	scheduleParams := db.Create_Diagnostic_ScheduleParams{
 		UserID:             currentUser.UserID.String(),
-		DiagnosticCentreID: dto.DiagnosticCentreID,
+		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
 		ScheduleTime:       toTimestamptz(dto.AppointmentDate),
-		Doctor:             dto.PreferredDoctor,
-		TestType:           db.TestType(dto.TestType),
+		Doctor:             string(dto.PreferredDoctor),
+		TestType:           dto.TestType,
 		Notes:              toText(dto.Notes),
-		AcceptanceStatus:   db.ScheduleAcceptanceStatusACCEPTED,
+		AcceptanceStatus:   db.ScheduleAcceptanceStatusPENDING,
 	}
 
 	schedule, err := tx.CreateSchedule(context.Request().Context(), scheduleParams)
@@ -80,7 +70,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	appointmentParams := db.CreateAppointmentParams{
 		PatientID:          currentUser.UserID.String(),
 		ScheduleID:         schedule.ID,
-		DiagnosticCentreID: dto.DiagnosticCentreID,
+		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
 		AppointmentDate:    toTimestamptz(dto.AppointmentDate),
 		TimeSlot:           dto.TimeSlot,
 		Status:             db.AppointmentStatusConfirmed,
@@ -473,8 +463,6 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 			utils.LogField{Key: "error", Value: err.Error()})
 	}
 }
-
-// Helper functions to send appointment notifications
 
 // sendAppointmentRequestEmail sends an email to the patient about their appointment request
 func (service *ServicesHandler) sendAppointmentRequestEmail(appointment *db.Appointment) {
