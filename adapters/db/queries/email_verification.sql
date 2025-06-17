@@ -8,18 +8,27 @@ INSERT INTO email_verification_tokens (
 ) RETURNING *;
 
 -- name: GetEmailVerificationToken :one
-SELECT * FROM email_verification_tokens
-WHERE email = $1 AND token = $2 AND used = false AND expires_at > NOW()
-ORDER BY created_at DESC
+SELECT * FROM email_verification_tokens 
+WHERE token = $1 AND used = false
 LIMIT 1;
 
 -- name: MarkEmailVerificationTokenUsed :exec
 UPDATE email_verification_tokens
 SET used = true
-WHERE email = $1 AND token = $2;
+WHERE id = $1;
+
+
+UPDATE users
+SET email_verified = true,
+    email_verified_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
 
 -- name: MarkEmailAsVerified :exec
 UPDATE users
 SET email_verified = true,
-    email_verified_at = NOW()
-WHERE email = $1;
+    email_verified_at = NOW(),
+    updated_at = NOW()
+WHERE email = $1
+RETURNING *;

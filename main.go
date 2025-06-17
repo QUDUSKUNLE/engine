@@ -82,9 +82,10 @@ func main() {
 		recordRepo,
 		paymentRepo,
 		appointmentRepo,
+		*cfg,
 	)
 	// Initialize CronConfig
-	cronConfig := config.GetConfig(userRepo, diagnosticRepo, appointmentRepo)
+	cronConfig := config.GetConfig(userRepo, diagnosticRepo, appointmentRepo, *cfg)
 	err = cronConfig.Start()
 	if err != nil {
 		log.Printf("Warning: Failed to start background services: %v", err)

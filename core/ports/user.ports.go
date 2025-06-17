@@ -22,7 +22,7 @@ type UserRepository interface {
 	UpdateUserPassword(ctx context.Context, arg db.UpdateUserPasswordParams) error
 
 		CreateEmailVerificationToken(ctx context.Context, arg db.CreateEmailVerificationTokenParams) (*db.EmailVerificationToken, error)
-	GetEmailVerificationToken(ctx context.Context, arg db.GetEmailVerificationTokenParams) (*db.EmailVerificationToken, error)
-	MarkEmailVerificationTokenUsed(ctx context.Context, arg db.MarkEmailVerificationTokenUsedParams) error
+	GetEmailVerificationToken(ctx context.Context, arg string) (*db.EmailVerificationToken, error)
+	MarkEmailVerificationTokenUsed(ctx context.Context, arg string) error
 	MarkEmailAsVerified(ctx context.Context, email string) error
 }

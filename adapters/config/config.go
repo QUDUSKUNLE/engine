@@ -27,9 +27,18 @@ type Config struct {
 	GoogleClientSecret string
 	GoogleRedirectURL  string
 
-	// Email Service
-	SEND_GRID_API_KEY string
+	// Email Host and Port
+	EMAIL_HOST string
+	EMAIL_PORT string
+
+	// Email Service for SendGRID
+	SEND_GRID_API_KEY  string
 	EMAIL_FROM_ADDRESS string
+
+	// Gmail Service
+	GMAIL_USERNAME     string
+	GMAIL_APP_PASSWORD string
+	GMAIL_FROM_ADDRESS string
 }
 
 func LoadConfig(serviceName string) (*Config, error) {
@@ -51,6 +60,11 @@ func LoadConfig(serviceName string) (*Config, error) {
 		config.AppUrl = os.Getenv("APP_URL")
 		config.EMAIL_FROM_ADDRESS = os.Getenv("EMAIL_FROM_ADDRESS")
 		config.SEND_GRID_API_KEY = os.Getenv("SEND_GRID_API_KEY")
+		config.GMAIL_FROM_ADDRESS = os.Getenv("EMAIL_FROM_ADDRESS")
+		config.GMAIL_APP_PASSWORD = os.Getenv("GMAIL_APP_PASSWORD")
+		config.GMAIL_USERNAME = os.Getenv("GMAIL_USERNAME")
+		config.EMAIL_HOST = os.Getenv("EMAIL_HOST")
+		config.EMAIL_PORT = os.Getenv("EMAIL_PORT")
 
 		// Validate required fields
 		if config.Port == "" {

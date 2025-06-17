@@ -2,7 +2,9 @@ package services
 
 import (
 	"github.com/medicue/adapters/ex"
+	"github.com/medicue/adapters/config"
 	"github.com/medicue/core/ports"
+	"strconv"
 )
 
 type ServicesHandler struct {
@@ -25,6 +27,7 @@ func ServicesAdapter(
 	record ports.RecordRepository,
 	paymentPort ports.PaymentRepository,
 	appointmentPort ports.AppointmentRepository,
+	conn config.Config,
 ) *ServicesHandler {
 	return &ServicesHandler{
 		UserRepo:            useRepo,
@@ -34,7 +37,12 @@ func ServicesAdapter(
 		PaymentRepo:         paymentPort,
 		AppointmentRepo:     appointmentPort,
 		RecordRepo:          record,
-		FileRepo:            &ex.LocalFileService{},
-		notificationService: &ex.NotificationAdapter{},
+		notificationService: ex.NewNotificationAdapter(&ex.GmailConfig{
+			Host: conn.EMAIL_HOST,
+			Port: func() int { p, _ := strconv.Atoi(conn.EMAIL_PORT); return p }(),
+			Username: conn.GMAIL_USERNAME,
+			Password: conn.GMAIL_APP_PASSWORD,
+			From: conn.EMAIL_FROM_ADDRESS,
+		}),
 	}
 }

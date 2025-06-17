@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"strconv"
 	"sync"
 
 	"github.com/medicue/adapters/ex"
@@ -27,17 +28,23 @@ func GetConfig(
 	useRepo ports.UserRepository,
 	diagnosticCentreRepo ports.DiagnosticRepository,
 	appointmentPort ports.AppointmentRepository,
+	con Config,
 ) *CronConfig {
 	once.Do(func() {
-		// Initialize email service
-		// Initialize email service
-		emailService := ex.NewSendGridEmailService()
-		if emailService == nil {
-			log.Fatal("Failed to initialize email service")
-		}
 
 		// Initialize repositories
-		notificationSvc := &ex.EmailAdapter{}
+		port, err := strconv.Atoi(con.EMAIL_PORT)
+		if err != nil {
+			log.Fatal("Invalid EMAIL_PORT:", err)
+		}
+		emailConfig := ex.NewGmailConfig(ex.GmailConfig{
+			Host:     con.EMAIL_HOST,
+			Port:     port,
+			Username: con.GMAIL_USERNAME,
+			Password: con.GMAIL_APP_PASSWORD,
+			From:     con.EMAIL_FROM_ADDRESS,
+		})
+		notificationSvc := ex.NewNotificationAdapter(emailConfig)
 
 		// Initialize reminder job
 		reminderJob := jobs.NewReminderJob(

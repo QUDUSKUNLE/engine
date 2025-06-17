@@ -32,7 +32,7 @@ type Querier interface {
 	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
 	GetAppointment(ctx context.Context, id string) (*Appointment, error)
 	GetCentreAppointments(ctx context.Context, arg GetCentreAppointmentsParams) ([]*Appointment, error)
-	GetEmailVerificationToken(ctx context.Context, arg GetEmailVerificationTokenParams) (*EmailVerificationToken, error)
+	GetEmailVerificationToken(ctx context.Context, token string) (*EmailVerificationToken, error)
 	// Get a Medical Record
 	GetMedicalRecord(ctx context.Context, arg GetMedicalRecordParams) (*GetMedicalRecordRow, error)
 	// Get Medical Records
@@ -73,7 +73,7 @@ type Querier interface {
 	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*DiagnosticCentre, error)
 	List_Payments(ctx context.Context, arg List_PaymentsParams) ([]*Payment, error)
 	MarkEmailAsVerified(ctx context.Context, email pgtype.Text) error
-	MarkEmailVerificationTokenUsed(ctx context.Context, arg MarkEmailVerificationTokenUsedParams) error
+	MarkEmailVerificationTokenUsed(ctx context.Context, id string) error
 	MarkResetTokenUsed(ctx context.Context, id string) error
 	Refund_Payment(ctx context.Context, arg Refund_PaymentParams) (*Payment, error)
 	RescheduleAppointment(ctx context.Context, arg RescheduleAppointmentParams) (*Appointment, error)

@@ -10,6 +10,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/medicue/adapters/ex/templates"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
@@ -59,15 +61,12 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	}
 
 	// Send verification email
-	subject := "Verify your email address"
-	body := fmt.Sprintf(`
-		<h2>Email Verification</h2>
-		<p>Hi there!</p>
-		<p>Thanks for registering with Medicue. Please verify your email by clicking the link below:</p>
-		<p><a href="%s/verify-email?token=%s&email=%s">Verify Email</a></p>
-		<p>This link will expire in 24 hours.</p>
-		<p>Best regards,<br/>Medicue Team</p>
-	`, os.Getenv("APP_URL"), verificationToken.Token, url.QueryEscape(createdUser.Email.String))
+	subject := "Sign up for Medicue - Email Verification"
+	appURL := os.Getenv("APP_URL")
+	escapedEmail := url.QueryEscape(createdUser.Email.String)
+	body := fmt.Sprintf(templates.EmailVerificationTemplate,
+		appURL, verificationToken.Token, escapedEmail,
+		appURL, verificationToken.Token, escapedEmail)
 
 	err = service.notificationService.SendEmail(createdUser.Email.String, subject, body)
 	if err != nil {
@@ -194,12 +193,27 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
+	// Send password reset email
+	subject := "Reset Your Password - Medicue"
+	appURL := os.Getenv("APP_URL")
+	escapedEmail := url.QueryEscape(user.Email.String)
+	body := fmt.Sprintf(templates.PasswordResetTemplate,
+		appURL, token, escapedEmail)
+
+	err = service.notificationService.SendEmail(user.Email.String, subject, body)
+	if err != nil {
+		utils.Error("Failed to send password reset email",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: user.ID})
+		// Don't return error here to prevent email enumeration
+	}
+
 	utils.Info("Password reset token generated and email sent",
 		utils.LogField{Key: "user_id", Value: user.ID},
 		utils.LogField{Key: "expires_at", Value: expiresAt})
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{
-		"message": "Reset instructions sent to your email",
+		"message": "If your email exists in our system, you will receive password reset instructions",
 	}, context)
 }
 
@@ -267,7 +281,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.EmailVerificationDTO)
 
 	// Get user by email
-	_, err := service.UserRepo.GetUserByEmail(
+	user, err := service.UserRepo.GetUserByEmail(
 		context.Request().Context(),
 		pgtype.Text{String: dto.Email, Valid: true},
 	)
@@ -277,12 +291,48 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("user not found"), context)
 	}
 
-	// TODO: Implement verify token logic
-	// This would involve:
-	// 1. Getting the verification token from database
-	// 2. Checking if it's valid and not expired
-	// 3. Marking the user as verified
-	// 4. Marking the token as used
+	// Get and verify token
+	token, err := service.UserRepo.GetEmailVerificationToken(context.Request().Context(), dto.Token)
+	if err != nil {
+		utils.Error("Invalid verification token",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid verification token"), context)
+	}
+
+	// Check if token is expired or used
+	if token.ExpiresAt.Time.Before(time.Now()) || (token.Used.Valid && token.Used.Bool) {
+		utils.Error("Expired or used verification token",
+			utils.LogField{Key: "token_id", Value: token.ID})
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("verification token expired or already used"), context)
+	}
+
+	// Verify email matches token
+	if token.Email != dto.Email {
+		utils.Error("Email mismatch for verification token",
+			utils.LogField{Key: "token_id", Value: token.ID})
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid verification token"), context)
+	}
+
+	// Marked user as verified
+	err = service.UserRepo.MarkEmailAsVerified(context.Request().Context(), dto.Email)
+	if err != nil {
+		utils.Error("Failed to mark user as verified",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: user.ID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	// Mark token as used
+	if err := service.UserRepo.MarkEmailVerificationTokenUsed(context.Request().Context(), token.ID); err != nil {
+		utils.Error("Failed to mark verification token as used",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "token_id", Value: token.ID})
+		// Don't return error since verification was successful
+	}
+
+	utils.Info("Email verified successfully",
+		utils.LogField{Key: "user_id", Value: user.ID},
+		utils.LogField{Key: "email", Value: user.Email.String})
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{
 		"message": "Email verified successfully",
@@ -293,7 +343,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.ResendVerificationDTO)
 
 	// Get user by email
-	_, err := service.UserRepo.GetUserByEmail(
+	user, err := service.UserRepo.GetUserByEmail(
 		context.Request().Context(),
 		pgtype.Text{String: dto.Email, Valid: true},
 	)
@@ -303,11 +353,45 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("user not found"), context)
 	}
 
-	// TODO: Implement resend verification logic
-	// This would involve:
-	// 1. Generating a new verification token
-	// 2. Saving it to the database
-	// 3. Sending the verification email
+	// Generate new verification token
+	token := utils.GenerateRandomToken()
+	expiresAt := time.Now().Add(24 * time.Hour)
+
+	verificationParams := db.CreateEmailVerificationTokenParams{
+		Email:     user.Email.String,
+		Token:     token,
+		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
+	}
+
+	// Save token to database
+	verificationToken, err := service.UserRepo.CreateEmailVerificationToken(
+		context.Request().Context(),
+		verificationParams,
+	)
+	if err != nil {
+		utils.Error("Failed to create verification token",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "email", Value: user.Email.String})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	// Send verification email
+	subject := "Sign up for Medicue - Email Verification"
+	appURL := os.Getenv("APP_URL")
+	escapedEmail := url.QueryEscape(user.Email.String)
+	body := fmt.Sprintf(templates.EmailVerificationTemplate,
+		appURL, verificationToken.Token, user.ID,
+		appURL, verificationToken.Token, escapedEmail)
+
+	err = service.notificationService.SendEmail(user.Email.String, subject, body)
+	if err != nil {
+		utils.Error("Failed to send verification email",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	utils.Info("Verification email resent successfully",
+		utils.LogField{Key: "email", Value: user.Email.String})
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{
 		"message": "Verification email sent",

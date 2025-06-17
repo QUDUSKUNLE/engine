@@ -42,19 +42,13 @@ func (q *Queries) CreateEmailVerificationToken(ctx context.Context, arg CreateEm
 }
 
 const getEmailVerificationToken = `-- name: GetEmailVerificationToken :one
-SELECT id, email, token, used, expires_at, created_at FROM email_verification_tokens
-WHERE email = $1 AND token = $2 AND used = false AND expires_at > NOW()
-ORDER BY created_at DESC
+SELECT id, email, token, used, expires_at, created_at FROM email_verification_tokens 
+WHERE token = $1 AND used = false
 LIMIT 1
 `
 
-type GetEmailVerificationTokenParams struct {
-	Email string `db:"email" json:"email"`
-	Token string `db:"token" json:"token"`
-}
-
-func (q *Queries) GetEmailVerificationToken(ctx context.Context, arg GetEmailVerificationTokenParams) (*EmailVerificationToken, error) {
-	row := q.db.QueryRow(ctx, getEmailVerificationToken, arg.Email, arg.Token)
+func (q *Queries) GetEmailVerificationToken(ctx context.Context, token string) (*EmailVerificationToken, error) {
+	row := q.db.QueryRow(ctx, getEmailVerificationToken, token)
 	var i EmailVerificationToken
 	err := row.Scan(
 		&i.ID,
@@ -70,8 +64,10 @@ func (q *Queries) GetEmailVerificationToken(ctx context.Context, arg GetEmailVer
 const markEmailAsVerified = `-- name: MarkEmailAsVerified :exec
 UPDATE users
 SET email_verified = true,
-    email_verified_at = NOW()
+    email_verified_at = NOW(),
+    updated_at = NOW()
 WHERE email = $1
+RETURNING id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number
 `
 
 func (q *Queries) MarkEmailAsVerified(ctx context.Context, email pgtype.Text) error {
@@ -82,15 +78,10 @@ func (q *Queries) MarkEmailAsVerified(ctx context.Context, email pgtype.Text) er
 const markEmailVerificationTokenUsed = `-- name: MarkEmailVerificationTokenUsed :exec
 UPDATE email_verification_tokens
 SET used = true
-WHERE email = $1 AND token = $2
+WHERE id = $1
 `
 
-type MarkEmailVerificationTokenUsedParams struct {
-	Email string `db:"email" json:"email"`
-	Token string `db:"token" json:"token"`
-}
-
-func (q *Queries) MarkEmailVerificationTokenUsed(ctx context.Context, arg MarkEmailVerificationTokenUsedParams) error {
-	_, err := q.db.Exec(ctx, markEmailVerificationTokenUsed, arg.Email, arg.Token)
+func (q *Queries) MarkEmailVerificationTokenUsed(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, markEmailVerificationTokenUsed, id)
 	return err
 }

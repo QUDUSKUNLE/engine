@@ -88,7 +88,7 @@ func (repo *Repository) CreateEmailVerificationToken(ctx context.Context, arg db
 	return token, nil
 }
 
-func (repo *Repository) GetEmailVerificationToken(ctx context.Context, arg db.GetEmailVerificationTokenParams) (*db.EmailVerificationToken, error) {
+func (repo *Repository) GetEmailVerificationToken(ctx context.Context, arg string) (*db.EmailVerificationToken, error) {
 	token, err := repo.database.GetEmailVerificationToken(ctx, arg)
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func (repo *Repository) GetEmailVerificationToken(ctx context.Context, arg db.Ge
 	return token, nil
 }
 
-func (repo *Repository) MarkEmailVerificationTokenUsed(ctx context.Context, arg db.MarkEmailVerificationTokenUsedParams) error {
+func (repo *Repository) MarkEmailVerificationTokenUsed(ctx context.Context, arg string) error {
 	return repo.database.MarkEmailVerificationTokenUsed(ctx, arg)
 }
 
