@@ -85,8 +85,9 @@ type (
 	}
 
 	UpdateUserProfileDTO struct {
-		FullName string `json:"full_name" validate:"required,min=2"`
-		NIN      string `json:"nin" validate:"omitempty,min=11"`
+		FirstName string `json:"first_name" validate:"required,min=3"`
+		LastName string `json:"last_name" validate:"required,min=3"`
+		Nin      string `json:"nin" validate:"omitempty,min=11"`
 	}
 
 	GetUserProfileParamDTO struct {

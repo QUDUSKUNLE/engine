@@ -143,7 +143,7 @@ func (handler *HTTPHandler) GetProfile(context echo.Context) error {
 // @Router /v1/account/profile [put]
 func (handler *HTTPHandler) UpdateProfile(context echo.Context) error {
 	// return handler.service.UpdateProfile(context)
-	return nil
+	return handler.service.UpdateProfile(context)
 }
 
 // DeactivateAccount godoc

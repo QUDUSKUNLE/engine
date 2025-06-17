@@ -9,6 +9,8 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"reflect"
+	"sync"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -16,12 +18,15 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/domain"
+	"github.com/medicue/core/utils/response"
 	"go.uber.org/zap"
 )
 
 var (
-	validate = validator.New()
+	validate *validator.Validate
 	logger   *zap.Logger
+
+	validatorMu sync.RWMutex
 
 	// JWT related errors
 	ErrMissingSecretKey = errors.New("missing JWT secret key")
@@ -32,41 +37,72 @@ var (
 	MinPasswordLength = 12
 )
 
+// InitValidator initializes the validator with custom validations
+func InitValidator() error {
+	validatorMu.Lock()
+	defer validatorMu.Unlock()
+
+	// Initialize validator
+	validate = validator.New(validator.WithRequiredStructEnabled())
+
+	// Register custom validations
+	if err := validate.RegisterValidation("min_one", validateMinOne); err != nil {
+		return fmt.Errorf("failed to register min_one validator: %w", err)
+	}
+
+	return nil
+}
+
 func init() {
 	var err error
 	logger, err = zap.NewProduction()
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}
+	if err := InitValidator(); err != nil {
+		panic(fmt.Sprintf("failed to initialize validator: %v", err))
+	}
 }
 
-// ErrorResponse sends a structured error response with logging
+// GetValidator returns the validator instance
+func GetValidator() *validator.Validate {
+	validatorMu.RLock()
+	defer validatorMu.RUnlock()
+	return validate
+}
+
+// Add this new function to handle min_one validation
+func validateMinOne(fl validator.FieldLevel) bool {
+	field := fl.Field()
+	switch field.Kind() {
+	case reflect.Slice, reflect.Array, reflect.Map:
+		return field.Len() > 0
+	}
+	return false
+}
+
+// ErrorResponse sends a structured error response with logging.
+// Deprecated: Use response.Error instead
 func ErrorResponse(status int, err error, c echo.Context) error {
-	logger.Error("error response",
-		zap.Int("status", status),
-		zap.Error(err),
-		zap.String("path", c.Path()),
-		zap.String("method", c.Request().Method),
-	)
-	return c.JSON(status, echo.Map{
-		"error":   err.Error(),
-		"status":  status,
-		"success": false,
-	})
+	if c.Get("logger") == nil {
+		c.Set("logger", logger) // Set logger if not present for backward compatibility
+	}
+
+	code := response.StatusToCode[status]
+	if code == "" {
+		code = response.CodeInternalError
+	}
+
+	return response.Error(status, err, c, code)
 }
 
-// ResponseMessage sends a structured success response with logging
-func ResponseMessage(status int, message interface{}, c echo.Context) error {
-	logger.Info("success response",
-		zap.Int("status", status),
-		zap.String("path", c.Path()),
-		zap.String("method", c.Request().Method),
-	)
-	return c.JSON(status, echo.Map{
-		"data":    message,
-		"status":  status,
-		"success": true,
-	})
+// ResponseMessage sends a structured success response with logging.
+// Deprecated: Use response.Success instead
+func ResponseMessage(status int, data interface{}, c echo.Context) error {
+	if c.Get("logger") == nil {
+		c.Set("logger", logger) // Set logger if not present for backward compatibility
+	}
+	return response.Success(status, data, c)
 }
 
 // GenerateToken generates a JWT token for the given user with enhanced security
@@ -159,22 +195,33 @@ func CurrentUser(c echo.Context) (*domain.CurrentUserDTO, error) {
 }
 
 // PrivateMiddlewareContext validates user type access
-func PrivateMiddlewareContext(c echo.Context, userType string) (*domain.CurrentUserDTO, error) {
+func PrivateMiddlewareContext(c echo.Context, userTypes []db.UserEnum) (*domain.CurrentUserDTO, error) {
 	user, err := CurrentUser(c)
 	if err != nil {
 		return nil, err
 	}
 
-	if user.UserType != db.UserEnum(userType) {
-		logger.Warn("unauthorized access attempt",
-			zap.String("requiredType", userType),
-			zap.String("actualType", string(user.UserType)),
-			zap.String("userID", user.UserID.String()),
-		)
-		return nil, ErrUnauthorized
+	for _, allowedType := range userTypes {
+		if user.UserType == allowedType {
+			return user, nil
+		}
 	}
 
-	return user, nil
+	logger.Warn("unauthorized access attempt",
+		zap.Strings("requiredTypes", convertUserTypesToStrings(userTypes)),
+		zap.String("actualType", string(user.UserType)),
+		zap.String("userID", user.UserID.String()),
+	)
+	return nil, ErrUnauthorized
+}
+
+// Helper function to convert UserEnum slice to string slice for logging
+func convertUserTypesToStrings(types []db.UserEnum) []string {
+	strings := make([]string, len(types))
+	for i, t := range types {
+		strings[i] = string(t)
+	}
+	return strings
 }
 
 // MarshalJSONField marshals any struct to JSON with error handling

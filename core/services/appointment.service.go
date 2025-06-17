@@ -17,7 +17,7 @@ import (
 // CreateAppointment creates a new appointment
 func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	// Authentication check for registered users
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumUSER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -72,7 +72,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 // GetAppointment retrieves an appointment by ID
 func (service *ServicesHandler) GetAppointment(context echo.Context) error {
 	// Authentication check
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumUSER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -97,7 +97,7 @@ func (service *ServicesHandler) GetAppointment(context echo.Context) error {
 // ListAppointments lists appointments based on filters
 func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 	// Authentication check
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumUSER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -149,7 +149,7 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 // CancelAppointment cancels an existing appointment
 func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 	// Authentication check
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumUSER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -202,7 +202,7 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 // RescheduleAppointment reschedules an appointment to a new time
 func (service *ServicesHandler) RescheduleAppointment(context echo.Context) error {
 	// Authentication check
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumUSER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}

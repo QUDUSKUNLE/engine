@@ -60,7 +60,7 @@ func (j *ReminderJob) sendAppointmentReminders() {
 	// }
 }
 
-func (j *ReminderJob) sendReminderEmail(appointment *db.Appointment) error {
+func (j *ReminderJob) SendReminderEmail(appointment *db.Appointment) error {
 	// Get patient details by email
 	patient, err := j.userRepo.GetUserByEmail(
 		context.Background(),
@@ -82,7 +82,6 @@ func (j *ReminderJob) sendReminderEmail(appointment *db.Appointment) error {
 	data := templates.AppointmentEmailData{
 		EmailData: templates.EmailData{
 			AppName: "Medicue",
-			// AppURL:  os.Getenv("APP_URL"),
 		},
 		PatientName:     patient.Fullname.String,
 		AppointmentID:   appointment.ID,

@@ -38,9 +38,13 @@ func (c *CustomValidator) Validate(inter interface{}) error {
 
 		var errorMessage []map[string]string
 		for _, er := range err.(validator.ValidationErrors) {
+			message := fmt.Sprintf("%v is an invalid input for field: %s", er.Value(), er.Field())
+			if er.Tag() == "min_one" {
+				message = fmt.Sprintf("%s must have at least one item", er.Field())
+			}
 			errDetail := map[string]string{
 				"field":   er.Field(),
-				"message": fmt.Sprintf("%v is an invalid input for field: %s", er.Value(), er.Field()),
+				"message": message,
 				"tag":     er.Tag(),
 			}
 			errorMessage = append(errorMessage, errDetail)
@@ -58,9 +62,12 @@ func (c *CustomValidator) Validate(inter interface{}) error {
 // ValidationAdaptor initializes and sets up the validator
 func ValidationAdaptor(e *echo.Echo) *echo.Echo {
 	utils.Info("Initializing validation adapter")
+
+	// Set custom validator for Echo
 	e.Validator = &CustomValidator{
-		validator: validator.New(validator.WithRequiredStructEnabled()),
+		validator: utils.GetValidator(),
 	}
+
 	return e
 }
 

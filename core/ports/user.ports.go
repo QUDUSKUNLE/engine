@@ -21,8 +21,8 @@ type UserRepository interface {
 	MarkResetTokenUsed(ctx context.Context, id string) error
 	UpdateUserPassword(ctx context.Context, arg db.UpdateUserPasswordParams) error
 
-		CreateEmailVerificationToken(ctx context.Context, arg db.CreateEmailVerificationTokenParams) (db.EmailVerificationToken, error)
-	GetEmailVerificationToken(ctx context.Context, arg db.GetEmailVerificationTokenParams) (db.EmailVerificationToken, error)
+		CreateEmailVerificationToken(ctx context.Context, arg db.CreateEmailVerificationTokenParams) (*db.EmailVerificationToken, error)
+	GetEmailVerificationToken(ctx context.Context, arg db.GetEmailVerificationTokenParams) (*db.EmailVerificationToken, error)
 	MarkEmailVerificationTokenUsed(ctx context.Context, arg db.MarkEmailVerificationTokenUsedParams) error
 	MarkEmailAsVerified(ctx context.Context, email string) error
 }

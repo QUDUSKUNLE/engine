@@ -1017,6 +1017,8 @@ type Appointment struct {
 	ReschedulingFee       pgtype.Numeric     `db:"rescheduling_fee" json:"rescheduling_fee"`
 	CreatedAt             pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt             pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ReminderSent          pgtype.Bool        `db:"reminder_sent" json:"reminder_sent"`
+	ReminderSentAt        pgtype.Timestamptz `db:"reminder_sent_at" json:"reminder_sent_at"`
 }
 
 type DiagnosticCentre struct {

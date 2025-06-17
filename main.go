@@ -56,8 +56,6 @@ func main() {
 		log.Fatalf("Error connecting to the database")
 	}
 
-
-
 	// Create a new echo instance
 	e := echo.New()
 
@@ -85,7 +83,7 @@ func main() {
 		paymentRepo,
 		appointmentRepo,
 	)
-		// Initialize CronConfig
+	// Initialize CronConfig
 	cronConfig := config.GetConfig(userRepo, diagnosticRepo, appointmentRepo)
 	err = cronConfig.Start()
 	if err != nil {
@@ -166,8 +164,11 @@ func main() {
 
 	// Start server with graceful shutdown
 	go func() {
-		if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatal("shutting down the server")
+		if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil &&
+			!errors.Is(err, http.ErrServerClosed) {
+			log.Fatal("Server error:", err)
+		} else {
+			log.Printf("Server gracefully shutting down...")
 		}
 	}()
 

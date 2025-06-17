@@ -2,7 +2,9 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -14,7 +16,7 @@ import (
 
 func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) error {
 	// Authentication & Authorization
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
 	}
@@ -42,14 +44,23 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 			utils.LogField{Key: "user_id", Value: currentUser.UserID.String()},
 			utils.LogField{Key: "diagnostic_centre", Value: params})
 		switch {
+		case strings.Contains(err.Error(), "unique_admin_id"):
+			return echo.NewHTTPError(http.StatusConflict, "Manager is already assigned to another diagnostic centre")
+		case strings.Contains(err.Error(), "diagnostic_centres_latitude_longitude_key"):
+			return echo.NewHTTPError(http.StatusConflict, "Latitude and Longitude already assigned to a centre")
+		case strings.Contains(err.Error(), "diagnostic_centres_diagnostic_centre_name_created_by_longit_key"):
+			return echo.NewHTTPError(http.StatusConflict, "Diagnostic centre name with the location already exists")
 		case errors.Is(err, utils.ErrDatabaseError):
 			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
 		case errors.Is(err, utils.ErrInvalidInput):
 			return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
+		case errors.Is(err, utils.ErrConflictError):
+			return echo.NewHTTPError(http.StatusConflict, utils.ErrConflictError.Error())
 		default:
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create diagnostic centre")
 		}
 	}
+	fmt.Println(response, "okkk")
 	res, err := buildDiagnosticCentreResponseFromRow(response, context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
@@ -133,7 +144,7 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 }
 
 func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) error {
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -155,7 +166,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 // DeleteDiagnosticCentre deletes a diagnostic center (owner only)
 func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) error {
 	// Authentication & Authorization check for owner
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		if errors.Is(err, utils.ErrInvalidToken) || errors.Is(err, utils.ErrUnauthorized) {
 			return &echo.HTTPError{
@@ -221,7 +232,7 @@ func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) err
 // GetDiagnosticCentresByOwner retrieves all diagnostic centers owned by the authenticated user
 func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context) error {
 	// Authentication & Authorization check for owner
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -259,12 +270,9 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 // GetDiagnosticCentreStats retrieves statistical information about a diagnostic centre
 func (service *ServicesHandler) GetDiagnosticCentreStats(context echo.Context) error {
 	// Authenticate and authorize user - first try owner, then manager
-	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	_, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		_, err = utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
-		if err != nil {
-			return utils.ErrorResponse(http.StatusUnauthorized, err, context)
-		}
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
 	// Get diagnostic centre ID
@@ -291,7 +299,7 @@ func (service *ServicesHandler) GetDiagnosticCentreStats(context echo.Context) e
 // GetDiagnosticCentresByManager retrieves all diagnostic centres managed by the authenticated manager
 func (service *ServicesHandler) GetDiagnosticCentresByManager(context echo.Context) error {
 	// Authentication & Authorization check for manager
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -327,7 +335,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByManager(context echo.Conte
 // UpdateDiagnosticCentreManager updates the manager of a diagnostic centre
 func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Context) error {
 	// Authentication & Authorization check for owner
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -371,12 +379,9 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 // GetDiagnosticCentreSchedules retrieves all schedules for a diagnostic centre
 func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Context) error {
 	// Authentication & Authorization check - try owner first, then manager
-	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	_, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		_, err = utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
-		if err != nil {
-			return utils.ErrorResponse(http.StatusUnauthorized, err, context)
-		}
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 
 	// Get diagnostic centre ID and schedule params
@@ -412,9 +417,9 @@ func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Contex
 // GetDiagnosticCentreRecords retrieves medical records for a diagnostic centre
 func (service *ServicesHandler) GetDiagnosticCentreRecords(context echo.Context) error {
 	// Authentication & Authorization check - try owner first, then manager
-	currentUser, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
-		currentUser, err = utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
+		currentUser, err = utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 		if err != nil {
 			return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 		}

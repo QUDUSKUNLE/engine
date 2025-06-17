@@ -37,7 +37,11 @@ func (repo *Repository) GetUser(ctx context.Context, id string) (*db.User, error
 
 // GetUserByEmail fetches a user by their email address.
 func (repo *Repository) GetUserByEmail(ctx context.Context, email pgtype.Text) (*db.User, error) {
-	return repo.database.GetUserByEmail(ctx, email)
+	response, err := repo.database.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 // UpdateUser updates user fields that are provided in the params and returns the updated user row.
@@ -76,20 +80,20 @@ func (repo *Repository) UpdateUserPassword(ctx context.Context, params db.Update
 }
 
 // Email verification methods
-func (repo *Repository) CreateEmailVerificationToken(ctx context.Context, arg db.CreateEmailVerificationTokenParams) (db.EmailVerificationToken, error) {
+func (repo *Repository) CreateEmailVerificationToken(ctx context.Context, arg db.CreateEmailVerificationTokenParams) (*db.EmailVerificationToken, error) {
 	token, err := repo.database.CreateEmailVerificationToken(ctx, arg)
 	if err != nil {
-		return db.EmailVerificationToken{}, err
+		return nil, err
 	}
-	return *token, nil
+	return token, nil
 }
 
-func (repo *Repository) GetEmailVerificationToken(ctx context.Context, arg db.GetEmailVerificationTokenParams) (db.EmailVerificationToken, error) {
+func (repo *Repository) GetEmailVerificationToken(ctx context.Context, arg db.GetEmailVerificationTokenParams) (*db.EmailVerificationToken, error) {
 	token, err := repo.database.GetEmailVerificationToken(ctx, arg)
 	if err != nil {
-		return db.EmailVerificationToken{}, err
+		return nil, err
 	}
-	return *token, nil
+	return token, nil
 }
 
 func (repo *Repository) MarkEmailVerificationTokenUsed(ctx context.Context, arg db.MarkEmailVerificationTokenUsedParams) error {

@@ -73,12 +73,9 @@ func (s *ServicesHandler) convertSlotToArrays(dto *domain.CreateAvailabilityDTO)
 // validateCreateAvailabilityInput validates the input for creating availability slots
 func (s *ServicesHandler) validateCreateAvailabilityInput(ctx echo.Context) (*domain.CreateAvailabilityDTO, error) {
 	// Authenticate and authorize user - owner or manager only
-	_, err := utils.PrivateMiddlewareContext(ctx, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	_, err := utils.PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		_, err = utils.PrivateMiddlewareContext(ctx, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
-		if err != nil {
 			return nil, err
-		}
 	}
 
 	// This validated at the middleware level
@@ -113,12 +110,9 @@ func (s *ServicesHandler) CreateAvailability(ctx echo.Context) error {
 // validateUpdateAvailabilityInput validates and converts the input for updating availability slots
 func (s *ServicesHandler) validateUpdateAvailabilityInput(ctx echo.Context) (*db.Update_AvailabilityParams, error) {
 	// Authenticate and authorize user
-	_, err := utils.PrivateMiddlewareContext(ctx, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	_, err := utils.PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER,db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		_, err = utils.PrivateMiddlewareContext(ctx, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	diagnosticCentreID := ctx.Param("diagnostic_centre_id")
@@ -175,12 +169,9 @@ func (s *ServicesHandler) UpdateAvailability(ctx echo.Context) error {
 // validateUpdateManyAvailabilityInput validates the input for updating multiple availability slots
 func (s *ServicesHandler) validateUpdateManyAvailabilityInput(ctx echo.Context) (*domain.UpdateManyAvailabilityDTO, error) {
 	// Authenticate and authorize user
-	_, err := utils.PrivateMiddlewareContext(ctx, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	_, err := utils.PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		_, err = utils.PrivateMiddlewareContext(ctx, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	dto, _ := ctx.Get(utils.ValidatedBodyDTO).(*domain.UpdateManyAvailabilityDTO)
@@ -304,12 +295,9 @@ func (s *ServicesHandler) GetAvailability(ctx echo.Context) error {
 // validateDeleteAvailabilityInput validates the input for deleting availability slots
 func (s *ServicesHandler) validateDeleteAvailabilityInput(ctx echo.Context) (*db.Delete_AvailabilityParams, error) {
 	// Authenticate and authorize user
-	_, err := utils.PrivateMiddlewareContext(ctx, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	_, err := utils.PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		_, err = utils.PrivateMiddlewareContext(ctx, string(db.UserEnumDIAGNOSTICCENTREMANAGER))
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	return &db.Delete_AvailabilityParams{

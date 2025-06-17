@@ -105,14 +105,24 @@ func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.Creat
 		return nil, err
 	}
 
+	availableTestsStr := make([]string, len(value.AvailableTests))
+	for i, test := range value.AvailableTests {
+		availableTestsStr[i] = string(test)
+	}
+
+	doctorsStr := make([]string, len(value.Doctors))
+	for i, doctor := range value.Doctors {
+		doctorsStr[i] = string(doctor)
+	}
+
 	params := &db.Create_Diagnostic_CentreParams{
 		DiagnosticCentreName: value.DiagnosticCentreName,
 		Latitude:             pgtype.Float8{Float64: value.Latitude, Valid: true},
 		Longitude:            pgtype.Float8{Float64: value.Longitude, Valid: true},
 		Address:              addressBytes,
 		Contact:              contactBytes,
-		Doctors:              value.Doctors,
-		AvailableTests:       value.AvailableTests,
+		Doctors:              doctorsStr,
+		AvailableTests:       availableTestsStr,
 		AdminID:              value.AdminId.String(),
 	}
 

@@ -23,6 +23,7 @@ LIMIT $1 OFFSET $2;
 UPDATE users
 SET
   nin = COALESCE($2, nin),
+  fullname = COALESCE($3, fullname),
   updated_at = NOW()
 WHERE id = $1
 RETURNING id, email, nin, user_type, created_at, updated_at;

@@ -81,7 +81,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 
 func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	// Check for permission to add a diagnostic manager
-	_, err := utils.PrivateMiddlewareContext(context, string(db.UserEnumDIAGNOSTICCENTREOWNER))
+	_, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		utils.Error("Unauthorized attempt to create diagnostic centre manager",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -119,7 +119,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 
 	createdUser, err := service.createUserHelper(context, newUser, db.UserEnumDIAGNOSTICCENTREMANAGER)
 	if err != nil {
-		return err
+		return utils.ErrorResponse(http.StatusConflict, err, context)
 	}
 
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)
@@ -133,14 +133,14 @@ func (service *ServicesHandler) Login(context echo.Context) error {
 	if err != nil {
 		utils.Error("Login failed - user not found",
 			utils.LogField{Key: "error", Value: err.Error()})
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
 
 	// Verify password
 	if err := domain.ComparePassword(*user, dto.Password); err != nil {
 		utils.Error("Login failed - invalid password",
 			utils.LogField{Key: "user_id", Value: user.ID})
-		return utils.ErrorResponse(http.StatusUnauthorized, errors.New(utils.InvalidRequest), context)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
 	}
 
 	// Generate token
@@ -314,60 +314,6 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	}, context)
 }
 
-func generateResetToken() string {
-	b := make([]byte, 32)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
-}
-
-func (service *ServicesHandler) createUserHelper(
-	context echo.Context,
-	arg db.CreateUserParams,
-	userTypes ...db.UserEnum,
-) (*db.User, error) {
-	if !isValidUserType(userTypes, arg.UserType) {
-		utils.Error("Invalid user type",
-			utils.LogField{Key: "user_type", Value: arg.UserType})
-		return nil, utils.ErrorResponse(http.StatusUnprocessableEntity,
-			errors.New("invalid user type"), context)
-	}
-
-	// Check if user exists
-	existingUser, err := service.UserRepo.GetUserByEmail(
-		context.Request().Context(),
-		arg.Email,
-	)
-	if err != nil && err != sql.ErrNoRows {
-		utils.Error("Failed to check existing user",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return nil, utils.ErrorResponse(http.StatusInternalServerError, err, context)
-	}
-	if existingUser != nil {
-		utils.Error("User already exists",
-			utils.LogField{Key: "email", Value: arg.Email.String})
-		return nil, utils.ErrorResponse(http.StatusBadRequest,
-			errors.New("user already exists"), context)
-	}
-
-	// Create user
-	createdRow, err := service.UserRepo.CreateUser(context.Request().Context(), arg)
-	if err != nil {
-		utils.Error("Failed to create user",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return nil, utils.ErrorResponse(http.StatusInternalServerError, err, context)
-	}
-
-	// Convert CreateUserRow to User
-	user := &db.User{
-		ID:       createdRow.ID,
-		Email:    createdRow.Email,
-		Nin:      createdRow.Nin,
-		UserType: createdRow.UserType,
-	}
-
-	return user, nil
-}
-
 func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.GoogleAuthDTO)
 
@@ -458,4 +404,85 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 		"token": token,
 		"name":  tokenInfo.UserId,
 	}, context)
+}
+
+func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
+	// Get validated DTO from context
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateUserProfileDTO)
+
+	// Get current user from context
+	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	if err != nil {
+		utils.Error("Failed to get current user",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+
+	// Update user profile
+	updateParams := db.UpdateUserParams{
+		ID:        currentUser.UserID.String(),
+		Fullname:  pgtype.Text{String: fmt.Sprintf("%s %s", dto.FirstName, dto.LastName), Valid: true},
+		Nin:      pgtype.Text{String: dto.Nin, Valid: true},
+	}
+
+	updatedUser, err := service.UserRepo.UpdateUser(context.Request().Context(), updateParams)
+	if err != nil {
+		utils.Error("Failed to update user profile",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	utils.Info("User profile updated successfully",
+		utils.LogField{Key: "user_id", Value: updatedUser.ID})
+
+	return utils.ResponseMessage(http.StatusOK, updatedUser, context)
+}
+
+func generateResetToken() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
+
+func (service *ServicesHandler) createUserHelper(
+	context echo.Context,
+	arg db.CreateUserParams,
+	userTypes ...db.UserEnum,
+) (*db.User, error) {
+	if !isValidUserType(userTypes, arg.UserType) {
+		utils.Error("Invalid user type",
+			utils.LogField{Key: "user_type", Value: arg.UserType})
+		return nil, utils.ErrorResponse(http.StatusUnprocessableEntity,
+			errors.New("invalid user type"), context)
+	}
+
+	// Check if user exists
+	existingUser, _ := service.UserRepo.GetUserByEmail(
+		context.Request().Context(),
+		arg.Email,
+	)
+	if existingUser != nil {
+		utils.Error("User already exists",
+			utils.LogField{Key: "email", Value: arg.Email.String})
+		return nil, errors.New("user already exists")
+	}
+
+	// Create user
+	createdRow, err := service.UserRepo.CreateUser(context.Request().Context(), arg)
+	if err != nil {
+		utils.Error("Failed to create user",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return nil, err
+	}
+
+	// Convert CreateUserRow to User
+	user := &db.User{
+		ID:       createdRow.ID,
+		Email:    createdRow.Email,
+		Nin:      createdRow.Nin,
+		UserType: createdRow.UserType,
+	}
+
+	return user, nil
 }

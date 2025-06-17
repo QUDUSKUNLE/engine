@@ -21,7 +21,7 @@ SET
     cancellation_fee = COALESCE($4, 0),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 
-RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at
+RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at
 `
 
 type CancelAppointmentParams struct {
@@ -65,6 +65,8 @@ func (q *Queries) CancelAppointment(ctx context.Context, arg CancelAppointmentPa
 		&i.ReschedulingFee,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReminderSent,
+		&i.ReminderSentAt,
 	)
 	return &i, err
 }
@@ -80,7 +82,7 @@ INSERT INTO appointments (
     notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at
+) RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at
 `
 
 type CreateAppointmentParams struct {
@@ -130,6 +132,8 @@ func (q *Queries) CreateAppointment(ctx context.Context, arg CreateAppointmentPa
 		&i.ReschedulingFee,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReminderSent,
+		&i.ReminderSentAt,
 	)
 	return &i, err
 }
@@ -144,7 +148,7 @@ func (q *Queries) DeleteAppointment(ctx context.Context, id string) error {
 }
 
 const getAppointment = `-- name: GetAppointment :one
-SELECT id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at FROM appointments WHERE id = $1
+SELECT id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at FROM appointments WHERE id = $1
 `
 
 func (q *Queries) GetAppointment(ctx context.Context, id string) (*Appointment, error) {
@@ -176,12 +180,14 @@ func (q *Queries) GetAppointment(ctx context.Context, id string) (*Appointment, 
 		&i.ReschedulingFee,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReminderSent,
+		&i.ReminderSentAt,
 	)
 	return &i, err
 }
 
 const getCentreAppointments = `-- name: GetCentreAppointments :many
-SELECT /*+ INDEX(appointments idx_appointments_diagnostic_centre) */ id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at FROM appointments 
+SELECT /*+ INDEX(appointments idx_appointments_diagnostic_centre) */ id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at FROM appointments 
 WHERE diagnostic_centre_id = $1
 AND status = ANY($2::appointment_status[])
 AND appointment_date BETWEEN $3 AND $4
@@ -240,6 +246,8 @@ func (q *Queries) GetCentreAppointments(ctx context.Context, arg GetCentreAppoin
 			&i.ReschedulingFee,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ReminderSent,
+			&i.ReminderSentAt,
 		); err != nil {
 			return nil, err
 		}
@@ -252,7 +260,7 @@ func (q *Queries) GetCentreAppointments(ctx context.Context, arg GetCentreAppoin
 }
 
 const getPatientAppointments = `-- name: GetPatientAppointments :many
-SELECT id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at FROM appointments 
+SELECT id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at FROM appointments 
 WHERE patient_id = $1
 AND status = ANY($2::appointment_status[])
 AND appointment_date BETWEEN $3 AND $4
@@ -311,6 +319,8 @@ func (q *Queries) GetPatientAppointments(ctx context.Context, arg GetPatientAppo
 			&i.ReschedulingFee,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ReminderSent,
+			&i.ReminderSentAt,
 		); err != nil {
 			return nil, err
 		}
@@ -362,7 +372,7 @@ SELECT
     old_appointment.notes,
     old_appointment.original_appointment_id
 FROM old_appointment
-RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at
+RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at
 `
 
 type RescheduleAppointmentParams struct {
@@ -412,6 +422,8 @@ func (q *Queries) RescheduleAppointment(ctx context.Context, arg RescheduleAppoi
 		&i.ReschedulingFee,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReminderSent,
+		&i.ReminderSentAt,
 	)
 	return &i, err
 }
@@ -431,7 +443,7 @@ SET
     END,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 
-RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at
+RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at
 `
 
 type UpdateAppointmentPaymentParams struct {
@@ -475,6 +487,8 @@ func (q *Queries) UpdateAppointmentPayment(ctx context.Context, arg UpdateAppoin
 		&i.ReschedulingFee,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReminderSent,
+		&i.ReminderSentAt,
 	)
 	return &i, err
 }
@@ -493,7 +507,7 @@ SET
         ELSE completion_time 
     END
 WHERE id = $1 
-RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at
+RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at
 `
 
 type UpdateAppointmentStatusParams struct {
@@ -530,6 +544,8 @@ func (q *Queries) UpdateAppointmentStatus(ctx context.Context, arg UpdateAppoint
 		&i.ReschedulingFee,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReminderSent,
+		&i.ReminderSentAt,
 	)
 	return &i, err
 }
