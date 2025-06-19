@@ -2,7 +2,7 @@
 WITH availability_params AS (
     SELECT 
         unnest($1::uuid[]) as diagnostic_centre_id,
-        unnest($2::weekday[]) as day_of_week,
+        unnest($2::text[]) as day_of_week,
         unnest($3::time[]) as start_time,
         unnest($4::time[]) as end_time,
         unnest($5::int[]) as max_appointments,
@@ -24,7 +24,7 @@ RETURNING *;
 -- name: Get_Availability :many
 SELECT * FROM diagnostic_centre_availability
 WHERE diagnostic_centre_id = $1
-AND ($2::weekday IS NULL OR day_of_week = $2)
+AND ($2::text IS NULL OR day_of_week = $2)
 ORDER BY
     CASE day_of_week
         WHEN 'monday' THEN 1
@@ -77,3 +77,18 @@ RETURNING dca.*;
 DELETE FROM diagnostic_centre_availability
 WHERE diagnostic_centre_id = $1
 AND day_of_week = $2;
+
+-- name: Create_Single_Availability :one
+INSERT INTO diagnostic_centre_availability (
+    diagnostic_centre_id,
+    day_of_week,
+    start_time,
+    end_time,
+    max_appointments,
+    slot_duration,
+    break_time
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+)
+RETURNING *;
+

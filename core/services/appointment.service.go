@@ -18,7 +18,7 @@ import (
 // CreateAppointment creates a new appointment and associated schedule
 func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	// Get authenticated user
-	currentUser, err := utils.CurrentUser(context)
+	currentUser, err := CurrentUser(context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -107,7 +107,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 // GetAppointment retrieves an appointment by ID
 func (service *ServicesHandler) GetAppointment(context echo.Context) error {
 	// Authentication check
-	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -132,7 +132,7 @@ func (service *ServicesHandler) GetAppointment(context echo.Context) error {
 // ListAppointments lists appointments based on filters
 func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 	// Authentication check
-	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -184,7 +184,7 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 // CancelAppointment cancels an existing appointment
 func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 	// Authentication check
-	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -237,7 +237,7 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 // RescheduleAppointment reschedules an appointment to a new time
 func (service *ServicesHandler) RescheduleAppointment(context echo.Context) error {
 	// Authentication check
-	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -465,48 +465,49 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 }
 
 // sendAppointmentRequestEmail sends an email to the patient about their appointment request
-func (service *ServicesHandler) sendAppointmentRequestEmail(appointment *db.Appointment) {
-	// Get patient details
-	patient, err := service.UserRepo.GetUser(context.Background(), appointment.PatientID)
-	if err != nil {
-		utils.Error("Failed to get patient details for request email",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return
-	}
+// func (service *ServicesHandler) sendAppointmentRequestEmail(appointment *db.Appointment) {
+// 	// Get patient details
+// 	patient, err := service.UserRepo.GetUser(context.Background(), appointment.PatientID)
+// 	if err != nil {
+// 		utils.Error("Failed to get patient details for request email",
+// 			utils.LogField{Key: "error", Value: err.Error()})
+// 		return
+// 	}
 
-	// Get centre details
-	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Background(), appointment.DiagnosticCentreID)
-	if err != nil {
-		utils.Error("Failed to get centre details for request email",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return
-	}
+// 	// Get centre details
+// 	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Background(), appointment.DiagnosticCentreID)
+// 	if err != nil {
+// 		utils.Error("Failed to get centre details for request email",
+// 			utils.LogField{Key: "error", Value: err.Error()})
+// 		return
+// 	}
 
-	data := templates.AppointmentEmailData{
-		EmailData: templates.EmailData{
-			AppName: "Medicue",
-		},
-		PatientName:     patient.Fullname.String,
-		AppointmentID:   appointment.ID,
-		AppointmentDate: appointment.AppointmentDate.Time,
-		TimeSlot:        appointment.TimeSlot,
-		CentreName:      centre.DiagnosticCentreName,
-		Status:          string(appointment.Status),
-		Notes:           appointment.Notes.String,
-	}
+// 	data := templates.AppointmentEmailData{
+// 		EmailData: templates.EmailData{
+// 			AppName: "Medicue",
+// 			Title:   "Medicue - Your Diagnostic Appointment",
+// 		},
+// 		PatientName:     patient.Fullname.String,
+// 		AppointmentID:   appointment.ID,
+// 		AppointmentDate: appointment.AppointmentDate.Time,
+// 		TimeSlot:        appointment.TimeSlot,
+// 		CentreName:      centre.DiagnosticCentreName,
+// 		Status:          string(appointment.Status),
+// 		Notes:           appointment.Notes.String,
+// 	}
 
-	body, err := templates.GetAppointmentRequestTemplate(data)
-	if err != nil {
-		utils.Error("Failed to generate request email template",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return
-	}
+// 	body, err := templates.GetAppointmentRequestTemplate(data)
+// 	if err != nil {
+// 		utils.Error("Failed to generate request email template",
+// 			utils.LogField{Key: "error", Value: err.Error()})
+// 		return
+// 	}
 
-	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Request Received", body); err != nil {
-		utils.Error("Failed to send request email",
-			utils.LogField{Key: "error", Value: err.Error()})
-	}
-}
+// 	if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Request Received", body); err != nil {
+// 		utils.Error("Failed to send request email",
+// 			utils.LogField{Key: "error", Value: err.Error()})
+// 	}
+// }
 
 // notifyDiagnosticCentreOfNewAppointment notifies the diagnostic centre about a new appointment
 func (service *ServicesHandler) notifyDiagnosticCentreOfNewAppointment(appointment *db.Appointment, centre *db.DiagnosticCentre) {

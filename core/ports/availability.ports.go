@@ -13,4 +13,6 @@ type AvailabilityRepository interface {
 	GetAvailability(ctx context.Context, params db.Get_AvailabilityParams) ([]*db.DiagnosticCentreAvailability, error)
 	DeleteAvailability(ctx context.Context, req db.Delete_AvailabilityParams) error
 	UpdateManyAvailability(ctx context.Context, arg db.Update_Many_AvailabilityParams) ([]*db.DiagnosticCentreAvailability, error)
+	// Create a single availability slot
+	CreateSingleAvailability(ctx context.Context, params db.Create_Single_AvailabilityParams) (*db.DiagnosticCentreAvailability, error)
 }

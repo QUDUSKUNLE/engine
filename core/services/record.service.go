@@ -17,7 +17,7 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 	ctx := context.Request().Context()
 
 	// Authentication & Authorization
-	uploader, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	uploader, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
 	}
@@ -105,7 +105,7 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 // GetMedicalRecord retrieves a single medical record.
 func (service *ServicesHandler) GetMedicalRecord(context echo.Context) error {
 	// Authentication check
-	user, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
 	}
@@ -142,7 +142,7 @@ func (service *ServicesHandler) GetMedicalRecord(context echo.Context) error {
 
 // GetMedicalRecords retrieves multiple medical records for a user.
 func (service *ServicesHandler) GetMedicalRecords(context echo.Context) error {
-	user, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -169,7 +169,7 @@ func (service *ServicesHandler) GetMedicalRecords(context echo.Context) error {
 
 // GetUploaderMedicalRecord retrieves a single medical record uploaded by a specific uploader.
 func (service *ServicesHandler) GetUploaderMedicalRecord(context echo.Context) error {
-	uploader, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	uploader, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -189,7 +189,7 @@ func (service *ServicesHandler) GetUploaderMedicalRecord(context echo.Context) e
 
 // GetUploaderMedicalRecords retrieves multiple medical records uploaded by a specific uploader.
 func (service *ServicesHandler) GetUploaderMedicalRecords(context echo.Context) error {
-	_, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -219,7 +219,7 @@ func (service *ServicesHandler) UpdateMedicalRecord(context echo.Context) error 
 	ctx := context.Request().Context()
 
 	// Authentication & Authorization
-	uploader, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	uploader, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
 	}

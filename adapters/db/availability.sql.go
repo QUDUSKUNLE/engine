@@ -84,6 +84,57 @@ func (q *Queries) Create_Availability(ctx context.Context, arg Create_Availabili
 	return items, nil
 }
 
+const create_Single_Availability = `-- name: Create_Single_Availability :one
+INSERT INTO diagnostic_centre_availability (
+    diagnostic_centre_id,
+    day_of_week,
+    start_time,
+    end_time,
+    max_appointments,
+    slot_duration,
+    break_time
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+)
+RETURNING id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appointments, slot_duration, break_time, created_at, updated_at
+`
+
+type Create_Single_AvailabilityParams struct {
+	DiagnosticCentreID string          `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	DayOfWeek          string          `db:"day_of_week" json:"day_of_week"`
+	StartTime          pgtype.Time     `db:"start_time" json:"start_time"`
+	EndTime            pgtype.Time     `db:"end_time" json:"end_time"`
+	MaxAppointments    pgtype.Int4     `db:"max_appointments" json:"max_appointments"`
+	SlotDuration       pgtype.Interval `db:"slot_duration" json:"slot_duration"`
+	BreakTime          pgtype.Interval `db:"break_time" json:"break_time"`
+}
+
+func (q *Queries) Create_Single_Availability(ctx context.Context, arg Create_Single_AvailabilityParams) (*DiagnosticCentreAvailability, error) {
+	row := q.db.QueryRow(ctx, create_Single_Availability,
+		arg.DiagnosticCentreID,
+		arg.DayOfWeek,
+		arg.StartTime,
+		arg.EndTime,
+		arg.MaxAppointments,
+		arg.SlotDuration,
+		arg.BreakTime,
+	)
+	var i DiagnosticCentreAvailability
+	err := row.Scan(
+		&i.ID,
+		&i.DiagnosticCentreID,
+		&i.DayOfWeek,
+		&i.StartTime,
+		&i.EndTime,
+		&i.MaxAppointments,
+		&i.SlotDuration,
+		&i.BreakTime,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
 const delete_Availability = `-- name: Delete_Availability :exec
 DELETE FROM diagnostic_centre_availability
 WHERE diagnostic_centre_id = $1

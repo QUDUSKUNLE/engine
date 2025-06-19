@@ -1039,7 +1039,7 @@ type DiagnosticCentre struct {
 type DiagnosticCentreAvailability struct {
 	ID                 string             `db:"id" json:"id"`
 	DiagnosticCentreID string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	DayOfWeek          Weekday            `db:"day_of_week" json:"day_of_week"`
+	DayOfWeek          string             `db:"day_of_week" json:"day_of_week"`
 	StartTime          pgtype.Time        `db:"start_time" json:"start_time"`
 	EndTime            pgtype.Time        `db:"end_time" json:"end_time"`
 	MaxAppointments    pgtype.Int4        `db:"max_appointments" json:"max_appointments"`
