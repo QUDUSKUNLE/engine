@@ -15,7 +15,7 @@ const create_Availability = `-- name: Create_Availability :many
 WITH availability_params AS (
     SELECT 
         unnest($1::uuid[]) as diagnostic_centre_id,
-        unnest($2::weekday[]) as day_of_week,
+        unnest($2::text[]) as day_of_week,
         unnest($3::time[]) as start_time,
         unnest($4::time[]) as end_time,
         unnest($5::int[]) as max_appointments,
@@ -37,7 +37,7 @@ RETURNING id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appoi
 
 type Create_AvailabilityParams struct {
 	Column1 []string          `db:"column_1" json:"column_1"`
-	Column2 []Weekday         `db:"column_2" json:"column_2"`
+	Column2 []string          `db:"column_2" json:"column_2"`
 	Column3 []pgtype.Time     `db:"column_3" json:"column_3"`
 	Column4 []pgtype.Time     `db:"column_4" json:"column_4"`
 	Column5 []int32           `db:"column_5" json:"column_5"`
@@ -100,13 +100,13 @@ RETURNING id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appoi
 `
 
 type Create_Single_AvailabilityParams struct {
-	DiagnosticCentreID string          `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	DayOfWeek          string          `db:"day_of_week" json:"day_of_week"`
-	StartTime          pgtype.Time     `db:"start_time" json:"start_time"`
-	EndTime            pgtype.Time     `db:"end_time" json:"end_time"`
-	MaxAppointments    pgtype.Int4     `db:"max_appointments" json:"max_appointments"`
-	SlotDuration       pgtype.Interval `db:"slot_duration" json:"slot_duration"`
-	BreakTime          pgtype.Interval `db:"break_time" json:"break_time"`
+	DiagnosticCentreID string      `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	DayOfWeek          string      `db:"day_of_week" json:"day_of_week"`
+	StartTime          pgtype.Time `db:"start_time" json:"start_time"`
+	EndTime            pgtype.Time `db:"end_time" json:"end_time"`
+	MaxAppointments    pgtype.Int4 `db:"max_appointments" json:"max_appointments"`
+	SlotDuration       int32       `db:"slot_duration" json:"slot_duration"`
+	BreakTime          pgtype.Int4 `db:"break_time" json:"break_time"`
 }
 
 func (q *Queries) Create_Single_Availability(ctx context.Context, arg Create_Single_AvailabilityParams) (*DiagnosticCentreAvailability, error) {
@@ -142,8 +142,8 @@ AND day_of_week = $2
 `
 
 type Delete_AvailabilityParams struct {
-	DiagnosticCentreID string  `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	DayOfWeek          Weekday `db:"day_of_week" json:"day_of_week"`
+	DiagnosticCentreID string `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	DayOfWeek          string `db:"day_of_week" json:"day_of_week"`
 }
 
 func (q *Queries) Delete_Availability(ctx context.Context, arg Delete_AvailabilityParams) error {
@@ -154,7 +154,7 @@ func (q *Queries) Delete_Availability(ctx context.Context, arg Delete_Availabili
 const get_Availability = `-- name: Get_Availability :many
 SELECT id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appointments, slot_duration, break_time, created_at, updated_at FROM diagnostic_centre_availability
 WHERE diagnostic_centre_id = $1
-AND ($2::weekday IS NULL OR day_of_week = $2)
+AND ($2::text IS NULL OR day_of_week = $2)
 ORDER BY
     CASE day_of_week
         WHEN 'monday' THEN 1
@@ -168,8 +168,8 @@ ORDER BY
 `
 
 type Get_AvailabilityParams struct {
-	DiagnosticCentreID string  `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	Column2            Weekday `db:"column_2" json:"column_2"`
+	DiagnosticCentreID string `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	Column2            string `db:"column_2" json:"column_2"`
 }
 
 func (q *Queries) Get_Availability(ctx context.Context, arg Get_AvailabilityParams) ([]*DiagnosticCentreAvailability, error) {
@@ -218,13 +218,13 @@ RETURNING id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appoi
 `
 
 type Update_AvailabilityParams struct {
-	DiagnosticCentreID string          `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	DayOfWeek          Weekday         `db:"day_of_week" json:"day_of_week"`
-	StartTime          pgtype.Time     `db:"start_time" json:"start_time"`
-	EndTime            pgtype.Time     `db:"end_time" json:"end_time"`
-	MaxAppointments    pgtype.Int4     `db:"max_appointments" json:"max_appointments"`
-	SlotDuration       pgtype.Interval `db:"slot_duration" json:"slot_duration"`
-	BreakTime          pgtype.Interval `db:"break_time" json:"break_time"`
+	DiagnosticCentreID string      `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	DayOfWeek          string      `db:"day_of_week" json:"day_of_week"`
+	StartTime          pgtype.Time `db:"start_time" json:"start_time"`
+	EndTime            pgtype.Time `db:"end_time" json:"end_time"`
+	MaxAppointments    int32 `db:"max_appointments" json:"max_appointments"`
+	SlotDuration       int32       `db:"slot_duration" json:"slot_duration"`
+	BreakTime          int32 `db:"break_time" json:"break_time"`
 }
 
 func (q *Queries) Update_Availability(ctx context.Context, arg Update_AvailabilityParams) (*DiagnosticCentreAvailability, error) {

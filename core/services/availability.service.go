@@ -59,9 +59,15 @@ func (s *ServicesHandler) convertSlotToArrays(dto *domain.CreateAvailabilityDTO)
 		breakTimes[i] = breakTime
 	}
 
+	// Convert daysOfWeek to []string
+	daysOfWeekStr := make([]string, len(daysOfWeek))
+	for i, day := range daysOfWeek {
+		daysOfWeekStr[i] = string(day)
+	}
+
 	return &db.Create_AvailabilityParams{
 		Column1: diagnosticCentreIDs,
-		Column2: daysOfWeek,
+		Column2: daysOfWeekStr,
 		Column3: startTimes,
 		Column4: endTimes,
 		Column5: maxAppointments,
@@ -75,7 +81,7 @@ func (s *ServicesHandler) validateCreateAvailabilityInput(ctx echo.Context) (*do
 	// Authenticate and authorize user - owner or manager only
 	_, err := PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-			return nil, err
+		return nil, err
 	}
 
 	// This validated at the middleware level
@@ -110,7 +116,7 @@ func (s *ServicesHandler) CreateAvailability(ctx echo.Context) error {
 // validateUpdateAvailabilityInput validates and converts the input for updating availability slots
 func (s *ServicesHandler) validateUpdateAvailabilityInput(ctx echo.Context) (*db.Update_AvailabilityParams, error) {
 	// Authenticate and authorize user
-	_, err := PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER,db.UserEnumDIAGNOSTICCENTREMANAGER})
+	_, err := PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return nil, err
 	}
@@ -123,31 +129,21 @@ func (s *ServicesHandler) validateUpdateAvailabilityInput(ctx echo.Context) (*db
 		return nil, fmt.Errorf("invalid request body")
 	}
 
-	// Convert slot duration to pgtype.Interval
-	slotDuration := pgtype.Interval{}
-	if err := slotDuration.Scan(dto.SlotDuration); err != nil {
-		return nil, fmt.Errorf("%s: %w", errInvalidSlotDuration, err)
-	}
 
-	// Convert break time to pgtype.Interval
-	breakTime := pgtype.Interval{}
-	if err := breakTime.Scan(dto.BreakTime); err != nil {
-		return nil, fmt.Errorf("%s: %w", errInvalidBreakTime, err)
-	}
-
-	// Convert end time to pgtype.Time
 	endTime := pgtype.Time{}
-	if err := endTime.Scan(*dto.EndTime); err != nil {
-		return nil, fmt.Errorf("%s: %w", errInvalidEndTime, err)
+	if dto.EndTime != nil {
+		if err := endTime.Scan(*dto.EndTime); err != nil {
+			return nil, fmt.Errorf("%s: %w", errInvalidEndTime, err)
+		}
 	}
 
 	return &db.Update_AvailabilityParams{
 		DiagnosticCentreID: diagnosticCentreID,
-		SlotDuration:       slotDuration,
-		MaxAppointments:    pgtype.Int4{Int32: int32(*dto.MaxAppointments), Valid: true},
-		BreakTime:          breakTime,
+		SlotDuration:       *dto.SlotDuration,
+		MaxAppointments:    *dto.MaxAppointments,
+		BreakTime:          *dto.BreakTime,
 		EndTime:            endTime,
-		DayOfWeek:          db.Weekday(dayOfWeek),
+		DayOfWeek:          dayOfWeek,
 	}, nil
 }
 
@@ -273,7 +269,7 @@ func (s *ServicesHandler) validateGetAvailabilityInput(ctx echo.Context) (*db.Ge
 
 	return &db.Get_AvailabilityParams{
 		DiagnosticCentreID: dto.DiagnosticCentreID,
-		Column2:            db.Weekday(dto.DayOfWeek),
+		Column2:            string(db.Weekday(dto.DayOfWeek)),
 	}, nil
 }
 
@@ -302,7 +298,7 @@ func (s *ServicesHandler) validateDeleteAvailabilityInput(ctx echo.Context) (*db
 
 	return &db.Delete_AvailabilityParams{
 		DiagnosticCentreID: ctx.Param("diagnostic_centre_id"),
-		DayOfWeek:          db.Weekday(ctx.Param("day_of_week")),
+		DayOfWeek:          ctx.Param("day_of_week"),
 	}, nil
 }
 

@@ -122,14 +122,12 @@ func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.Creat
 		return nil, err
 	}
 
-	availableTestsStr := make([]string, len(value.AvailableTests))
-	for i, test := range value.AvailableTests {
-		availableTestsStr[i] = string(test)
-	}
+	availableTests := make([]db.AvailableTests, len(value.AvailableTests))
+	copy(availableTests, value.AvailableTests)
 
-	doctorsStr := make([]string, len(value.Doctors))
+	doctors := make([]db.Doctor, len(value.Doctors))
 	for i, doctor := range value.Doctors {
-		doctorsStr[i] = string(doctor)
+		doctors[i] = db.Doctor(doctor)
 	}
 
 	params := &db.Create_Diagnostic_CentreParams{
@@ -138,8 +136,8 @@ func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.Creat
 		Longitude:            pgtype.Float8{Float64: value.Longitude, Valid: true},
 		Address:              addressBytes,
 		Contact:              contactBytes,
-		Doctors:              doctorsStr,
-		AvailableTests:       availableTestsStr,
+		Doctors:              doctors,
+		AvailableTests:       availableTests,
 		AdminID:              value.AdminId.String(),
 	}
 
@@ -165,14 +163,24 @@ func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domai
 		return nil, err
 	}
 
+	doctors := make([]db.Doctor, len(value.Doctors))
+	for i, doctor := range value.Doctors {
+		doctors[i] = db.Doctor(doctor)
+	}
+
+	availableTests := make([]db.AvailableTests, len(value.AvailableTests))
+	for i, test := range value.AvailableTests {
+		availableTests[i] = db.AvailableTests(test)
+	}
+
 	params := &db.Update_Diagnostic_Centre_ByOwnerParams{
 		DiagnosticCentreName: value.DiagnosticCentreName,
 		Latitude:             pgtype.Float8{Float64: value.Latitude, Valid: true},
 		Longitude:            pgtype.Float8{Float64: value.Longitude, Valid: true},
 		Address:              addressBytes,
 		Contact:              contactBytes,
-		Doctors:              value.Doctors,
-		AvailableTests:       value.AvailableTests,
+		Doctors:              doctors,
+		AvailableTests:       availableTests,
 		AdminID:              value.ADMINID.String(),
 	}
 

@@ -1028,8 +1028,8 @@ type DiagnosticCentre struct {
 	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
 	Address              []byte             `db:"address" json:"address"`
 	Contact              []byte             `db:"contact" json:"contact"`
-	Doctors              []string           `db:"doctors" json:"doctors"`
-	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
 	AdminID              string             `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
@@ -1043,8 +1043,8 @@ type DiagnosticCentreAvailability struct {
 	StartTime          pgtype.Time        `db:"start_time" json:"start_time"`
 	EndTime            pgtype.Time        `db:"end_time" json:"end_time"`
 	MaxAppointments    pgtype.Int4        `db:"max_appointments" json:"max_appointments"`
-	SlotDuration       pgtype.Interval    `db:"slot_duration" json:"slot_duration"`
-	BreakTime          pgtype.Interval    `db:"break_time" json:"break_time"`
+	SlotDuration       int32              `db:"slot_duration" json:"slot_duration"`
+	BreakTime          pgtype.Int4        `db:"break_time" json:"break_time"`
 	CreatedAt          pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
