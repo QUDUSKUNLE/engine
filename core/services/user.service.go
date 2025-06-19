@@ -39,7 +39,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	}
 
 	// Generate verification token
-	token := utils.GenerateRandomToken()
+	token := GenerateRandomToken()
 	expiresAt := time.Now().Add(24 * time.Hour)
 
 	verificationParams := db.CreateEmailVerificationTokenParams{
@@ -80,7 +80,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 
 func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	// Check for permission to add a diagnostic manager
-	_, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
+	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		utils.Error("Unauthorized attempt to create diagnostic centre manager",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -97,7 +97,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 	}
 
 	// Generate password and create user
-	password, err := utils.GenerateRandomPassword(20)
+	password, err := GenerateRandomPassword(20)
 	if err != nil {
 		utils.Error("Failed to generate random password",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -147,7 +147,7 @@ func (service *ServicesHandler) Login(context echo.Context) error {
 		UserID:   uuid.MustParse(user.ID),
 		UserType: user.UserType,
 	}
-	token, err := utils.GenerateToken(userClaims)
+	token, err := GenerateToken(userClaims)
 	if err != nil {
 		utils.Error("Failed to generate JWT token",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -354,7 +354,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	}
 
 	// Generate new verification token
-	token := utils.GenerateRandomToken()
+	token := GenerateRandomToken()
 	expiresAt := time.Now().Add(24 * time.Hour)
 
 	verificationParams := db.CreateEmailVerificationTokenParams{
@@ -473,7 +473,7 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 		UserID:   uuid.MustParse(user.ID),
 		UserType: user.UserType,
 	}
-	token, err := utils.GenerateToken(userClaims)
+	token, err := GenerateToken(userClaims)
 	if err != nil {
 		utils.Error("Failed to generate JWT token",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -495,7 +495,7 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateUserProfileDTO)
 
 	// Get current user from context
-	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		utils.Error("Failed to get current user",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -528,7 +528,7 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 
 func (service *ServicesHandler) GetProfile(context echo.Context) error {
 	// Get current user from context
-	currentUser, err := utils.PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER, db.UserEnumDIAGNOSTICCENTREMANAGER, db.UserEnumDIAGNOSTICCENTREOWNER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER, db.UserEnumDIAGNOSTICCENTREMANAGER, db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		utils.Error("Failed to get current user",
 			utils.LogField{Key: "error", Value: err.Error()})

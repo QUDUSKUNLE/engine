@@ -64,6 +64,7 @@ func main() {
 	e.Use(middlewares.PrometheusMiddleware)
 	e.Use(echoprometheus.NewMiddleware("Medicue"))
 
+	availabilityRepo := repository.NewAvailabilityRepository(store)
 	// Plug echo into validationAdaptor
 	e = middlewares.ValidationAdaptor(e)
 
@@ -71,7 +72,6 @@ func main() {
 	scheduleRepo := repository.NewScheduleRepository(store)
 	diagnosticRepo := repository.NewDiagnosticCentreRepository(store)
 	recordRepo := repository.NewRecordRepository(store)
-	availabilityRepo := repository.NewAvailabilityRepository(store)
 	paymentRepo := repository.NewPaymentRepository(store)
 	appointmentRepo := repository.NewApppointmentRepository(store)
 	core := services.ServicesAdapter(

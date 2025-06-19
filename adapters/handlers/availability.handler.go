@@ -65,7 +65,7 @@ func (h *HTTPHandler) UpdateAvailability(c echo.Context) error {
 // @Failure 404 {object} utils.ErrorResponse
 // @Router /api/v1/availability/{diagnostic_centre_id} [put]
 func (handler *HTTPHandler) UpdateManyAvailability(context echo.Context) error {
-	return handler.service.UpdateManyAvailability(context)
+	return nil
 }
 
 // @Summary Delete availability for a diagnostic centre
@@ -83,3 +83,13 @@ func (h *HTTPHandler) DeleteAvailability(c echo.Context) error {
 
 	return nil
 }
+
+// @Summary Create a single availability slot
+// @Description Creates a single availability slot for a diagnostic centre
+// @Tags availability
+// @Accept json
+// @Produce json
+// @Param body body CreateSingleAvailabilityRequest true "Availability details"
+// @Success 201 {object} db.DiagnosticCentreAvailability
+// @Failure 400 {object} Error
+// @Router /availability/single [post]

@@ -373,6 +373,13 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 					factory:     func() interface{} { return nil },
 					description: "Delete diagnostic centre availability",
 				},
+				// {
+				// 	method:      http.MethodPost,
+				// 	path:        "/availability/single",
+				// 	handler:     handler.CreateSingleAvailability,
+				// 	factory:     func() interface{} { return &domain.CreateSingleAvailabilityDTO{} },
+				// 	description: "Create a single availability slot",
+				// },
 			},
 		},
 	}

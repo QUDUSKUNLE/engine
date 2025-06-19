@@ -2,15 +2,17 @@ package db
 
 import (
 	"context"
-	"log"
+	"fmt"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 )
 
 func DatabaseConnection(DB_URL string) (*Queries, error) {
-	database, err := pgxpool.New(context.Background(), DB_URL)
+	// Open a connection using pgx directly
+	db, err := pgx.Connect(context.Background(), DB_URL)
 	if err != nil {
-		log.Fatalf("There was error connecting to the database: %v", err)
+		return nil, fmt.Errorf("error opening database connection: %v", err)
 	}
-	return New(database), nil
+
+	return New(db), nil
 }

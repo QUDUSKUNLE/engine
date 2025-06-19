@@ -1,15 +1,32 @@
 package services
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"io"
+	"math/big"
+	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/domain"
 	"github.com/medicue/core/utils"
+)
+
+var (
+	// JWT related errors
+	ErrMissingSecretKey = errors.New("missing JWT secret key")
+	ErrInvalidToken     = errors.New("invalid or expired token")
+	ErrUnauthorized     = errors.New("unauthorized to perform this operation")
+	// Minimum password length for security
+	MinPasswordLength = 12
+	passwordChars     = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}<>?/|"
 )
 
 // PaginationParams interface for any struct that has Limit and Offset fields
@@ -238,4 +255,128 @@ func toTimestamptz(t time.Time) pgtype.Timestamptz {
 
 func toText(s string) pgtype.Text {
 	return pgtype.Text{String: s, Valid: len(s) > 0}
+}
+
+// GenerateToken generates a JWT token for the given user with enhanced security
+func GenerateToken(user domain.CurrentUserDTO) (string, error) {
+	secret := os.Getenv("JWT_SECRET_KEY")
+	if secret == "" {
+		utils.Error("jwt secret key missing")
+		return "", ErrMissingSecretKey
+	}
+
+	// Get token expiration from env or use default
+	tokenExpiration := 72 * time.Hour
+	if expStr := os.Getenv("JWT_EXPIRATION_HOURS"); expStr != "" {
+		if exp, err := time.ParseDuration(expStr + "h"); err == nil {
+			tokenExpiration = exp
+		}
+	}
+
+	claims := &domain.JwtCustomClaimsDTO{
+		UserID:       user.UserID,
+		DiagnosticID: user.DiagnosticID,
+		UserType:     db.UserEnum(user.UserType),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenExpiration)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedToken, err := token.SignedString([]byte(secret))
+	if err != nil {
+		utils.Error("failed to sign token", utils.LogField{Key: "error", Value: err.Error()})
+		return "", fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	utils.Info("token generated successfully",
+		utils.LogField{Key: "userID", Value: user.UserID.String()},
+		utils.LogField{Key: "userType", Value: string(user.UserType)},
+	)
+	return signedToken, nil
+}
+
+// GenerateRandomPassword generates a cryptographically secure random password
+func GenerateRandomPassword(length int) (string, error) {
+	if length < MinPasswordLength {
+		return "", fmt.Errorf("password length must be at least %d characters", MinPasswordLength)
+	}
+
+	password := make([]byte, length)
+	for i := range password {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(passwordChars))))
+		if err != nil {
+			utils.Error("failed to generate random number", utils.LogField{Key: "error", Value: err.Error()})
+			return "", fmt.Errorf("failed to generate password: %w", err)
+		}
+		password[i] = passwordChars[num.Int64()]
+	}
+	return string(password), nil
+}
+
+// GenerateRandomToken creates a cryptographically secure random token
+func GenerateRandomToken() string {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
+}
+
+// CurrentUser extracts the current user from the JWT token in the context
+func CurrentUser(c echo.Context) (*domain.CurrentUserDTO, error) {
+	userToken, ok := c.Get("user").(*jwt.Token)
+	if !ok || userToken == nil {
+		utils.Error("missing or invalid user token")
+		return nil, ErrInvalidToken
+	}
+
+	claims, ok := userToken.Claims.(*domain.JwtCustomClaimsDTO)
+	if !ok {
+		utils.Error("invalid token claims")
+		return nil, ErrInvalidToken
+	}
+
+	utils.Debug("user extracted from token",
+		utils.LogField{Key: "userID", Value: claims.UserID.String()},
+		utils.LogField{Key: "userType", Value: string(claims.UserType)},
+	)
+
+	return &domain.CurrentUserDTO{
+		UserID:       claims.UserID,
+		DiagnosticID: claims.DiagnosticID,
+		UserType:     claims.UserType,
+	}, nil
+}
+
+// PrivateMiddlewareContext validates user type access
+func PrivateMiddlewareContext(c echo.Context, userTypes []db.UserEnum) (*domain.CurrentUserDTO, error) {
+	user, err := CurrentUser(c)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, allowedType := range userTypes {
+		if user.UserType == allowedType {
+			return user, nil
+		}
+	}
+
+	utils.Warn("unauthorized access attempt",
+		utils.LogField{Key: "requiredTypes", Value: convertUserTypesToStrings(userTypes)},
+		utils.LogField{Key: "actualType", Value: string(user.UserType)},
+		utils.LogField{Key: "userID", Value: user.UserID.String()},
+	)
+	return nil, ErrUnauthorized
+}
+
+// Helper function to convert UserEnum slice to string slice for logging
+func convertUserTypesToStrings(types []db.UserEnum) []string {
+	strings := make([]string, len(types))
+	for i, t := range types {
+		strings[i] = string(t)
+	}
+	return strings
 }
