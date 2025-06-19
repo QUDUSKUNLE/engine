@@ -262,8 +262,8 @@ func TestGetDiagnosticCentreStats_Success(t *testing.T) {
 	testCentre := &db.DiagnosticCentre{
 		ID:                   centreID.String(),
 		DiagnosticCentreName: "Test Centre",
-		Doctors:              []string{"Dr. Smith", "Dr. Jones"},
-		AvailableTests:       []string{"Blood Test", "X-Ray", "MRI"},
+		Doctors:              []db.Doctor{"Dr. Smith", "Dr. Jones"},
+		AvailableTests:       []db.AvailableTests{"Blood Test", "X-Ray", "MRI"},
 		CreatedBy:            uuid.New().String(),
 		AdminID:              managerID.String(),
 	}
@@ -366,8 +366,8 @@ func TestGetDiagnosticCentresByManager_Success(t *testing.T) {
 		ID:                   centreID.String(),
 		DiagnosticCentreName: "Test Centre",
 		AdminID:              managerID.String(),
-		Doctors:              []string{"Dr. Smith"},
-		AvailableTests:       []string{"Blood Test"},
+		Doctors:              []db.Doctor{"Dr. Smith"},
+		AvailableTests:       []db.AvailableTests{"Blood Test"},
 	}
 
 	e := echo.New()

@@ -112,11 +112,11 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	hasFilters := false
 	// Add optional filters
 	if query.Doctor != "" {
-		params.Doctors = []string{query.Doctor}
+		params.Doctors = []db.Doctor{db.Doctor(query.Doctor)}
 		hasFilters = true
 	}
 	if query.Test != "" {
-		params.AvailableTests = []string{query.Test}
+		params.AvailableTests = []db.AvailableTests{db.AvailableTests(query.Test)}
 		hasFilters = true
 	}
 
