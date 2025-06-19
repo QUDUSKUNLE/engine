@@ -1028,8 +1028,8 @@ type DiagnosticCentre struct {
 	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
 	Address              []byte             `db:"address" json:"address"`
 	Contact              []byte             `db:"contact" json:"contact"`
-	Doctors              []string           `db:"doctors" json:"doctors"`
-	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
 	AdminID              string             `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
@@ -1039,7 +1039,7 @@ type DiagnosticCentre struct {
 type DiagnosticCentreAvailability struct {
 	ID                 string             `db:"id" json:"id"`
 	DiagnosticCentreID string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	DayOfWeek          string             `db:"day_of_week" json:"day_of_week"`
+	DayOfWeek          Weekday            `db:"day_of_week" json:"day_of_week"`
 	StartTime          pgtype.Time        `db:"start_time" json:"start_time"`
 	EndTime            pgtype.Time        `db:"end_time" json:"end_time"`
 	MaxAppointments    pgtype.Int4        `db:"max_appointments" json:"max_appointments"`

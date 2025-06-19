@@ -28,15 +28,15 @@ INSERT INTO diagnostic_centres (
 `
 
 type Create_Diagnostic_CentreParams struct {
-	DiagnosticCentreName string        `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
-	Latitude             pgtype.Float8 `db:"latitude" json:"latitude"`
-	Longitude            pgtype.Float8 `db:"longitude" json:"longitude"`
-	Address              []byte        `db:"address" json:"address"`
-	Contact              []byte        `db:"contact" json:"contact"`
-	Doctors              []string      `db:"doctors" json:"doctors"`
-	AvailableTests       []string      `db:"available_tests" json:"available_tests"`
-	CreatedBy            string        `db:"created_by" json:"created_by"`
-	AdminID              string        `db:"admin_id" json:"admin_id"`
+	DiagnosticCentreName string           `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8    `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8    `db:"longitude" json:"longitude"`
+	Address              []byte           `db:"address" json:"address"`
+	Contact              []byte           `db:"contact" json:"contact"`
+	Doctors              []Doctor         `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests `db:"available_tests" json:"available_tests"`
+	CreatedBy            string           `db:"created_by" json:"created_by"`
+	AdminID              string           `db:"admin_id" json:"admin_id"`
 }
 
 // Inserts a new diagnostic record into the diagnostic_centres table.
@@ -132,11 +132,11 @@ LIMIT 3
 `
 
 type Find_Nearest_Diagnostic_Centres_WhenRejectedParams struct {
-	Radians        float64  `db:"radians" json:"radians"`
-	Radians_2      float64  `db:"radians_2" json:"radians_2"`
-	ID             string   `db:"id" json:"id"`
-	Doctors        []string `db:"doctors" json:"doctors"`
-	AvailableTests []string `db:"available_tests" json:"available_tests"`
+	Radians        float64          `db:"radians" json:"radians"`
+	Radians_2      float64          `db:"radians_2" json:"radians_2"`
+	ID             string           `db:"id" json:"id"`
+	Doctors        []Doctor         `db:"doctors" json:"doctors"`
+	AvailableTests []AvailableTests `db:"available_tests" json:"available_tests"`
 }
 
 type Find_Nearest_Diagnostic_Centres_WhenRejectedRow struct {
@@ -146,8 +146,8 @@ type Find_Nearest_Diagnostic_Centres_WhenRejectedRow struct {
 	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
 	Address              []byte             `db:"address" json:"address"`
 	Contact              []byte             `db:"contact" json:"contact"`
-	Doctors              []string           `db:"doctors" json:"doctors"`
-	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DistanceKm           float64            `db:"distance_km" json:"distance_km"`
@@ -308,10 +308,10 @@ LIMIT 50
 `
 
 type Get_Nearest_Diagnostic_CentresParams struct {
-	Radians        float64  `db:"radians" json:"radians"`
-	Radians_2      float64  `db:"radians_2" json:"radians_2"`
-	Doctors        []string `db:"doctors" json:"doctors"`
-	AvailableTests []string `db:"available_tests" json:"available_tests"`
+	Radians        float64          `db:"radians" json:"radians"`
+	Radians_2      float64          `db:"radians_2" json:"radians_2"`
+	Doctors        []Doctor         `db:"doctors" json:"doctors"`
+	AvailableTests []AvailableTests `db:"available_tests" json:"available_tests"`
 }
 
 type Get_Nearest_Diagnostic_CentresRow struct {
@@ -321,8 +321,8 @@ type Get_Nearest_Diagnostic_CentresRow struct {
 	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
 	Address              []byte             `db:"address" json:"address"`
 	Contact              []byte             `db:"contact" json:"contact"`
-	Doctors              []string           `db:"doctors" json:"doctors"`
-	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DistanceKm           float64            `db:"distance_km" json:"distance_km"`
@@ -469,11 +469,11 @@ LIMIT $4 OFFSET $5
 `
 
 type Search_Diagnostic_CentresParams struct {
-	Column1        pgtype.Text `db:"column_1" json:"column_1"`
-	Doctors        []string    `db:"doctors" json:"doctors"`
-	AvailableTests []string    `db:"available_tests" json:"available_tests"`
-	Limit          int32       `db:"limit" json:"limit"`
-	Offset         int32       `db:"offset" json:"offset"`
+	Column1        pgtype.Text      `db:"column_1" json:"column_1"`
+	Doctors        []Doctor         `db:"doctors" json:"doctors"`
+	AvailableTests []AvailableTests `db:"available_tests" json:"available_tests"`
+	Limit          int32            `db:"limit" json:"limit"`
+	Offset         int32            `db:"offset" json:"offset"`
 }
 
 // Searches diagnostic_centres by name with pagination.
@@ -528,7 +528,7 @@ LIMIT $3 OFFSET $4
 
 type Search_Diagnostic_Centres_ByDoctorParams struct {
 	Column1 pgtype.Text `db:"column_1" json:"column_1"`
-	Doctors []string    `db:"doctors" json:"doctors"`
+	Doctors []Doctor    `db:"doctors" json:"doctors"`
 	Limit   int32       `db:"limit" json:"limit"`
 	Offset  int32       `db:"offset" json:"offset"`
 }
@@ -589,16 +589,16 @@ RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doc
 `
 
 type Update_Diagnostic_Centre_ByOwnerParams struct {
-	ID                   string        `db:"id" json:"id"`
-	CreatedBy            string        `db:"created_by" json:"created_by"`
-	DiagnosticCentreName string        `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
-	Latitude             pgtype.Float8 `db:"latitude" json:"latitude"`
-	Longitude            pgtype.Float8 `db:"longitude" json:"longitude"`
-	Address              []byte        `db:"address" json:"address"`
-	Contact              []byte        `db:"contact" json:"contact"`
-	Doctors              []string      `db:"doctors" json:"doctors"`
-	AvailableTests       []string      `db:"available_tests" json:"available_tests"`
-	AdminID              string        `db:"admin_id" json:"admin_id"`
+	ID                   string           `db:"id" json:"id"`
+	CreatedBy            string           `db:"created_by" json:"created_by"`
+	DiagnosticCentreName string           `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8    `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8    `db:"longitude" json:"longitude"`
+	Address              []byte           `db:"address" json:"address"`
+	Contact              []byte           `db:"contact" json:"contact"`
+	Doctors              []Doctor         `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests `db:"available_tests" json:"available_tests"`
+	AdminID              string           `db:"admin_id" json:"admin_id"`
 }
 
 // Updates a diagnostic centre by the owner.

@@ -24,6 +24,7 @@ type Querier interface {
 	// Create a diagnostic schedule
 	Create_Diagnostic_Schedule(ctx context.Context, arg Create_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Create_Payment(ctx context.Context, arg Create_PaymentParams) (*Payment, error)
+	Create_Single_Availability(ctx context.Context, arg Create_Single_AvailabilityParams) (*DiagnosticCentreAvailability, error)
 	DeleteAppointment(ctx context.Context, id string) error
 	Delete_Availability(ctx context.Context, arg Delete_AvailabilityParams) error
 	// Deletes a diagnosticCentre only by the created_by.
