@@ -32,30 +32,32 @@ func (s *ServicesHandler) convertSlotToArrays(dto *domain.CreateAvailabilityDTO)
 		diagnosticCentreIDs[i] = dto.DiagnosticCentreID
 		daysOfWeek[i] = slot.DayOfWeek
 
+		// Convert time.Time to pgtype.Time for start time
 		startTime := pgtype.Time{}
-		if err := startTime.Scan(slot.StartTime); err != nil {
-			return nil, fmt.Errorf("%s: %w", errInvalidStartTime, err)
-		}
+		// Extract only the time part (hours, minutes, seconds, microseconds)
+		hour, min, sec := slot.StartTime.Clock()
+		nsec := slot.StartTime.Nanosecond()
+		startTime.Microseconds = int64(hour*3600+min*60+sec)*1000000 + int64(nsec/1000)
+		startTime.Valid = true
 		startTimes[i] = startTime
 
+		// Convert time.Time to pgtype.Time for end time
 		endTime := pgtype.Time{}
-		if err := endTime.Scan(slot.EndTime); err != nil {
-			return nil, fmt.Errorf("%s: %w", errInvalidEndTime, err)
-		}
+		// Extract only the time part (hours, minutes, seconds, microseconds)
+		hour, min, sec = slot.EndTime.Clock()
+		nsec = slot.EndTime.Nanosecond()
+		endTime.Microseconds = int64(hour*3600+min*60+sec)*1000000 + int64(nsec/1000)
+		endTime.Valid = true
 		endTimes[i] = endTime
 
-		maxAppointments[i] = int32(slot.MaxAppointments)
+		maxAppointments[i] = slot.MaxAppointments
 		slotDurations[i] = slot.SlotDuration // Already an int32
 		breakTimes[i] = slot.BreakTime       // Already an int32
 	}
 
-	// Copy daysOfWeek to daysOfWeekStr
-	daysOfWeekStr := make([]string, len(daysOfWeek))
-	copy(daysOfWeekStr, daysOfWeek)
-
 	return &db.Create_AvailabilityParams{
 		Column1: diagnosticCentreIDs,
-		Column2: daysOfWeekStr,
+		Column2: daysOfWeek,
 		Column3: startTimes,
 		Column4: endTimes,
 		Column5: maxAppointments,
