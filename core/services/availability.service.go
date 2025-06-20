@@ -306,9 +306,9 @@ func (s *ServicesHandler) GetAvailability(ctx echo.Context) error {
 		}
 	}
 	if len(slots) == 0 {
-		return utils.ResponseMessage(http.StatusOK, []struct{}{}, ctx)
+		return utils.ResponseMessage(http.StatusOK, []*domain.AvailabilitySlot{}, ctx)
 	}
-
+	
 	result := make([]*domain.AvailabilitySlot, len(slots))
 	for i, slot := range slots {
 		result[i] = &domain.AvailabilitySlot{
