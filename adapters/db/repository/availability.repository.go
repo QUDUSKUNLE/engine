@@ -22,6 +22,10 @@ func (r *Repository) GetAvailability(ctx context.Context, params db.Get_Availabi
 	return r.database.Get_Availability(ctx, params)
 }
 
+func (r *Repository) GetDiagnosticAvailability(ctx context.Context, req string) ([]*db.DiagnosticCentreAvailability, error) {
+	return r.database.Get_Diagnostic_Availability(ctx, req)
+}
+
 func (r *Repository) UpdateAvailability(ctx context.Context, params db.Update_AvailabilityParams) (*db.DiagnosticCentreAvailability, error) {
 	return r.database.Update_Availability(ctx, params)
 }

@@ -203,6 +203,43 @@ func (q *Queries) Get_Availability(ctx context.Context, arg Get_AvailabilityPara
 	return items, nil
 }
 
+const get_Diagnostic_Availability = `-- name: Get_Diagnostic_Availability :many
+SELECT id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appointments, slot_duration, break_time, created_at, updated_at FROM diagnostic_centre_availability
+WHERE diagnostic_centre_id = $1
+ORDER BY created_at ASC
+`
+
+func (q *Queries) Get_Diagnostic_Availability(ctx context.Context, diagnosticCentreID string) ([]*DiagnosticCentreAvailability, error) {
+	rows, err := q.db.Query(ctx, get_Diagnostic_Availability, diagnosticCentreID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*DiagnosticCentreAvailability
+	for rows.Next() {
+		var i DiagnosticCentreAvailability
+		if err := rows.Scan(
+			&i.ID,
+			&i.DiagnosticCentreID,
+			&i.DayOfWeek,
+			&i.StartTime,
+			&i.EndTime,
+			&i.MaxAppointments,
+			&i.SlotDuration,
+			&i.BreakTime,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const update_Availability = `-- name: Update_Availability :one
 UPDATE diagnostic_centre_availability
 SET

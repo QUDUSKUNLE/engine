@@ -55,6 +55,7 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error)
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, error)
 	Get_Availability(ctx context.Context, arg Get_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
+	Get_Diagnostic_Availability(ctx context.Context, diagnosticCentreID string) ([]*DiagnosticCentreAvailability, error)
 	// Retrieves a single diagnostic record by its ID.
 	Get_Diagnostic_Centre(ctx context.Context, id string) (*DiagnosticCentre, error)
 	// GetDiagnosticCentreByManager

@@ -9,14 +9,16 @@ import (
 )
 
 type AvailabilitySlot struct {
-	ID                 uuid.UUID `json:"id"`
-	DiagnosticCentreID uuid.UUID `json:"diagnostic_centre_id"`
+	ID                 string `json:"id"`
+	DiagnosticCentreID string `json:"diagnostic_centre_id"`
 	DayOfWeek          string    `json:"day_of_week"`
-	StartTime          time.Time `json:"start_time"`
-	EndTime            time.Time `json:"end_time"`
-	MaxAppointments    int       `json:"max_appointments"`
-	SlotDuration       int32     `json:"slot_duration"` // minutes
-	BreakTime          int32     `json:"break_time"`    // minutes
+	StartTime          string    `json:"start_time"`
+	EndTime            string    `json:"end_time"`
+	MaxAppointments    int32       `json:"max_appointments"`
+	SlotDuration       string     `json:"slot_duration"` // minutes
+	BreakTime          string     `json:"break_time"`    // minutes
+	CreatedAt          string    `json:"created_at"`
+	UpdatedAt          string    `json:"updated_at"`
 }
 
 type Slots struct {
@@ -137,7 +139,7 @@ type GetAvailabilityDTO struct {
 // UpdateManyAvailabilitySlot represents a single slot in the update many request
 type UpdateManyAvailabilitySlot struct {
 	DiagnosticCentreID string     `json:"diagnostic_centre_id" validate:"required,uuid"`
-	DayOfWeek          string `json:"day_of_week" validate:"required"`
+	DayOfWeek          string     `json:"day_of_week" validate:"required"`
 	StartTime          *time.Time `json:"start_time,omitempty" validate:"omitempty,time"`
 	EndTime            *time.Time `json:"end_time,omitempty" validate:"omitempty,time"`
 	MaxAppointments    *int32     `json:"max_appointments,omitempty" validate:"omitempty,min=1"`
