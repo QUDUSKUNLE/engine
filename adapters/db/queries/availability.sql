@@ -6,8 +6,8 @@ WITH availability_params AS (
         unnest($3::time[]) as start_time,
         unnest($4::time[]) as end_time,
         unnest($5::int[]) as max_appointments,
-        unnest($6::interval[]) as slot_duration,
-        unnest($7::interval[]) as break_time
+        unnest($6::int[]) as slot_duration,
+        unnest($7::int[]) as break_time
 )
 INSERT INTO diagnostic_centre_availability (
     diagnostic_centre_id,
@@ -53,12 +53,12 @@ RETURNING *;
 WITH update_params AS (
     SELECT 
         unnest($1::uuid[]) as diagnostic_centre_id,
-        unnest($2::weekday[]) as day_of_week,
+        unnest($2::text[]) as day_of_week,
         unnest($3::time[]) as start_time,
         unnest($4::time[]) as end_time,
         unnest($5::int[]) as max_appointments,
-        unnest($6::interval[]) as slot_duration,
-        unnest($7::interval[]) as break_time
+        unnest($6::int[]) as slot_duration,
+        unnest($7::int[]) as break_time
 )
 UPDATE diagnostic_centre_availability AS dca
 SET

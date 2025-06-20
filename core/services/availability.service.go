@@ -21,16 +21,16 @@ const (
 // convertSlotToArrays converts a slice of availability slots to arrays of individual fields
 func (s *ServicesHandler) convertSlotToArrays(dto *domain.CreateAvailabilityDTO) (*db.Create_AvailabilityParams, error) {
 	diagnosticCentreIDs := make([]string, len(dto.Slots))
-	daysOfWeek := make([]db.Weekday, len(dto.Slots))
+	daysOfWeek := make([]string, len(dto.Slots))
 	startTimes := make([]pgtype.Time, len(dto.Slots))
 	endTimes := make([]pgtype.Time, len(dto.Slots))
 	maxAppointments := make([]int32, len(dto.Slots))
-	slotDurations := make([]pgtype.Interval, len(dto.Slots))
-	breakTimes := make([]pgtype.Interval, len(dto.Slots))
+	slotDurations := make([]int32, len(dto.Slots))
+	breakTimes := make([]int32, len(dto.Slots))
 
 	for i, slot := range dto.Slots {
 		diagnosticCentreIDs[i] = dto.DiagnosticCentreID
-		daysOfWeek[i] = db.Weekday(slot.DayOfWeek)
+		daysOfWeek[i] = slot.DayOfWeek
 
 		startTime := pgtype.Time{}
 		if err := startTime.Scan(slot.StartTime); err != nil {
@@ -45,24 +45,14 @@ func (s *ServicesHandler) convertSlotToArrays(dto *domain.CreateAvailabilityDTO)
 		endTimes[i] = endTime
 
 		maxAppointments[i] = int32(slot.MaxAppointments)
-
-		slotDuration := pgtype.Interval{}
-		if err := slotDuration.Scan(slot.SlotDuration); err != nil {
-			return nil, fmt.Errorf("%s: %w", errInvalidSlotDuration, err)
-		}
-		slotDurations[i] = slotDuration
-
-		breakTime := pgtype.Interval{}
-		if err := breakTime.Scan(slot.BreakTime); err != nil {
-			return nil, fmt.Errorf("%s: %w", errInvalidBreakTime, err)
-		}
-		breakTimes[i] = breakTime
+		slotDurations[i] = slot.SlotDuration // Already an int32
+		breakTimes[i] = slot.BreakTime       // Already an int32
 	}
 
 	// Convert daysOfWeek to []string
 	daysOfWeekStr := make([]string, len(daysOfWeek))
 	for i, day := range daysOfWeek {
-		daysOfWeekStr[i] = string(day)
+		daysOfWeekStr[i] = day
 	}
 
 	return &db.Create_AvailabilityParams{
@@ -128,7 +118,12 @@ func (s *ServicesHandler) validateUpdateAvailabilityInput(ctx echo.Context) (*db
 	if dto == nil {
 		return nil, fmt.Errorf("invalid request body")
 	}
-
+	startTime := pgtype.Time{}
+	if dto.StartTime != nil {
+		if err := startTime.Scan(*dto.StartTime); err != nil {
+			return nil, fmt.Errorf("%s: %w", errInvalidEndTime, err)
+		}
+	}
 
 	endTime := pgtype.Time{}
 	if dto.EndTime != nil {
@@ -137,11 +132,27 @@ func (s *ServicesHandler) validateUpdateAvailabilityInput(ctx echo.Context) (*db
 		}
 	}
 
+	var slotDuration int32
+	if dto.SlotDuration != nil {
+		slotDuration = *dto.SlotDuration
+	}
+
+	var maxAppointments int32
+	if dto.MaxAppointments != nil {
+		maxAppointments = *dto.MaxAppointments
+	}
+
+	var breakTime int32
+	if dto.BreakTime != nil {
+		breakTime = *dto.BreakTime
+	}
+
 	return &db.Update_AvailabilityParams{
 		DiagnosticCentreID: diagnosticCentreID,
-		SlotDuration:       *dto.SlotDuration,
-		MaxAppointments:    *dto.MaxAppointments,
-		BreakTime:          *dto.BreakTime,
+		SlotDuration:       slotDuration,
+		MaxAppointments:    pgtype.Int4{Int32: maxAppointments, Valid: true},
+		BreakTime:          pgtype.Int4{Int32: breakTime},
+		StartTime:          startTime,
 		EndTime:            endTime,
 		DayOfWeek:          dayOfWeek,
 	}, nil
@@ -181,16 +192,16 @@ func (s *ServicesHandler) validateUpdateManyAvailabilityInput(ctx echo.Context) 
 // convertUpdateManySlotToArrays converts a slice of update availability slots to arrays of individual fields
 func (s *ServicesHandler) convertUpdateManySlotToArrays(dto *domain.UpdateManyAvailabilityDTO) (db.Update_Many_AvailabilityParams, error) {
 	diagnosticCentreIDs := make([]string, len(dto.Slots))
-	daysOfWeek := make([]db.Weekday, len(dto.Slots))
+	daysOfWeek := make([]string, len(dto.Slots))
 	startTimes := make([]pgtype.Time, len(dto.Slots))
 	endTimes := make([]pgtype.Time, len(dto.Slots))
 	maxAppointments := make([]int32, len(dto.Slots))
-	slotDurations := make([]pgtype.Interval, len(dto.Slots))
-	breakTimes := make([]pgtype.Interval, len(dto.Slots))
+	slotDurations := make([]int32, len(dto.Slots))
+	breakTimes := make([]int32, len(dto.Slots))
 
 	for i, slot := range dto.Slots {
 		diagnosticCentreIDs[i] = slot.DiagnosticCentreID
-		daysOfWeek[i] = slot.DayOfWeek
+		daysOfWeek[i] = string(slot.DayOfWeek)
 
 		if slot.StartTime != nil {
 			startTime := pgtype.Time{}
@@ -213,19 +224,11 @@ func (s *ServicesHandler) convertUpdateManySlotToArrays(dto *domain.UpdateManyAv
 		}
 
 		if slot.SlotDuration != nil {
-			slotDuration := pgtype.Interval{}
-			if err := slotDuration.Scan(*slot.SlotDuration); err != nil {
-				return db.Update_Many_AvailabilityParams{}, fmt.Errorf("%s: %w", errInvalidSlotDuration, err)
-			}
-			slotDurations[i] = slotDuration
+			slotDurations[i] = *slot.SlotDuration // Already an int32
 		}
 
 		if slot.BreakTime != nil {
-			breakTime := pgtype.Interval{}
-			if err := breakTime.Scan(*slot.BreakTime); err != nil {
-				return db.Update_Many_AvailabilityParams{}, fmt.Errorf("%s: %w", errInvalidBreakTime, err)
-			}
-			breakTimes[i] = breakTime
+			breakTimes[i] = *slot.BreakTime // Already an int32
 		}
 	}
 
@@ -258,61 +261,4 @@ func (s *ServicesHandler) UpdateManyAvailability(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, slots)
-}
-
-// validateGetAvailabilityInput validates the input for getting availability slots
-func (s *ServicesHandler) validateGetAvailabilityInput(ctx echo.Context) (*db.Get_AvailabilityParams, error) {
-	dto, _ := ctx.Get(utils.ValidatedBodyDTO).(*domain.GetAvailabilityDTO)
-	if dto == nil {
-		return nil, fmt.Errorf("invalid request body")
-	}
-
-	return &db.Get_AvailabilityParams{
-		DiagnosticCentreID: dto.DiagnosticCentreID,
-		Column2:            string(db.Weekday(dto.DayOfWeek)),
-	}, nil
-}
-
-// GetAvailability retrieves availability slots for a diagnostic centre
-func (s *ServicesHandler) GetAvailability(ctx echo.Context) error {
-	params, err := s.validateGetAvailabilityInput(ctx)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
-	}
-
-	slots, err := s.AvailabilityRepo.GetAvailability(ctx.Request().Context(), *params)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
-	}
-
-	return ctx.JSON(http.StatusOK, slots)
-}
-
-// validateDeleteAvailabilityInput validates the input for deleting availability slots
-func (s *ServicesHandler) validateDeleteAvailabilityInput(ctx echo.Context) (*db.Delete_AvailabilityParams, error) {
-	// Authenticate and authorize user
-	_, err := PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
-	if err != nil {
-		return nil, err
-	}
-
-	return &db.Delete_AvailabilityParams{
-		DiagnosticCentreID: ctx.Param("diagnostic_centre_id"),
-		DayOfWeek:          ctx.Param("day_of_week"),
-	}, nil
-}
-
-// DeleteAvailability removes an availability slot for a diagnostic centre
-func (s *ServicesHandler) DeleteAvailability(ctx echo.Context) error {
-	params, err := s.validateDeleteAvailabilityInput(ctx)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, ctx)
-	}
-
-	err = s.AvailabilityRepo.DeleteAvailability(ctx.Request().Context(), *params)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
-	}
-
-	return ctx.NoContent(http.StatusNoContent)
 }

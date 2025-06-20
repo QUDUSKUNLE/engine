@@ -16,17 +16,17 @@ type AvailabilitySlot struct {
 	StartTime          time.Time `json:"start_time"`
 	EndTime            time.Time `json:"end_time"`
 	MaxAppointments    int       `json:"max_appointments"`
-	SlotDuration       string    `json:"slot_duration"` // e.g., "30 minutes"
-	BreakTime          string    `json:"break_time"`    // e.g., "5 minutes"
+	SlotDuration       int32     `json:"slot_duration"` // minutes
+	BreakTime          int32     `json:"break_time"`    // minutes
 }
 
 type Slots struct {
 	DayOfWeek       string    `json:"day_of_week" validate:"required,oneof=monday tuesday wednesday thursday friday saturday sunday"`
 	StartTime       time.Time `json:"start_time" validate:"required"`
 	EndTime         time.Time `json:"end_time" validate:"required,gtfield=StartTime"`
-	MaxAppointments int32       `json:"max_appointments" validate:"required,min=0"`
-	SlotDuration    int32    `json:"slot_duration" validate:"required"` // e.g., "30 minutes"
-	BreakTime       int32    `json:"break_time" validate:"required"`    // e.g., "5 minutes"
+	MaxAppointments int32     `json:"max_appointments" validate:"required,min=0"`
+	SlotDuration    int32     `json:"slot_duration" validate:"required,min=1"` // minutes
+	BreakTime       int32     `json:"break_time" validate:"required,min=0"`    // minutes
 }
 
 type CreateSingleAvailabilityDTO struct {
@@ -35,8 +35,8 @@ type CreateSingleAvailabilityDTO struct {
 	StartTime          time.Time `json:"start_time" validate:"required"`
 	EndTime            time.Time `json:"end_time" validate:"required,gtfield=StartTime"`
 	MaxAppointments    int32     `json:"max_appointments" validate:"required,min=1"`
-	SlotDuration       int32   `json:"slot_duration" validate:"required"` // e.g., "30 minutes"
-	BreakTime          int32   `json:"break_time" validate:"required"`    // e.g., "5 minutes"
+	SlotDuration       int32     `json:"slot_duration" validate:"required"` // e.g., "30 minutes"
+	BreakTime          int32     `json:"break_time" validate:"required"`    // e.g., "5 minutes"
 }
 
 // MarshalJSON implements custom JSON marshaling for Slots
@@ -90,8 +90,8 @@ type UpdateAvailabilityDTO struct {
 	StartTime       *time.Time `json:"start_time,omitempty" validate:"omitempty,time"`
 	EndTime         *time.Time `json:"end_time,omitempty" validate:"omitempty,time"`
 	MaxAppointments *int32     `json:"max_appointments,omitempty" validate:"omitempty,min=0"`
-	SlotDuration    *int32     `json:"slot_duration,omitempty"`
-	BreakTime       *int32     `json:"break_time,omitempty"`
+	SlotDuration    *int32     `json:"slot_duration,omitempty" validate:"omitempty,min=1"` // minutes
+	BreakTime       *int32     `json:"break_time,omitempty" validate:"omitempty,min=0"`    // minutes
 }
 
 type GetAvailabilityDTO struct {
@@ -106,8 +106,8 @@ type UpdateManyAvailabilitySlot struct {
 	StartTime          *time.Time `json:"start_time,omitempty" validate:"omitempty,time"`
 	EndTime            *time.Time `json:"end_time,omitempty" validate:"omitempty,time"`
 	MaxAppointments    *int32     `json:"max_appointments,omitempty" validate:"omitempty,min=1"`
-	SlotDuration       *int32     `json:"slot_duration,omitempty" validate:"omitempty"`
-	BreakTime          *int32     `json:"break_time,omitempty" validate:"omitempty"`
+	SlotDuration       *int32     `json:"slot_duration,omitempty" validate:"omitempty,min=1"` // minutes
+	BreakTime          *int32     `json:"break_time,omitempty" validate:"omitempty,min=0"`    // minutes
 }
 
 // UpdateManyAvailabilityDTO represents the request body for updating multiple availability slots
