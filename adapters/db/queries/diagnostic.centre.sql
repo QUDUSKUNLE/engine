@@ -181,6 +181,21 @@ LIMIT $3 OFFSET $4;
 
 -- Retrieves the nearest diagnostic centres based on latitude and longitude.
 -- name: Get_Nearest_Diagnostic_Centres :many
+WITH filtered_centres AS (
+  SELECT DISTINCT dc.id
+  FROM diagnostic_centres dc
+  WHERE
+    dc.latitude IS NOT NULL
+    AND dc.longitude IS NOT NULL
+    AND (dc.doctors @> $3 OR $3 IS NULL)
+    AND (dc.available_tests @> $4 OR $4 IS NULL)
+    AND ($5 = '' OR EXISTS (
+      SELECT 1
+      FROM diagnostic_centre_availability dca2 
+      WHERE dca2.diagnostic_centre_id = dc.id
+      AND dca2.day_of_week = $5
+    ))
+)
 SELECT
   dc.id,
   dc.diagnostic_centre_name,
@@ -201,7 +216,10 @@ SELECT
       'slot_duration', dca.slot_duration,
       'break_time', dca.break_time
     )
-  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
+  ) FILTER (
+    WHERE dca.diagnostic_centre_id IS NOT NULL 
+    AND ($5 = '' OR dca.day_of_week = $5)
+  ) as availability,
   CAST(
     6371 * acos(
       cos(radians($1)) * cos(radians(dc.latitude)) *
@@ -209,15 +227,12 @@ SELECT
       sin(radians($1)) * sin(radians(dc.latitude))
     ) AS DOUBLE PRECISION
   ) AS distance_km
-FROM diagnostic_centres dc
+FROM filtered_centres fc
+JOIN diagnostic_centres dc ON dc.id = fc.id
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
-WHERE
-  dc.latitude IS NOT NULL
-  AND dc.longitude IS NOT NULL
-  AND (dc.doctors @> $3 OR $3 IS NULL)
-  AND (dc.available_tests @> $4 OR $4 IS NULL)
 GROUP BY
-  dc.id
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address,
+  dc.contact, dc.doctors, dc.available_tests, dc.created_at, dc.updated_at
 ORDER BY
   distance_km ASC
 LIMIT 50;
