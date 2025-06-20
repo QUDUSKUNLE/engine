@@ -87,7 +87,7 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 }
 
 // Helper to unmarshal address and contact, and build response
-func buildDiagnosticCentreResponseFromRow(row *db.DiagnosticCentre, c echo.Context) (map[string]interface{}, error) {
+func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_CentresRow, c echo.Context) (map[string]interface{}, error) {
 	var address domain.Address
 	if err := utils.UnmarshalJSONField(row.Address, &address, c); err != nil {
 		utils.Error("Failed to unmarshal address",
@@ -192,7 +192,7 @@ func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domai
 }
 
 // Helper to build diagnostic centre response
-func buildDiagnosticCentreResponse(response *db.DiagnosticCentre, address domain.Address, contact domain.Contact) map[string]interface{} {
+func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRow, address domain.Address, contact domain.Contact) map[string]interface{} {
 	return map[string]interface{}{
 		"diagnostic_centre_id":   response.ID,
 		"diagnostic_centre_name": response.DiagnosticCentreName,
@@ -202,10 +202,9 @@ func buildDiagnosticCentreResponse(response *db.DiagnosticCentre, address domain
 		"contact":                contact,
 		"doctors":                response.Doctors,
 		"available_tests":        response.AvailableTests,
-		"created_by":             response.CreatedBy,
-		"admin_id":               response.AdminID,
 		"created_at":             response.CreatedAt,
 		"updated_at":             response.UpdatedAt,
+		"availability":           response.Availability,
 	}
 }
 

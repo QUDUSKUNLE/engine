@@ -102,30 +102,43 @@ func (q *Queries) Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Dele
 
 const find_Nearest_Diagnostic_Centres_WhenRejected = `-- name: Find_Nearest_Diagnostic_Centres_WhenRejected :many
 SELECT
-  id,
-  diagnostic_centre_name,
-  latitude,
-  longitude,
-  address,
-  contact,
-  doctors,
-  available_tests,
-  created_at,
-  updated_at,
+  dc.id,
+  dc.diagnostic_centre_name,
+  dc.latitude,
+  dc.longitude,
+  dc.address,
+  dc.contact,
+  dc.doctors,
+  dc.available_tests,
+  dc.created_at,
+  dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
   CAST(
     6371 * acos(
-      cos(radians($1)) * cos(radians(latitude)) *
-      cos(radians(longitude) - radians($2)) +
-      sin(radians($1)) * sin(radians(latitude))
+      cos(radians($1)) * cos(radians(dc.latitude)) *
+      cos(radians(dc.longitude) - radians($2)) +
+      sin(radians($1)) * sin(radians(dc.latitude))
     ) AS DOUBLE PRECISION
   ) AS distance_km 
-FROM diagnostic_centres
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
 WHERE
-  id != $3 -- Exclude the current diagnostic centre
-  AND latitude IS NOT NULL
-  AND longitude IS NOT NULL
-  AND (doctors @> $4 OR $4 IS NULL) -- doctor type
-  AND (available_tests @> $5 OR $5 IS NULL) -- test type
+  dc.id != $3 -- Exclude the current diagnostic centre
+  AND dc.latitude IS NOT NULL
+  AND dc.longitude IS NOT NULL
+  AND (dc.doctors @> $4 OR $4 IS NULL) -- doctor type
+  AND (dc.available_tests @> $5 OR $5 IS NULL) -- test type
+GROUP BY
+  dc.id
 ORDER BY
   distance_km ASC
 LIMIT 3
@@ -150,6 +163,7 @@ type Find_Nearest_Diagnostic_Centres_WhenRejectedRow struct {
 	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
 	DistanceKm           float64            `db:"distance_km" json:"distance_km"`
 }
 
@@ -179,6 +193,7 @@ func (q *Queries) Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Conte
 			&i.AvailableTests,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Availability,
 			&i.DistanceKm,
 		); err != nil {
 			return nil, err
@@ -192,13 +207,44 @@ func (q *Queries) Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Conte
 }
 
 const get_Diagnostic_Centre = `-- name: Get_Diagnostic_Centre :one
-SELECT id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at FROM diagnostic_centres WHERE id = $1
+SELECT 
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+WHERE dc.id = $1
+GROUP BY dc.id
 `
 
+type Get_Diagnostic_CentreRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              string             `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+}
+
 // Retrieves a single diagnostic record by its ID.
-func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, id string) (*DiagnosticCentre, error) {
+func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, id string) (*Get_Diagnostic_CentreRow, error) {
 	row := q.db.QueryRow(ctx, get_Diagnostic_Centre, id)
-	var i DiagnosticCentre
+	var i Get_Diagnostic_CentreRow
 	err := row.Scan(
 		&i.ID,
 		&i.DiagnosticCentreName,
@@ -212,12 +258,28 @@ func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, id string) (*Diagno
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Availability,
 	)
 	return &i, err
 }
 
 const get_Diagnostic_Centre_ByManager = `-- name: Get_Diagnostic_Centre_ByManager :one
-SELECT id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at FROM diagnostic_centres WHERE id = $1 AND admin_id = $2
+SELECT 
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+WHERE dc.id = $1 AND dc.admin_id = $2
+GROUP BY dc.id
 `
 
 type Get_Diagnostic_Centre_ByManagerParams struct {
@@ -225,10 +287,26 @@ type Get_Diagnostic_Centre_ByManagerParams struct {
 	AdminID string `db:"admin_id" json:"admin_id"`
 }
 
+type Get_Diagnostic_Centre_ByManagerRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              string             `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+}
+
 // GetDiagnosticCentreByManager
-func (q *Queries) Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*DiagnosticCentre, error) {
+func (q *Queries) Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*Get_Diagnostic_Centre_ByManagerRow, error) {
 	row := q.db.QueryRow(ctx, get_Diagnostic_Centre_ByManager, arg.ID, arg.AdminID)
-	var i DiagnosticCentre
+	var i Get_Diagnostic_Centre_ByManagerRow
 	err := row.Scan(
 		&i.ID,
 		&i.DiagnosticCentreName,
@@ -242,12 +320,28 @@ func (q *Queries) Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_D
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Availability,
 	)
 	return &i, err
 }
 
 const get_Diagnostic_Centre_ByOwner = `-- name: Get_Diagnostic_Centre_ByOwner :one
-SELECT id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at FROM diagnostic_centres WHERE id = $1 AND created_by = $2
+SELECT 
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+WHERE dc.id = $1 AND dc.created_by = $2
+GROUP BY dc.id
 `
 
 type Get_Diagnostic_Centre_ByOwnerParams struct {
@@ -255,10 +349,26 @@ type Get_Diagnostic_Centre_ByOwnerParams struct {
 	CreatedBy string `db:"created_by" json:"created_by"`
 }
 
+type Get_Diagnostic_Centre_ByOwnerRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              string             `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+}
+
 // GetADiagnosticCentreByOwner :one
-func (q *Queries) Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error) {
+func (q *Queries) Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*Get_Diagnostic_Centre_ByOwnerRow, error) {
 	row := q.db.QueryRow(ctx, get_Diagnostic_Centre_ByOwner, arg.ID, arg.CreatedBy)
-	var i DiagnosticCentre
+	var i Get_Diagnostic_Centre_ByOwnerRow
 	err := row.Scan(
 		&i.ID,
 		&i.DiagnosticCentreName,
@@ -272,36 +382,49 @@ func (q *Queries) Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Dia
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Availability,
 	)
 	return &i, err
 }
 
 const get_Nearest_Diagnostic_Centres = `-- name: Get_Nearest_Diagnostic_Centres :many
 SELECT
-  id,
-  diagnostic_centre_name,
-  latitude,
-  longitude,
-  address,
-  contact,
-  doctors,
-  available_tests,
-  created_at,
-  updated_at,
+  dc.id,
+  dc.diagnostic_centre_name,
+  dc.latitude,
+  dc.longitude,
+  dc.address,
+  dc.contact,
+  dc.doctors,
+  dc.available_tests,
+  dc.created_at,
+  dc.updated_at,
+  ARRAY_AGG(
+    DISTINCT jsonb_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
   CAST(
     6371 * acos(
-      cos(radians($1)) * cos(radians(latitude)) *
-      cos(radians(longitude) - radians($2)) +
-      sin(radians($1)) * sin(radians(latitude))
+      cos(radians($1)) * cos(radians(dc.latitude)) *
+      cos(radians(dc.longitude) - radians($2)) +
+      sin(radians($1)) * sin(radians(dc.latitude))
     ) AS DOUBLE PRECISION
   ) AS distance_km
-FROM
-  diagnostic_centres
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
 WHERE
-  latitude IS NOT NULL
-  AND longitude IS NOT NULL
-  AND (doctors @> $3 OR $3 IS NULL)
-  AND (available_tests @> $4 OR $4 IS NULL)
+  dc.latitude IS NOT NULL
+  AND dc.longitude IS NOT NULL
+  AND (dc.doctors @> $3 OR $3 IS NULL)
+  AND (dc.available_tests @> $4 OR $4 IS NULL)
+GROUP BY
+  dc.id
 ORDER BY
   distance_km ASC
 LIMIT 50
@@ -325,6 +448,7 @@ type Get_Nearest_Diagnostic_CentresRow struct {
 	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
 	DistanceKm           float64            `db:"distance_km" json:"distance_km"`
 }
 
@@ -354,6 +478,7 @@ func (q *Queries) Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Ne
 			&i.AvailableTests,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Availability,
 			&i.DistanceKm,
 		); err != nil {
 			return nil, err
@@ -367,8 +492,23 @@ func (q *Queries) Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Ne
 }
 
 const list_Diagnostic_Centres_ByOwner = `-- name: List_Diagnostic_Centres_ByOwner :many
-SELECT id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at FROM diagnostic_centres WHERE created_by = $1
-ORDER BY created_at DESC
+SELECT 
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+WHERE dc.created_by = $1
+GROUP BY dc.id
+ORDER BY dc.created_at DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -378,16 +518,32 @@ type List_Diagnostic_Centres_ByOwnerParams struct {
 	Offset    int32  `db:"offset" json:"offset"`
 }
 
+type List_Diagnostic_Centres_ByOwnerRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              string             `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+}
+
 // Retrieves all diagnostic records for a specific owner.
-func (q *Queries) List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*DiagnosticCentre, error) {
+func (q *Queries) List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*List_Diagnostic_Centres_ByOwnerRow, error) {
 	rows, err := q.db.Query(ctx, list_Diagnostic_Centres_ByOwner, arg.CreatedBy, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*DiagnosticCentre
+	var items []*List_Diagnostic_Centres_ByOwnerRow
 	for rows.Next() {
-		var i DiagnosticCentre
+		var i List_Diagnostic_Centres_ByOwnerRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.DiagnosticCentreName,
@@ -401,6 +557,7 @@ func (q *Queries) List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_
 			&i.AdminID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Availability,
 		); err != nil {
 			return nil, err
 		}
@@ -413,8 +570,22 @@ func (q *Queries) List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_
 }
 
 const retrieve_Diagnostic_Centres = `-- name: Retrieve_Diagnostic_Centres :many
-SELECT id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at FROM diagnostic_centres
-ORDER BY created_at DESC
+SELECT 
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+GROUP BY dc.id
+ORDER BY dc.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
@@ -423,16 +594,32 @@ type Retrieve_Diagnostic_CentresParams struct {
 	Offset int32 `db:"offset" json:"offset"`
 }
 
+type Retrieve_Diagnostic_CentresRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              string             `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+}
+
 // Retrieves all diagnostic records with pagination.
-func (q *Queries) Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_Diagnostic_CentresParams) ([]*DiagnosticCentre, error) {
+func (q *Queries) Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_Diagnostic_CentresParams) ([]*Retrieve_Diagnostic_CentresRow, error) {
 	rows, err := q.db.Query(ctx, retrieve_Diagnostic_Centres, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*DiagnosticCentre
+	var items []*Retrieve_Diagnostic_CentresRow
 	for rows.Next() {
-		var i DiagnosticCentre
+		var i Retrieve_Diagnostic_CentresRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.DiagnosticCentreName,
@@ -446,6 +633,7 @@ func (q *Queries) Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_
 			&i.AdminID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Availability,
 		); err != nil {
 			return nil, err
 		}
@@ -458,13 +646,25 @@ func (q *Queries) Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_
 }
 
 const search_Diagnostic_Centres = `-- name: Search_Diagnostic_Centres :many
-SELECT id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at
-FROM diagnostic_centres
+SELECT 
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) as availability
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
 WHERE
-  (diagnostic_centre_name ILIKE '%' || $1 || '%' OR $1 IS NULL)
-  AND (doctors @> $2 OR $2 IS NULL)
-  AND (available_tests @> $3 OR $3 IS NULL)
-ORDER BY created_at DESC
+  (dc.diagnostic_centre_name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (dc.doctors @> $2 OR $2 IS NULL)
+  AND (dc.available_tests @> $3 OR $3 IS NULL)
+ORDER BY dc.created_at DESC
 LIMIT $4 OFFSET $5
 `
 
@@ -476,8 +676,24 @@ type Search_Diagnostic_CentresParams struct {
 	Offset         int32            `db:"offset" json:"offset"`
 }
 
+type Search_Diagnostic_CentresRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              string             `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+}
+
 // Searches diagnostic_centres by name with pagination.
-func (q *Queries) Search_Diagnostic_Centres(ctx context.Context, arg Search_Diagnostic_CentresParams) ([]*DiagnosticCentre, error) {
+func (q *Queries) Search_Diagnostic_Centres(ctx context.Context, arg Search_Diagnostic_CentresParams) ([]*Search_Diagnostic_CentresRow, error) {
 	rows, err := q.db.Query(ctx, search_Diagnostic_Centres,
 		arg.Column1,
 		arg.Doctors,
@@ -489,9 +705,9 @@ func (q *Queries) Search_Diagnostic_Centres(ctx context.Context, arg Search_Diag
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*DiagnosticCentre
+	var items []*Search_Diagnostic_CentresRow
 	for rows.Next() {
-		var i DiagnosticCentre
+		var i Search_Diagnostic_CentresRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.DiagnosticCentreName,
@@ -505,6 +721,7 @@ func (q *Queries) Search_Diagnostic_Centres(ctx context.Context, arg Search_Diag
 			&i.AdminID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Availability,
 		); err != nil {
 			return nil, err
 		}
@@ -517,12 +734,25 @@ func (q *Queries) Search_Diagnostic_Centres(ctx context.Context, arg Search_Diag
 }
 
 const search_Diagnostic_Centres_ByDoctor = `-- name: Search_Diagnostic_Centres_ByDoctor :many
-SELECT id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at
-FROM diagnostic_centres
+SELECT 
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
 WHERE
-  (diagnostic_centre_name ILIKE '%' || $1 || '%' OR $1 IS NULL)
-  AND (doctors @> $2)
-ORDER BY created_at DESC
+  (dc.diagnostic_centre_name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+  AND (dc.doctors @> $2)
+GROUP BY dc.id
+ORDER BY dc.created_at DESC
 LIMIT $3 OFFSET $4
 `
 
@@ -533,8 +763,24 @@ type Search_Diagnostic_Centres_ByDoctorParams struct {
 	Offset  int32       `db:"offset" json:"offset"`
 }
 
+type Search_Diagnostic_Centres_ByDoctorRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []Doctor           `db:"doctors" json:"doctors"`
+	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              string             `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+}
+
 // SearchDiagnosticWith Doctor type
-func (q *Queries) Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*DiagnosticCentre, error) {
+func (q *Queries) Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*Search_Diagnostic_Centres_ByDoctorRow, error) {
 	rows, err := q.db.Query(ctx, search_Diagnostic_Centres_ByDoctor,
 		arg.Column1,
 		arg.Doctors,
@@ -545,9 +791,9 @@ func (q *Queries) Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Se
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*DiagnosticCentre
+	var items []*Search_Diagnostic_Centres_ByDoctorRow
 	for rows.Next() {
-		var i DiagnosticCentre
+		var i Search_Diagnostic_Centres_ByDoctorRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.DiagnosticCentreName,
@@ -561,6 +807,7 @@ func (q *Queries) Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Se
 			&i.AdminID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Availability,
 		); err != nil {
 			return nil, err
 		}

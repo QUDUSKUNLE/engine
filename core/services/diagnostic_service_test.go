@@ -25,20 +25,20 @@ import (
 
 type MockDiagnosticRepo struct{ mock.Mock }
 
-func (m *MockDiagnosticRepo) GetDiagnosticCentre(ctx context.Context, id string) (*db.DiagnosticCentre, error) {
+func (m *MockDiagnosticRepo) GetDiagnosticCentre(ctx context.Context, id string) (*db.Get_Diagnostic_CentreRow, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*db.DiagnosticCentre), args.Error(1)
+	return args.Get(0).(*db.Get_Diagnostic_CentreRow), args.Error(1)
 }
 
-func (m *MockDiagnosticRepo) GetDiagnosticCentreByOwner(ctx context.Context, params db.Get_Diagnostic_Centre_ByOwnerParams) (*db.DiagnosticCentre, error) {
+func (m *MockDiagnosticRepo) GetDiagnosticCentreByOwner(ctx context.Context, params db.Get_Diagnostic_Centre_ByOwnerParams) (*db.Get_Diagnostic_Centre_ByOwnerRow, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*db.DiagnosticCentre), args.Error(1)
+	return args.Get(0).(*db.Get_Diagnostic_Centre_ByOwnerRow), args.Error(1)
 }
 
 func (m *MockDiagnosticRepo) UpdateDiagnosticCentreByOwner(ctx context.Context, params db.Update_Diagnostic_Centre_ByOwnerParams) (*db.DiagnosticCentre, error) {
@@ -57,12 +57,12 @@ func (m *MockDiagnosticRepo) GetNearestDiagnosticCentres(ctx context.Context, pa
 	return args.Get(0).([]*db.Get_Nearest_Diagnostic_CentresRow), args.Error(1)
 }
 
-func (m *MockDiagnosticRepo) GetDiagnosticCentreByManager(ctx context.Context, params db.Get_Diagnostic_Centre_ByManagerParams) (*db.DiagnosticCentre, error) {
+func (m *MockDiagnosticRepo) GetDiagnosticCentreByManager(ctx context.Context, params db.Get_Diagnostic_Centre_ByManagerParams) (*db.Get_Diagnostic_Centre_ByManagerRow, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*db.DiagnosticCentre), args.Error(1)
+	return args.Get(0).(*db.Get_Diagnostic_Centre_ByManagerRow), args.Error(1)
 }
 
 func (m *MockDiagnosticRepo) CreateDiagnosticCentre(ctx context.Context, params db.Create_Diagnostic_CentreParams) (*db.DiagnosticCentre, error) {
@@ -81,38 +81,38 @@ func (m *MockDiagnosticRepo) DeleteDiagnosticCentreByOwner(ctx context.Context, 
 	return args.Get(0).(*db.DiagnosticCentre), args.Error(1)
 }
 
-func (m *MockDiagnosticRepo) ListDiagnosticCentresByOwner(ctx context.Context, params db.List_Diagnostic_Centres_ByOwnerParams) ([]*db.DiagnosticCentre, error) {
+func (m *MockDiagnosticRepo) ListDiagnosticCentresByOwner(ctx context.Context, params db.List_Diagnostic_Centres_ByOwnerParams) ([]*db.List_Diagnostic_Centres_ByOwnerRow, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*db.DiagnosticCentre), args.Error(1)
+	return args.Get(0).([]*db.List_Diagnostic_Centres_ByOwnerRow), args.Error(1)
 }
 
-func (m *MockDiagnosticRepo) RetrieveDiagnosticCentres(ctx context.Context, params db.Retrieve_Diagnostic_CentresParams) ([]*db.DiagnosticCentre, error) {
+func (m *MockDiagnosticRepo) RetrieveDiagnosticCentres(ctx context.Context, params db.Retrieve_Diagnostic_CentresParams) ([]*db.Retrieve_Diagnostic_CentresRow, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*db.DiagnosticCentre), args.Error(1)
+	return args.Get(0).([]*db.Retrieve_Diagnostic_CentresRow), args.Error(1)
 }
 
-func (m *MockDiagnosticRepo) SearchDiagnosticCentres(ctx context.Context, params db.Search_Diagnostic_CentresParams) ([]*db.DiagnosticCentre, error) {
+func (m *MockDiagnosticRepo) SearchDiagnosticCentres(ctx context.Context, params db.Search_Diagnostic_CentresParams) ([]*db.Search_Diagnostic_CentresRow, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*db.DiagnosticCentre), args.Error(1)
+	return args.Get(0).([]*db.Search_Diagnostic_CentresRow), args.Error(1)
 }
 
 type MockScheduleRepo struct{ mock.Mock }
 
-func (m *MockScheduleRepo) GetDiagnosticSchedulesByCentre(ctx context.Context, params db.Get_Diagnsotic_Schedules_By_CentreParams) ([]*db.DiagnosticSchedule, error) {
+func (m *MockScheduleRepo) GetDiagnosticSchedulesByCentre(ctx context.Context, params db.Get_Diagnsotic_Schedules_By_CentreParams) ([]*db.Search_Diagnostic_CentresRow, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*db.DiagnosticSchedule), args.Error(1)
+	return args.Get(0).([]*db.Search_Diagnostic_CentresRow), args.Error(1)
 }
 
 // Tests related to DeleteDiagnosticCentre
