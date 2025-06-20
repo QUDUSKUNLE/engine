@@ -262,3 +262,68 @@ func (s *ServicesHandler) UpdateManyAvailability(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, slots)
 }
+
+// validateGetAvailabilityInput validates the input for getting availability slots
+func (s *ServicesHandler) validateGetAvailabilityInput(ctx echo.Context) (*db.Get_AvailabilityParams, error) {
+	diagnosticCentreID := ctx.Param("diagnostic_centre_id")
+	if diagnosticCentreID == "" {
+		return nil, fmt.Errorf("diagnostic_centre_id is required")
+	}
+	// Day of week is optional in query params
+	dayOfWeek := ctx.QueryParam("day_of_week")
+	if dayOfWeek != "" {
+		// Validate day_of_week if provided
+		validDays := map[string]bool{
+			"monday": true, "tuesday": true, "wednesday": true,
+			"thursday": true, "friday": true, "saturday": true, "sunday": true,
+		}
+		if !validDays[dayOfWeek] {
+			return nil, fmt.Errorf("invalid day of week")
+		}
+	}
+	return &db.Get_AvailabilityParams{
+		DiagnosticCentreID: diagnosticCentreID,
+		Column2:            dayOfWeek,
+	}, nil
+}
+
+// GetAvailability retrieves availability slots for a diagnostic centre
+func (s *ServicesHandler) GetAvailability(ctx echo.Context) error {
+	params, err := s.validateGetAvailabilityInput(ctx)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
+	}
+	var slots []*db.DiagnosticCentreAvailability
+	if params.Column2 == "" {
+		slots, err = s.AvailabilityRepo.GetDiagnosticAvailability(ctx.Request().Context(), params.DiagnosticCentreID)
+		if err != nil {
+			return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
+		}
+	} else {
+		slots, err = s.AvailabilityRepo.GetAvailability(ctx.Request().Context(), *params)
+		if err != nil {
+			return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
+		}
+	}
+	if len(slots) == 0 {
+		return utils.ResponseMessage(http.StatusOK, []struct{}{}, ctx)
+	}
+
+	result := make([]*domain.AvailabilitySlot, len(slots))
+	for i, slot := range slots {
+		result[i] = &domain.AvailabilitySlot{
+			ID:                 slot.ID,
+			DiagnosticCentreID: slot.DiagnosticCentreID,
+			DayOfWeek:          slot.DayOfWeek,
+			StartTime:          fmt.Sprintf("%02d:%02d:%02d", slot.StartTime.Microseconds/3600000000, (slot.StartTime.Microseconds%3600000000)/60000000, ((slot.StartTime.Microseconds%3600000000)%60000000)/1000000),
+			EndTime:            fmt.Sprintf("%02d:%02d:%02d", slot.EndTime.Microseconds/3600000000, (slot.EndTime.Microseconds%3600000000)/60000000, ((slot.EndTime.Microseconds%3600000000)%60000000)/1000000),
+			SlotDuration:       fmt.Sprintf("%d mins", slot.SlotDuration),
+			CreatedAt:          slot.CreatedAt.Time.String(),
+			UpdatedAt:          slot.UpdatedAt.Time.String(),
+			BreakTime:          fmt.Sprintf("%d mins", slot.BreakTime.Int32),
+			MaxAppointments:    slot.MaxAppointments.Int32,
+		}
+	}
+
+	return utils.ResponseMessage(http.StatusOK, result, ctx)
+}

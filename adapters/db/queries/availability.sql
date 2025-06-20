@@ -36,6 +36,12 @@ ORDER BY
         WHEN 'sunday' THEN 7
     END;
 
+-- name: Get_Diagnostic_Availability :many
+SELECT * FROM diagnostic_centre_availability
+WHERE diagnostic_centre_id = $1
+ORDER BY created_at ASC;
+
+
 -- name: Update_Availability :one
 UPDATE diagnostic_centre_availability
 SET

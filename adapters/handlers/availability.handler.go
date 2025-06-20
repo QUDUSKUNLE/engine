@@ -19,6 +19,7 @@ func (handler *HTTPHandler) CreateAvailability(context echo.Context) error {
 	return handler.service.CreateAvailability(context)
 }
 
+// GetAvailability retrieves availability slots for a diagnostic centre
 // @Summary Get availability for a diagnostic centre
 // @Description Get availability slots for the diagnostic centre, optionally filtered by day of week
 // @Tags Availability
@@ -32,7 +33,7 @@ func (handler *HTTPHandler) CreateAvailability(context echo.Context) error {
 // @Failure 404 {object} utils.ErrorResponse
 // @Router /api/v1/availability/{diagnostic_centre_id} [get]
 func (handler *HTTPHandler) GetAvailability(context echo.Context) error {
-	return nil
+	return handler.service.GetAvailability(context)
 }
 
 // @Summary Update availability for a diagnostic centre
