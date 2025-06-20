@@ -57,11 +57,11 @@ type Querier interface {
 	Get_Availability(ctx context.Context, arg Get_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
 	Get_Diagnostic_Availability(ctx context.Context, diagnosticCentreID string) ([]*DiagnosticCentreAvailability, error)
 	// Retrieves a single diagnostic record by its ID.
-	Get_Diagnostic_Centre(ctx context.Context, id string) (*DiagnosticCentre, error)
+	Get_Diagnostic_Centre(ctx context.Context, id string) (*Get_Diagnostic_CentreRow, error)
 	// GetDiagnosticCentreByManager
-	Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*DiagnosticCentre, error)
+	Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*Get_Diagnostic_Centre_ByManagerRow, error)
 	// GetADiagnosticCentreByOwner :one
-	Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
+	Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*Get_Diagnostic_Centre_ByOwnerRow, error)
 	// Get Diagnostic Schedule
 	Get_Diagnostic_Schedule(ctx context.Context, arg Get_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	// Get Diagnostic Schedules
@@ -72,7 +72,7 @@ type Querier interface {
 	Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Nearest_Diagnostic_CentresParams) ([]*Get_Nearest_Diagnostic_CentresRow, error)
 	Get_Payment(ctx context.Context, id string) (*Payment, error)
 	// Retrieves all diagnostic records for a specific owner.
-	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*DiagnosticCentre, error)
+	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*List_Diagnostic_Centres_ByOwnerRow, error)
 	List_Payments(ctx context.Context, arg List_PaymentsParams) ([]*Payment, error)
 	MarkEmailAsVerified(ctx context.Context, email pgtype.Text) error
 	MarkEmailVerificationTokenUsed(ctx context.Context, id string) error
@@ -80,11 +80,11 @@ type Querier interface {
 	Refund_Payment(ctx context.Context, arg Refund_PaymentParams) (*Payment, error)
 	RescheduleAppointment(ctx context.Context, arg RescheduleAppointmentParams) (*Appointment, error)
 	// Retrieves all diagnostic records with pagination.
-	Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_Diagnostic_CentresParams) ([]*DiagnosticCentre, error)
+	Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_Diagnostic_CentresParams) ([]*Retrieve_Diagnostic_CentresRow, error)
 	// Searches diagnostic_centres by name with pagination.
-	Search_Diagnostic_Centres(ctx context.Context, arg Search_Diagnostic_CentresParams) ([]*DiagnosticCentre, error)
+	Search_Diagnostic_Centres(ctx context.Context, arg Search_Diagnostic_CentresParams) ([]*Search_Diagnostic_CentresRow, error)
 	// SearchDiagnosticWith Doctor type
-	Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*DiagnosticCentre, error)
+	Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*Search_Diagnostic_Centres_ByDoctorRow, error)
 	UpdateAppointmentPayment(ctx context.Context, arg UpdateAppointmentPaymentParams) (*Appointment, error)
 	UpdateAppointmentStatus(ctx context.Context, arg UpdateAppointmentStatusParams) (*Appointment, error)
 	// Uploader Update a Medical Record

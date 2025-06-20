@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -60,8 +59,19 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create diagnostic centre")
 		}
 	}
-	fmt.Println(response, "okkk")
-	res, err := buildDiagnosticCentreResponseFromRow(response, context)
+	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
+		ID:                   response.ID,
+		DiagnosticCentreName: response.DiagnosticCentreName,
+		Latitude:             response.Latitude,
+		Longitude:            response.Longitude,
+		Address:              response.Address,
+		Contact:              response.Contact,
+		Doctors:              response.Doctors,
+		AvailableTests:       response.AvailableTests,
+		CreatedAt:            response.CreatedAt,
+		UpdatedAt:            response.UpdatedAt,
+	}
+	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -87,7 +97,20 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve diagnostic centre")
 		}
 	}
-	res, err := buildDiagnosticCentreResponseFromRow(response, context)
+	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
+		ID:                   response.ID,
+		DiagnosticCentreName: response.DiagnosticCentreName,
+		Latitude:             response.Latitude,
+		Longitude:            response.Longitude,
+		Address:              response.Address,
+		Contact:              response.Contact,
+		Doctors:              response.Doctors,
+		AvailableTests:       response.AvailableTests,
+		CreatedAt:            response.CreatedAt,
+		UpdatedAt:            response.UpdatedAt,
+		Availability:         response.Availability,
+	}
+	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -261,7 +284,21 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 
 	result := make([]map[string]interface{}, 0, len(response))
 	for _, centre := range response {
-		item, err := buildDiagnosticCentreResponseFromRow(centre, context)
+		// Convert DiagnosticCentre to Get_Nearest_Diagnostic_CentresRow
+		centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
+			ID:                   centre.ID,
+			DiagnosticCentreName: centre.DiagnosticCentreName,
+			Latitude:             centre.Latitude,
+			Longitude:            centre.Longitude,
+			Address:              centre.Address,
+			Contact:              centre.Contact,
+			Doctors:              centre.Doctors,
+			AvailableTests:       centre.AvailableTests,
+			CreatedAt:            centre.CreatedAt,
+			UpdatedAt:            centre.UpdatedAt,
+			// Availability:        centre.Availability,
+		}
+		item, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 		if err != nil {
 			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 		}
@@ -327,8 +364,22 @@ func (service *ServicesHandler) GetDiagnosticCentresByManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
+	// Convert to Get_Nearest_Diagnostic_CentresRow
+	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
+		ID:                   centre.ID,
+		DiagnosticCentreName: centre.DiagnosticCentreName,
+		Latitude:             centre.Latitude,
+		Longitude:            centre.Longitude,
+		Address:              centre.Address,
+		Contact:              centre.Contact,
+		Doctors:              centre.Doctors,
+		AvailableTests:       centre.AvailableTests,
+		CreatedAt:            centre.CreatedAt,
+		UpdatedAt:            centre.UpdatedAt,
+	}
+
 	// Build response
-	result, err := buildDiagnosticCentreResponseFromRow(centre, context)
+	result, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -372,7 +423,19 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	result, err := buildDiagnosticCentreResponseFromRow(response, context)
+	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
+		ID:                   response.ID,
+		DiagnosticCentreName: response.DiagnosticCentreName,
+		Latitude:             response.Latitude,
+		Longitude:            response.Longitude,
+		Address:              response.Address,
+		Contact:              response.Contact,
+		Doctors:              response.Doctors,
+		AvailableTests:       response.AvailableTests,
+		CreatedAt:            response.CreatedAt,
+		UpdatedAt:            response.UpdatedAt,
+	}
+	result, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -453,8 +516,8 @@ func (service *ServicesHandler) GetDiagnosticCentreRecords(context echo.Context)
 }
 
 // buildDiagnosticCentre converts a database row to a domain diagnostic centre
-func buildDiagnosticCentre(row db.Get_Nearest_Diagnostic_CentresRow) *db.DiagnosticCentre {
-	return &db.DiagnosticCentre{
+func buildDiagnosticCentre(row db.Get_Nearest_Diagnostic_CentresRow) *db.Get_Nearest_Diagnostic_CentresRow {
+	return &db.Get_Nearest_Diagnostic_CentresRow{
 		ID:                   row.ID,
 		DiagnosticCentreName: row.DiagnosticCentreName,
 		Latitude:             row.Latitude,
@@ -465,5 +528,6 @@ func buildDiagnosticCentre(row db.Get_Nearest_Diagnostic_CentresRow) *db.Diagnos
 		AvailableTests:       row.AvailableTests,
 		CreatedAt:            row.CreatedAt,
 		UpdatedAt:            row.UpdatedAt,
+		Availability:         row.Availability,
 	}
 }

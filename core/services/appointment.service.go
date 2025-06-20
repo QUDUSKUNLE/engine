@@ -26,11 +26,17 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	// Parse appointment creation request
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateAppointmentDTO)
 
-	// Get diagnostic centre details
-	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(
+	// Get diagnostic centre details and convert to DiagnosticCentre type
+	centreRow, err := service.DiagnosticRepo.GetDiagnosticCentre(
 		context.Request().Context(),
 		dto.DiagnosticCentreID.String(),
 	)
+	centre := &db.DiagnosticCentre{
+		ID:                   centreRow.ID,
+		DiagnosticCentreName: centreRow.DiagnosticCentreName,
+		Contact:              centreRow.Contact,
+		// Copy other fields as needed
+	}
 	if err != nil {
 		utils.Error("Failed to get diagnostic centre details",
 			utils.LogField{Key: "error", Value: err.Error()},
