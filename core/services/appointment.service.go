@@ -53,7 +53,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
 		ScheduleTime:       toTimestamptz(dto.AppointmentDate),
 		Doctor:             string(dto.PreferredDoctor),
-		TestType:           dto.TestType,
+		TestType:           db.TestType(dto.TestType),
 		Notes:              toText(dto.Notes),
 		AcceptanceStatus:   db.ScheduleAcceptanceStatusPENDING,
 	}

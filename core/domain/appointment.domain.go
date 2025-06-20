@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/medicue/adapters/db"
 )
 
 // AppointmentStatus represents the status of an appointment
@@ -22,10 +21,10 @@ const (
 // CreateAppointmentDTO represents the request body for creating an appointment
 type CreateAppointmentDTO struct {
 	DiagnosticCentreID uuid.UUID   `json:"diagnostic_centre_id" validate:"required,uuid"`
-	TestType           db.TestType `json:"test_type" validate:"required,oneof=BLOOD_TEST URINE_TEST X_RAY MRI CT_SCAN ULTRASOUND ECG COVID_TEST DNA_TEST ALLERGY_TEST GENETIC_TEST OTHER EEG BIOPSY SKIN_TEST IMMUNOLOGY_TEST HORMONE_TEST VIRAL_TEST BACTERIAL_TEST PARASITIC_TEST FUNGAL_TEST MOLECULAR_TEST TOXICOLOGY_TEST ECHO COVID_19_TEST BLOOD_SUGAR_TEST LIPID_PROFILE HEMOGLOBIN_TEST THYROID_TEST LIVER_FUNCTION_TEST KIDNEY_FUNCTION_TEST URIC_ACID_TEST VITAMIN_D_TEST VITAMIN_B12_TEST HEMOGRAM COMPLETE_BLOOD_COUNT BLOOD_GROUPING HEPATITIS_B_TEST HEPATITIS_C_TEST HIV_TEST MALARIA_TEST DENGUE_TEST TYPHOID_TEST COVID_19_ANTIBODY_TEST COVID_19_RAPID_ANTIGEN_TEST COVID_19_RT_PCR_TEST PREGNANCY_TEST,required"`
+	TestType           string `json:"test_type" validate:"required,oneof=BLOOD_TEST URINE_TEST X_RAY MRI CT_SCAN ULTRASOUND ECG COVID_TEST DNA_TEST ALLERGY_TEST GENETIC_TEST OTHER EEG BIOPSY SKIN_TEST IMMUNOLOGY_TEST HORMONE_TEST VIRAL_TEST BACTERIAL_TEST PARASITIC_TEST FUNGAL_TEST MOLECULAR_TEST TOXICOLOGY_TEST ECHO COVID_19_TEST BLOOD_SUGAR_TEST LIPID_PROFILE HEMOGLOBIN_TEST THYROID_TEST LIVER_FUNCTION_TEST KIDNEY_FUNCTION_TEST URIC_ACID_TEST VITAMIN_D_TEST VITAMIN_B12_TEST HEMOGRAM COMPLETE_BLOOD_COUNT BLOOD_GROUPING HEPATITIS_B_TEST HEPATITIS_C_TEST HIV_TEST MALARIA_TEST DENGUE_TEST TYPHOID_TEST COVID_19_ANTIBODY_TEST COVID_19_RAPID_ANTIGEN_TEST COVID_19_RT_PCR_TEST PREGNANCY_TEST,required"`
 	AppointmentDate    time.Time   `json:"appointment_date" validate:"required"`
 	TimeSlot           string      `json:"time_slot" validate:"required,time"`
-	PreferredDoctor    db.Doctor   `json:"preferred_doctor" validate:"omitempty,oneof=Male Female"`
+	PreferredDoctor    string   `json:"preferred_doctor" validate:"omitempty,oneof=Male Female"`
 	Notes              string      `json:"notes" validate:"max=500"`
 }
 
