@@ -32,7 +32,7 @@ func (handler *HTTPHandler) CreateAvailability(context echo.Context) error {
 // @Failure 404 {object} utils.ErrorResponse
 // @Router /api/v1/availability/{diagnostic_centre_id} [get]
 func (handler *HTTPHandler) GetAvailability(context echo.Context) error {
-	return handler.service.GetAvailability(context)
+	return nil
 }
 
 // @Summary Update availability for a diagnostic centre
@@ -81,7 +81,7 @@ func (handler *HTTPHandler) UpdateManyAvailability(context echo.Context) error {
 // @Router /api/v1/availability/{diagnostic_centre_id}/{day_of_week} [delete]
 func (h *HTTPHandler) DeleteAvailability(c echo.Context) error {
 
-	return h.service.DeleteAvailability(c)
+	return nil
 }
 
 // @Summary Create a single availability slot

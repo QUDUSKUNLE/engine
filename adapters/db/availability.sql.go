@@ -19,8 +19,8 @@ WITH availability_params AS (
         unnest($3::time[]) as start_time,
         unnest($4::time[]) as end_time,
         unnest($5::int[]) as max_appointments,
-        unnest($6::interval[]) as slot_duration,
-        unnest($7::interval[]) as break_time
+        unnest($6::int[]) as slot_duration,
+        unnest($7::int[]) as break_time
 )
 INSERT INTO diagnostic_centre_availability (
     diagnostic_centre_id,
@@ -36,13 +36,13 @@ RETURNING id, diagnostic_centre_id, day_of_week, start_time, end_time, max_appoi
 `
 
 type Create_AvailabilityParams struct {
-	Column1 []string          `db:"column_1" json:"column_1"`
-	Column2 []string          `db:"column_2" json:"column_2"`
-	Column3 []pgtype.Time     `db:"column_3" json:"column_3"`
-	Column4 []pgtype.Time     `db:"column_4" json:"column_4"`
-	Column5 []int32           `db:"column_5" json:"column_5"`
-	Column6 []pgtype.Interval `db:"column_6" json:"column_6"`
-	Column7 []pgtype.Interval `db:"column_7" json:"column_7"`
+	Column1 []string      `db:"column_1" json:"column_1"`
+	Column2 []string      `db:"column_2" json:"column_2"`
+	Column3 []pgtype.Time `db:"column_3" json:"column_3"`
+	Column4 []pgtype.Time `db:"column_4" json:"column_4"`
+	Column5 []int32       `db:"column_5" json:"column_5"`
+	Column6 []int32       `db:"column_6" json:"column_6"`
+	Column7 []int32       `db:"column_7" json:"column_7"`
 }
 
 func (q *Queries) Create_Availability(ctx context.Context, arg Create_AvailabilityParams) ([]*DiagnosticCentreAvailability, error) {
@@ -222,9 +222,9 @@ type Update_AvailabilityParams struct {
 	DayOfWeek          string      `db:"day_of_week" json:"day_of_week"`
 	StartTime          pgtype.Time `db:"start_time" json:"start_time"`
 	EndTime            pgtype.Time `db:"end_time" json:"end_time"`
-	MaxAppointments    int32 `db:"max_appointments" json:"max_appointments"`
+	MaxAppointments    pgtype.Int4 `db:"max_appointments" json:"max_appointments"`
 	SlotDuration       int32       `db:"slot_duration" json:"slot_duration"`
-	BreakTime          int32 `db:"break_time" json:"break_time"`
+	BreakTime          pgtype.Int4 `db:"break_time" json:"break_time"`
 }
 
 func (q *Queries) Update_Availability(ctx context.Context, arg Update_AvailabilityParams) (*DiagnosticCentreAvailability, error) {
@@ -257,12 +257,12 @@ const update_Many_Availability = `-- name: Update_Many_Availability :many
 WITH update_params AS (
     SELECT 
         unnest($1::uuid[]) as diagnostic_centre_id,
-        unnest($2::weekday[]) as day_of_week,
+        unnest($2::text[]) as day_of_week,
         unnest($3::time[]) as start_time,
         unnest($4::time[]) as end_time,
         unnest($5::int[]) as max_appointments,
-        unnest($6::interval[]) as slot_duration,
-        unnest($7::interval[]) as break_time
+        unnest($6::int[]) as slot_duration,
+        unnest($7::int[]) as break_time
 )
 UPDATE diagnostic_centre_availability AS dca
 SET
@@ -279,13 +279,13 @@ RETURNING dca.id, dca.diagnostic_centre_id, dca.day_of_week, dca.start_time, dca
 `
 
 type Update_Many_AvailabilityParams struct {
-	Column1 []string          `db:"column_1" json:"column_1"`
-	Column2 []Weekday         `db:"column_2" json:"column_2"`
-	Column3 []pgtype.Time     `db:"column_3" json:"column_3"`
-	Column4 []pgtype.Time     `db:"column_4" json:"column_4"`
-	Column5 []int32           `db:"column_5" json:"column_5"`
-	Column6 []pgtype.Interval `db:"column_6" json:"column_6"`
-	Column7 []pgtype.Interval `db:"column_7" json:"column_7"`
+	Column1 []string      `db:"column_1" json:"column_1"`
+	Column2 []string      `db:"column_2" json:"column_2"`
+	Column3 []pgtype.Time `db:"column_3" json:"column_3"`
+	Column4 []pgtype.Time `db:"column_4" json:"column_4"`
+	Column5 []int32       `db:"column_5" json:"column_5"`
+	Column6 []int32       `db:"column_6" json:"column_6"`
+	Column7 []int32       `db:"column_7" json:"column_7"`
 }
 
 func (q *Queries) Update_Many_Availability(ctx context.Context, arg Update_Many_AvailabilityParams) ([]*DiagnosticCentreAvailability, error) {
