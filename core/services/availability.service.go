@@ -49,11 +49,9 @@ func (s *ServicesHandler) convertSlotToArrays(dto *domain.CreateAvailabilityDTO)
 		breakTimes[i] = slot.BreakTime       // Already an int32
 	}
 
-	// Convert daysOfWeek to []string
+	// Copy daysOfWeek to daysOfWeekStr
 	daysOfWeekStr := make([]string, len(daysOfWeek))
-	for i, day := range daysOfWeek {
-		daysOfWeekStr[i] = day
-	}
+	copy(daysOfWeekStr, daysOfWeek)
 
 	return &db.Create_AvailabilityParams{
 		Column1: diagnosticCentreIDs,
