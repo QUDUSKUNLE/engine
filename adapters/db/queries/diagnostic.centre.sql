@@ -184,7 +184,6 @@ LIMIT $3 OFFSET $4;
 WITH filtered_centres AS (
   SELECT DISTINCT dc.id
   FROM diagnostic_centres dc
-  LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
   WHERE
     dc.latitude IS NOT NULL
     AND dc.longitude IS NOT NULL

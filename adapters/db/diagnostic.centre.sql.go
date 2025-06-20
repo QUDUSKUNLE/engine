@@ -391,7 +391,7 @@ const get_Nearest_Diagnostic_Centres = `-- name: Get_Nearest_Diagnostic_Centres 
 WITH filtered_centres AS (
   SELECT DISTINCT dc.id
   FROM diagnostic_centres dc
-  LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+  -- LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
   WHERE
     dc.latitude IS NOT NULL
     AND dc.longitude IS NOT NULL
