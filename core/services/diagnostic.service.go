@@ -130,6 +130,7 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	params := db.Get_Nearest_Diagnostic_CentresParams{
 		Radians:   query.Latitude,
 		Radians_2: query.Longitude,
+		Column5: query.DayOfWeek, // Empty string will match all days in SQL query
 	}
 
 	hasFilters := false
@@ -296,7 +297,6 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 			AvailableTests:       centre.AvailableTests,
 			CreatedAt:            centre.CreatedAt,
 			UpdatedAt:            centre.UpdatedAt,
-			// Availability:        centre.Availability,
 		}
 		item, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 		if err != nil {
