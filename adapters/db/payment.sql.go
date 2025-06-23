@@ -19,20 +19,24 @@ INSERT INTO payments (
     amount,
     currency,
     payment_method,
-    payment_metadata
+    payment_metadata,
+    payment_provider,
+    provider_reference
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at, payment_provider, provider_reference, provider_metadata
 `
 
 type Create_PaymentParams struct {
-	AppointmentID      string         `db:"appointment_id" json:"appointment_id"`
-	PatientID          string         `db:"patient_id" json:"patient_id"`
-	DiagnosticCentreID string         `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	Amount             pgtype.Numeric `db:"amount" json:"amount"`
-	Currency           string         `db:"currency" json:"currency"`
-	PaymentMethod      PaymentMethod  `db:"payment_method" json:"payment_method"`
-	PaymentMetadata    []byte         `db:"payment_metadata" json:"payment_metadata"`
+	AppointmentID      string          `db:"appointment_id" json:"appointment_id"`
+	PatientID          string          `db:"patient_id" json:"patient_id"`
+	DiagnosticCentreID string          `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	Amount             pgtype.Numeric  `db:"amount" json:"amount"`
+	Currency           string          `db:"currency" json:"currency"`
+	PaymentMethod      PaymentMethod   `db:"payment_method" json:"payment_method"`
+	PaymentMetadata    []byte          `db:"payment_metadata" json:"payment_metadata"`
+	PaymentProvider    PaymentProvider `db:"payment_provider" json:"payment_provider"`
+	ProviderReference  pgtype.Text     `db:"provider_reference" json:"provider_reference"`
 }
 
 func (q *Queries) Create_Payment(ctx context.Context, arg Create_PaymentParams) (*Payment, error) {
@@ -44,6 +48,8 @@ func (q *Queries) Create_Payment(ctx context.Context, arg Create_PaymentParams) 
 		arg.Currency,
 		arg.PaymentMethod,
 		arg.PaymentMetadata,
+		arg.PaymentProvider,
+		arg.ProviderReference,
 	)
 	var i Payment
 	err := row.Scan(
@@ -64,12 +70,15 @@ func (q *Queries) Create_Payment(ctx context.Context, arg Create_PaymentParams) 
 		&i.RefundedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentProvider,
+		&i.ProviderReference,
+		&i.ProviderMetadata,
 	)
 	return &i, err
 }
 
 const get_Payment = `-- name: Get_Payment :one
-SELECT id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at FROM payments WHERE id = $1
+SELECT id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at, payment_provider, provider_reference, provider_metadata FROM payments WHERE id = $1
 `
 
 func (q *Queries) Get_Payment(ctx context.Context, id string) (*Payment, error) {
@@ -93,12 +102,15 @@ func (q *Queries) Get_Payment(ctx context.Context, id string) (*Payment, error) 
 		&i.RefundedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentProvider,
+		&i.ProviderReference,
+		&i.ProviderMetadata,
 	)
 	return &i, err
 }
 
 const list_Payments = `-- name: List_Payments :many
-SELECT id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at FROM payments 
+SELECT id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at, payment_provider, provider_reference, provider_metadata FROM payments 
 WHERE 
     (CASE WHEN $1::UUID IS NOT NULL THEN diagnostic_centre_id = $1 ELSE TRUE END) AND
     (CASE WHEN $2::UUID IS NOT NULL THEN patient_id = $2 ELSE TRUE END) AND
@@ -154,6 +166,9 @@ func (q *Queries) List_Payments(ctx context.Context, arg List_PaymentsParams) ([
 			&i.RefundedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PaymentProvider,
+			&i.ProviderReference,
+			&i.ProviderMetadata,
 		); err != nil {
 			return nil, err
 		}
@@ -181,7 +196,7 @@ WHERE
         SELECT 1 FROM payments AS p
         WHERE p.id = payments.id AND p.refund_amount IS NOT NULL
     )
-RETURNING id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at
+RETURNING id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at, payment_provider, provider_reference, provider_metadata
 `
 
 type Refund_PaymentParams struct {
@@ -217,6 +232,9 @@ func (q *Queries) Refund_Payment(ctx context.Context, arg Refund_PaymentParams) 
 		&i.RefundedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentProvider,
+		&i.ProviderReference,
+		&i.ProviderMetadata,
 	)
 	return &i, err
 }
@@ -233,7 +251,7 @@ SET
     payment_metadata = COALESCE($4, payment_metadata),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 
-RETURNING id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at
+RETURNING id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at, payment_provider, provider_reference, provider_metadata
 `
 
 type Update_Payment_StatusParams struct {
@@ -269,6 +287,9 @@ func (q *Queries) Update_Payment_Status(ctx context.Context, arg Update_Payment_
 		&i.RefundedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentProvider,
+		&i.ProviderReference,
+		&i.ProviderMetadata,
 	)
 	return &i, err
 }

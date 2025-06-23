@@ -1,0 +1,1 @@
+-- No need to drop these in the down migration as they might be used by other parts of the system

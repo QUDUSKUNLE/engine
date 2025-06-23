@@ -1,0 +1,1 @@
+-- No need to do anything in down migration as the constraint will be handled by other migrations

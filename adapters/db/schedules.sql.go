@@ -30,7 +30,7 @@ type Create_Diagnostic_ScheduleParams struct {
 	UserID             string                   `db:"user_id" json:"user_id"`
 	DiagnosticCentreID string                   `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
 	ScheduleTime       pgtype.Timestamptz       `db:"schedule_time" json:"schedule_time"`
-	TestType           TestType                 `db:"test_type" json:"test_type"`
+	TestType           string                   `db:"test_type" json:"test_type"`
 	Doctor             string                   `db:"doctor" json:"doctor"`
 	AcceptanceStatus   ScheduleAcceptanceStatus `db:"acceptance_status" json:"acceptance_status"`
 	Notes              pgtype.Text              `db:"notes" json:"notes"`
@@ -264,7 +264,7 @@ RETURNING id, user_id, diagnostic_centre_id, schedule_time, test_type, schedule_
 
 type Update_Diagnostic_ScheduleParams struct {
 	ScheduleTime   pgtype.Timestamptz `db:"schedule_time" json:"schedule_time"`
-	TestType       TestType           `db:"test_type" json:"test_type"`
+	TestType       string             `db:"test_type" json:"test_type"`
 	ScheduleStatus ScheduleStatus     `db:"schedule_status" json:"schedule_status"`
 	Notes          pgtype.Text        `db:"notes" json:"notes"`
 	Doctor         string             `db:"doctor" json:"doctor"`

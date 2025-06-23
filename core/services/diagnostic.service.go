@@ -130,17 +130,17 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	params := db.Get_Nearest_Diagnostic_CentresParams{
 		Radians:   query.Latitude,
 		Radians_2: query.Longitude,
-		Column5: query.DayOfWeek, // Empty string will match all days in SQL query
+		Column5:   query.DayOfWeek, // Empty string will match all days in SQL query
 	}
 
 	hasFilters := false
-	// Add optional filters
+	// Add optional filters with case normalization
 	if query.Doctor != "" {
-		params.Doctors = []db.Doctor{db.Doctor(query.Doctor)}
+		params.Doctors = []string{query.Doctor}
 		hasFilters = true
 	}
 	if query.Test != "" {
-		params.AvailableTests = []db.AvailableTests{db.AvailableTests(query.Test)}
+		params.AvailableTests = []string{query.Test}
 		hasFilters = true
 	}
 

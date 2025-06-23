@@ -79,9 +79,10 @@ INSERT INTO appointments (
     appointment_date,
     time_slot,
     status,
-    notes
+    notes,
+    reminder_sent
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, false
 ) RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at
 `
 
@@ -517,6 +518,49 @@ type UpdateAppointmentStatusParams struct {
 
 func (q *Queries) UpdateAppointmentStatus(ctx context.Context, arg UpdateAppointmentStatusParams) (*Appointment, error) {
 	row := q.db.QueryRow(ctx, updateAppointmentStatus, arg.ID, arg.Status)
+	var i Appointment
+	err := row.Scan(
+		&i.ID,
+		&i.PatientID,
+		&i.ScheduleID,
+		&i.DiagnosticCentreID,
+		&i.AppointmentDate,
+		&i.TimeSlot,
+		&i.Status,
+		&i.PaymentID,
+		&i.PaymentStatus,
+		&i.PaymentAmount,
+		&i.PaymentDate,
+		&i.CheckInTime,
+		&i.CompletionTime,
+		&i.Notes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.CancellationTime,
+		&i.CancellationFee,
+		&i.OriginalAppointmentID,
+		&i.ReschedulingReason,
+		&i.RescheduledBy,
+		&i.ReschedulingTime,
+		&i.ReschedulingFee,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ReminderSent,
+		&i.ReminderSentAt,
+	)
+	return &i, err
+}
+
+const updateReminderSent = `-- name: UpdateReminderSent :one
+UPDATE appointments 
+SET reminder_sent = true,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1 
+RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at
+`
+
+func (q *Queries) UpdateReminderSent(ctx context.Context, id string) (*Appointment, error) {
+	row := q.db.QueryRow(ctx, updateReminderSent, id)
 	var i Appointment
 	err := row.Scan(
 		&i.ID,
