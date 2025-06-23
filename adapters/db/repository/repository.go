@@ -49,7 +49,7 @@ func NewPaymentRepository(
 	return &Repository{database: store}
 }
 
-func NewApppointmentRepository(
+func NewAppointmentRepository(
 	store *db.Queries,
 	conn *pgx.Conn,
 ) ports.AppointmentRepository {

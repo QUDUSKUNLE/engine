@@ -72,7 +72,7 @@ func main() {
 	diagnosticRepo := repository.NewDiagnosticCentreRepository(store)
 	recordRepo := repository.NewRecordRepository(store)
 	paymentRepo := repository.NewPaymentRepository(store)
-	appointmentRepo := repository.NewApppointmentRepository(store, conn)
+	appointmentRepo := repository.NewAppointmentRepository(store, conn)
 	core := services.ServicesAdapter(
 		userRepo,
 		scheduleRepo,

@@ -72,7 +72,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
 		ScheduleTime:       toTimestamptz(dto.AppointmentDate),
 		Doctor:             string(dto.PreferredDoctor),
-		TestType:           dto.TestType,
+		TestType:           testType,
 		Notes:              toText(dto.Notes),
 		AcceptanceStatus:   db.ScheduleAcceptanceStatusACCEPTED, // Auto-accept the schedule since validation is done
 	}

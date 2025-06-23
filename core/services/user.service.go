@@ -180,7 +180,6 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	token := generateResetToken()
 	expiresAt := time.Now().Add(15 * time.Minute)
 
-	fmt.Println(token, "**********")
 	// Save token to database
 	resetToken := db.CreatePasswordResetTokenParams{
 		Email:     user.Email.String,
