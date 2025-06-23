@@ -49,9 +49,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
-
 	// Initialize DB connection
-	store, err := db.DatabaseConnection(cfg.DB_URL)
+	store, conn, err := db.DatabaseConnection(cfg.DB_URL)
 	if err != nil {
 		log.Fatalf("Error connecting to the database")
 	}
@@ -73,7 +72,7 @@ func main() {
 	diagnosticRepo := repository.NewDiagnosticCentreRepository(store)
 	recordRepo := repository.NewRecordRepository(store)
 	paymentRepo := repository.NewPaymentRepository(store)
-	appointmentRepo := repository.NewApppointmentRepository(store)
+	appointmentRepo := repository.NewApppointmentRepository(store, conn)
 	core := services.ServicesAdapter(
 		userRepo,
 		scheduleRepo,
@@ -152,7 +151,7 @@ func main() {
 	}))
 
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "time=${time}, remote_ip=${remote_ip}, latency=${latency}, method=${method}, uri=${uri}, status=${status}, host=${host}\n",
+		Format: "id=${id} protocol=${protocol} time=${time}, remote_ip=${remote_ip}, latency=${latency}, method=${method}, uri=${uri}, status=${status}, host=${host}\n",
 	}))
 
 	// Configure rate limiter with metrics endpoint excluded

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -17,8 +18,9 @@ import (
 
 // CreateAppointment creates a new appointment and associated schedule
 func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
-	// Get authenticated user
-	currentUser, err := CurrentUser(context)
+
+	// Authenticate and authorize user - owner or manager only
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -53,13 +55,24 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	}
 	defer tx.Rollback(context.Request().Context())
 
-	// Create schedule with PENDING status waiting for diagnostic centre acceptance
+	// Normalize test type format
+	testType := strings.ToUpper(strings.ReplaceAll(string(dto.TestType), " ", "_"))
+	if !service.AppointmentRepo.IsValidTestType(context.Request().Context(), testType) {
+		utils.Error("Failed to validate test_type",
+			utils.LogField{Key: "error", Value: "Invalid test type"})
+		return utils.ErrorResponse(
+			http.StatusBadRequest,
+			fmt.Errorf("invalid test type: %s", testType),
+			context,
+		)
+	}
+	// Use the validated test type for schedule creation
 	scheduleParams := db.Create_Diagnostic_ScheduleParams{
 		UserID:             currentUser.UserID.String(),
 		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
 		ScheduleTime:       toTimestamptz(dto.AppointmentDate),
 		Doctor:             string(dto.PreferredDoctor),
-		TestType:           db.TestType(dto.TestType),
+		TestType:           dto.TestType,
 		Notes:              toText(dto.Notes),
 		AcceptanceStatus:   db.ScheduleAcceptanceStatusPENDING,
 	}
@@ -78,7 +91,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		ScheduleID:         schedule.ID,
 		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
 		AppointmentDate:    toTimestamptz(dto.AppointmentDate),
-		TimeSlot:           dto.TimeSlot,
+		TimeSlot:           dto.AppointmentDate.Format("15:04"),
 		Status:             db.AppointmentStatusConfirmed,
 		Notes:              toText(dto.Notes),
 	}
@@ -91,6 +104,25 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
+	// Initiate Payment record
+	// NB
+	_, err = service.PaymentRepo.CreatePayment(context.Request().Context(), db.Create_PaymentParams{
+		AppointmentID:      appointment.ID,
+		PatientID:          currentUser.UserID.String(),
+		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
+		Amount:             toNumeric(dto.Amount),
+		Currency:           "NGN",
+		PaymentMethod:      db.PaymentMethodCard,
+	})
+
+	if err != nil {
+		utils.Error("Failed to create payment",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "appointment_id", Value: appointment.ID},
+		)
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
 	// Commit transaction
 	if err := tx.Commit(context.Request().Context()); err != nil {
 		utils.Error("Failed to commit transaction",
@@ -98,9 +130,11 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit transaction"), context)
 	}
 
+	// After Payment confirmation that is when this would be sent
 	// Send confirmation email to user asynchronously
 	go service.sendAppointmentConfirmationEmail(appointment)
 
+	// Also to teh diagnostic centres
 	// Send notification to diagnostic centre about new appointment asynchronously
 	go service.notifyDiagnosticCentreOfNewAppointment(appointment, centre)
 

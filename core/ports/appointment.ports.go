@@ -16,6 +16,7 @@ type AppointmentRepository interface {
 	CancelAppointment(ctx context.Context, id string) error
 	RescheduleAppointment(ctx context.Context, params db.RescheduleAppointmentParams) (*db.Appointment, error)
 	MarkReminderSent(ctx context.Context, id string) error
+	IsValidTestType(ctx context.Context, testType string) bool
 }
 
 // AppointmentTx represents a transaction for appointment operations

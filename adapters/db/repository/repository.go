@@ -1,13 +1,16 @@
 package repository
 
 import (
+	"context"
+
+	"github.com/jackc/pgx/v5"
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/ports"
-	"context"
 )
 
 type Repository struct {
 	database *db.Queries
+	conn     *pgx.Conn
 }
 
 func NewUserRepository(
@@ -46,13 +49,36 @@ func NewPaymentRepository(
 	return &Repository{database: store}
 }
 
-func (r *Repository) BeginTx(ctx context.Context) (ports.AppointmentTx, error) {
-	// Implementation needed
-	return nil, nil
-}
-
 func NewApppointmentRepository(
 	store *db.Queries,
+	conn *pgx.Conn,
 ) ports.AppointmentRepository {
-	return &Repository{database: store}
+	return &Repository{database: store, conn: conn}
+}
+
+func (r *Repository) GetTestTypes(ctx context.Context) ([]string, error) {
+	rows, err := r.conn.Query(ctx, `
+        SELECT enumlabel 
+        FROM pg_enum 
+        WHERE enumtypid = (
+            SELECT oid 
+            FROM pg_type 
+            WHERE typname = 'test_type'
+        )
+        ORDER BY enumsortorder
+    `)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var testTypes []string
+	for rows.Next() {
+		var testType string
+		if err := rows.Scan(&testType); err != nil {
+			return nil, err
+		}
+		testTypes = append(testTypes, testType)
+	}
+	return testTypes, nil
 }
