@@ -122,12 +122,12 @@ func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.Creat
 		return nil, err
 	}
 
-	availableTests := make([]db.AvailableTests, len(value.AvailableTests))
+	availableTests := make([]string, len(value.AvailableTests))
 	copy(availableTests, value.AvailableTests)
 
-	doctors := make([]db.Doctor, len(value.Doctors))
+	doctors := make([]string, len(value.Doctors))
 	for i, doctor := range value.Doctors {
-		doctors[i] = db.Doctor(doctor)
+		doctors[i] = string(doctor)
 	}
 
 	params := &db.Create_Diagnostic_CentreParams{
@@ -163,15 +163,11 @@ func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domai
 		return nil, err
 	}
 
-	doctors := make([]db.Doctor, len(value.Doctors))
-	for i, doctor := range value.Doctors {
-		doctors[i] = db.Doctor(doctor)
-	}
+	doctors := make([]string, len(value.Doctors))
+	copy(doctors, value.Doctors)
 
-	availableTests := make([]db.AvailableTests, len(value.AvailableTests))
-	for i, test := range value.AvailableTests {
-		availableTests[i] = db.AvailableTests(test)
-	}
+	availableTests := make([]string, len(value.AvailableTests))
+	copy(availableTests, value.AvailableTests)
 
 	params := &db.Update_Diagnostic_Centre_ByOwnerParams{
 		DiagnosticCentreName: value.DiagnosticCentreName,
@@ -241,7 +237,16 @@ func isValidLongitude(lon float64) bool {
 
 func toNumeric(n float64) pgtype.Numeric {
 	var num pgtype.Numeric
-	_ = num.Scan(n)
+	err := num.Scan(n)
+	if err != nil {
+		// If scan fails, try converting through string to maintain decimal precision
+		err = num.Scan(fmt.Sprintf("%.2f", n))
+		if err != nil {
+			num.Valid = false
+			return num
+		}
+	}
+	num.Valid = true
 	return num
 }
 

@@ -74,7 +74,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		Doctor:             string(dto.PreferredDoctor),
 		TestType:           dto.TestType,
 		Notes:              toText(dto.Notes),
-		AcceptanceStatus:   db.ScheduleAcceptanceStatusPENDING,
+		AcceptanceStatus:   db.ScheduleAcceptanceStatusACCEPTED, // Auto-accept the schedule since validation is done
 	}
 
 	schedule, err := tx.CreateSchedule(context.Request().Context(), scheduleParams)
@@ -91,10 +91,11 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		ScheduleID:         schedule.ID,
 		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
 		AppointmentDate:    toTimestamptz(dto.AppointmentDate),
-		TimeSlot:           dto.AppointmentDate.Format("15:04"),
-		Status:             db.AppointmentStatusConfirmed,
-		Notes:              toText(dto.Notes),
-		// ReminderSent:       false,
+		TimeSlot: fmt.Sprintf("%s-%s",
+			dto.AppointmentDate.Format("15:04"),
+			dto.AppointmentDate.Add(30*time.Minute).Format("15:04")),
+		Status: db.AppointmentStatusPending,
+		Notes:  toText(dto.Notes),
 	}
 
 	appointment, err := tx.CreateAppointment(context.Request().Context(), appointmentParams)
@@ -105,15 +106,25 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	// Initiate Payment record
-	// NB
+	// Create payment record
+	var pgAmount pgtype.Numeric
+	// Format amount with exactly 2 decimal places and apply proper rounding
+	amount := fmt.Sprintf("%.2f", dto.Amount)
+	if err := pgAmount.Scan(amount); err != nil {
+		utils.Error("Failed to convert amount to numeric",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "amount", Value: amount})
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid amount format"), context)
+	}
+
 	_, err = service.PaymentRepo.CreatePayment(context.Request().Context(), db.Create_PaymentParams{
 		AppointmentID:      appointment.ID,
 		PatientID:          currentUser.UserID.String(),
 		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
-		Amount:             toNumeric(dto.Amount),
+		Amount:             pgAmount,
 		Currency:           "NGN",
 		PaymentMethod:      db.PaymentMethodCard,
+		PaymentProvider:    db.PaymentProviderPAYSTACK,
 	})
 
 	if err != nil {

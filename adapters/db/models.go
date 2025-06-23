@@ -726,9 +726,11 @@ type UserEnum string
 
 const (
 	UserEnumUSER                    UserEnum = "USER"
-	UserEnumDIAGNOSTICCENTREOWNER   UserEnum = "DIAGNOSTIC_CENTRE_OWNER"
+	UserEnumDIAGNOSTICCENTRE        UserEnum = "DIAGNOSTIC_CENTRE"
 	UserEnumHOSPITAL                UserEnum = "HOSPITAL"
 	UserEnumADMIN                   UserEnum = "ADMIN"
+	UserEnumDIAGNOSTICMANAGER       UserEnum = "DIAGNOSTIC_MANAGER"
+	UserEnumDIAGNOSTICCENTREOWNER   UserEnum = "DIAGNOSTIC_CENTRE_OWNER"
 	UserEnumDIAGNOSTICCENTREMANAGER UserEnum = "DIAGNOSTIC_CENTRE_MANAGER"
 )
 
@@ -770,9 +772,11 @@ func (ns NullUserEnum) Value() (driver.Value, error) {
 func (e UserEnum) Valid() bool {
 	switch e {
 	case UserEnumUSER,
-		UserEnumDIAGNOSTICCENTREOWNER,
+		UserEnumDIAGNOSTICCENTRE,
 		UserEnumHOSPITAL,
 		UserEnumADMIN,
+		UserEnumDIAGNOSTICMANAGER,
+		UserEnumDIAGNOSTICCENTREOWNER,
 		UserEnumDIAGNOSTICCENTREMANAGER:
 		return true
 	}
@@ -782,9 +786,11 @@ func (e UserEnum) Valid() bool {
 func AllUserEnumValues() []UserEnum {
 	return []UserEnum{
 		UserEnumUSER,
-		UserEnumDIAGNOSTICCENTREOWNER,
+		UserEnumDIAGNOSTICCENTRE,
 		UserEnumHOSPITAL,
 		UserEnumADMIN,
+		UserEnumDIAGNOSTICMANAGER,
+		UserEnumDIAGNOSTICCENTREOWNER,
 		UserEnumDIAGNOSTICCENTREMANAGER,
 	}
 }
@@ -899,8 +905,8 @@ type DiagnosticCentre struct {
 	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
 	Address              []byte             `db:"address" json:"address"`
 	Contact              []byte             `db:"contact" json:"contact"`
-	Doctors              []Doctor           `db:"doctors" json:"doctors"`
-	AvailableTests       []AvailableTests   `db:"available_tests" json:"available_tests"`
+	Doctors              []string           `db:"doctors" json:"doctors"`
+	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
 	AdminID              string             `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
