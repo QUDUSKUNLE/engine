@@ -94,6 +94,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		TimeSlot:           dto.AppointmentDate.Format("15:04"),
 		Status:             db.AppointmentStatusConfirmed,
 		Notes:              toText(dto.Notes),
+		// ReminderSent:       false,
 	}
 
 	appointment, err := tx.CreateAppointment(context.Request().Context(), appointmentParams)

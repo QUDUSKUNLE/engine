@@ -1,0 +1,1 @@
+-- No need to drop the type in down migration as it's needed by other parts of the system

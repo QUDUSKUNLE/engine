@@ -6,9 +6,10 @@ INSERT INTO appointments (
     appointment_date,
     time_slot,
     status,
-    notes
+    notes,
+    reminder_sent
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, false
 ) RETURNING *;
 
 -- name: GetAppointment :one
@@ -119,3 +120,10 @@ RETURNING *;
 
 -- name: DeleteAppointment :exec
 DELETE FROM appointments WHERE id = $1;
+
+-- name: UpdateReminderSent :one
+UPDATE appointments 
+SET reminder_sent = true,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1 
+RETURNING *;

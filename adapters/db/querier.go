@@ -90,6 +90,7 @@ type Querier interface {
 	// Uploader Update a Medical Record
 	// Updates a medical record by uploader, allowing partial updates to fields. Only the uploader can update their own records. Updates the 'updated_at' timestamp.
 	UpdateMedicalRecordByUploader(ctx context.Context, arg UpdateMedicalRecordByUploaderParams) (*MedicalRecord, error)
+	UpdateReminderSent(ctx context.Context, id string) (*Appointment, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	Update_Availability(ctx context.Context, arg Update_AvailabilityParams) (*DiagnosticCentreAvailability, error)
