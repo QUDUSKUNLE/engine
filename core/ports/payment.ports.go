@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/medicue/adapters/db"
+	"github.com/medicue/adapters/ex/paystack"
 )
 
 // PaymentRepository defines the interface for payment data operations
@@ -13,4 +14,8 @@ type PaymentRepository interface {
 	ListPayments(ctx context.Context, params db.List_PaymentsParams) ([]*db.Payment, error)
 	RefundPayment(ctx context.Context, params db.Refund_PaymentParams) (*db.Payment, error)
 	UpdatePaymentStatus(ctx context.Context, params db.Update_Payment_StatusParams) (*db.Payment, error)
+}
+
+type PaymentService interface {
+	InitializeTransaction(email string, amount float64, reference string, metadata map[string]interface{}) (*paystack.PaystackTransactionResponse, error)
 }

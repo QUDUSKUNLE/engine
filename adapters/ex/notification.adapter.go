@@ -5,7 +5,7 @@ import (
 	"net/smtp"
 )
 
-type NotificationAdapter struct{
+type NotificationAdapter struct {
 	config *GmailConfig
 }
 

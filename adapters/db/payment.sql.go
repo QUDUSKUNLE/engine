@@ -21,9 +21,11 @@ INSERT INTO payments (
     payment_method,
     payment_metadata,
     payment_provider,
-    provider_reference
+    provider_reference,
+    provider_metadata,
+    transaction_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 ) RETURNING id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at, payment_provider, provider_reference, provider_metadata
 `
 
@@ -37,6 +39,8 @@ type Create_PaymentParams struct {
 	PaymentMetadata    []byte          `db:"payment_metadata" json:"payment_metadata"`
 	PaymentProvider    PaymentProvider `db:"payment_provider" json:"payment_provider"`
 	ProviderReference  pgtype.Text     `db:"provider_reference" json:"provider_reference"`
+	ProviderMetadata   []byte          `db:"provider_metadata" json:"provider_metadata"`
+	TransactionID      pgtype.Text     `db:"transaction_id" json:"transaction_id"`
 }
 
 func (q *Queries) Create_Payment(ctx context.Context, arg Create_PaymentParams) (*Payment, error) {
@@ -50,6 +54,8 @@ func (q *Queries) Create_Payment(ctx context.Context, arg Create_PaymentParams) 
 		arg.PaymentMetadata,
 		arg.PaymentProvider,
 		arg.ProviderReference,
+		arg.ProviderMetadata,
+		arg.TransactionID,
 	)
 	var i Payment
 	err := row.Scan(

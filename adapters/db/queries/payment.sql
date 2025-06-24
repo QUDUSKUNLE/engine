@@ -8,9 +8,11 @@ INSERT INTO payments (
     payment_method,
     payment_metadata,
     payment_provider,
-    provider_reference
+    provider_reference,
+    provider_metadata,
+    transaction_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 ) RETURNING *;
 
 -- name: Get_Payment :one

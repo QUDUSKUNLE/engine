@@ -28,24 +28,6 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	// Parse appointment creation request
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateAppointmentDTO)
 
-	// Get diagnostic centre details and convert to DiagnosticCentre type
-	centreRow, err := service.DiagnosticRepo.GetDiagnosticCentre(
-		context.Request().Context(),
-		dto.DiagnosticCentreID.String(),
-	)
-	centre := &db.DiagnosticCentre{
-		ID:                   centreRow.ID,
-		DiagnosticCentreName: centreRow.DiagnosticCentreName,
-		Contact:              centreRow.Contact,
-		// Copy other fields as needed
-	}
-	if err != nil {
-		utils.Error("Failed to get diagnostic centre details",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "diagnostic_centre_id", Value: dto.DiagnosticCentreID})
-		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
-	}
-
 	// Start transaction
 	tx, err := service.AppointmentRepo.BeginTx(context.Request().Context())
 	if err != nil {
@@ -117,6 +99,39 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid amount format"), context)
 	}
 
+	// Generate unique reference for this payment
+	paymentReference := fmt.Sprintf("MED-%s-%s", appointment.ID, time.Now().Format("20060102150405"))
+	// Initialize Paystack transaction
+	metadata := map[string]interface{}{
+		"appointment_id": appointment.ID,
+		"patient_id":     currentUser.UserID.String(),
+		"centre_id":      dto.DiagnosticCentreID.String(),
+		"test_type":      testType,
+	}
+
+	paystackResponse, err := service.paymentService.InitializeTransaction(
+		currentUser.UserID.String(),
+		dto.Amount,
+		paymentReference,
+		metadata,
+	)
+
+	if err != nil {
+		utils.Error("Failed to initialize payment",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "appointment_id", Value: appointment.ID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	fmt.Println(paystackResponse, "YYYYYYY")
+
+	metadataBytes, err := utils.MarshalJSONField(paystackResponse, context)
+	if err != nil {
+		utils.Error("Failed to marshal payment metadata",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
 	_, err = service.PaymentRepo.CreatePayment(context.Request().Context(), db.Create_PaymentParams{
 		AppointmentID:      appointment.ID,
 		PatientID:          currentUser.UserID.String(),
@@ -125,6 +140,9 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		Currency:           "NGN",
 		PaymentMethod:      db.PaymentMethodCard,
 		PaymentProvider:    db.PaymentProviderPAYSTACK,
+		PaymentMetadata:    metadataBytes,
+		ProviderReference: pgtype.Text{String: paymentReference, Valid: true},
+		TransactionID: pgtype.Text{String: paystackResponse.Data.Reference, Valid: true},
 	})
 
 	if err != nil {
@@ -141,14 +159,6 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit transaction"), context)
 	}
-
-	// After Payment confirmation that is when this would be sent
-	// Send confirmation email to user asynchronously
-	go service.sendAppointmentConfirmationEmail(appointment)
-
-	// Also to teh diagnostic centres
-	// Send notification to diagnostic centre about new appointment asynchronously
-	go service.notifyDiagnosticCentreOfNewAppointment(appointment, centre)
 
 	return utils.ResponseMessage(http.StatusCreated, map[string]interface{}{
 		"message":     "Appointment created successfully",
@@ -353,9 +363,9 @@ func (service *ServicesHandler) RescheduleAppointment(context echo.Context) erro
 // Helper functions to send appointment emails
 func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db.Appointment) {
 	// Get patient details by email
-	patient, err := service.UserRepo.GetUserByEmail(
+	patient, err := service.UserRepo.GetUser(
 		context.Background(),
-		pgtype.Text{String: appointment.PatientID, Valid: true},
+		appointment.PatientID,
 	)
 	if err != nil {
 		utils.Error("Failed to get patient details for confirmation email",
@@ -414,16 +424,6 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 		utils.Error("Failed to send confirmation email",
 			utils.LogField{Key: "error", Value: err.Error()})
 	}
-
-	// Format SMS message
-	// smsMessage := fmt.Sprintf(
-	// 	"Your appointment at %s has been confirmed for %s at %s. Appointment ID: %s. Test type: %s",
-	// 	centre.DiagnosticCentreName,
-	// 	appointment.AppointmentDate.Time.Format("Monday, January 2, 2006"),
-	// 	appointment.TimeSlot,
-	// 	appointment.ID,
-	// 	schedule.TestType,
-	// )
 }
 
 func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db.Appointment) {
