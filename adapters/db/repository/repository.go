@@ -45,8 +45,9 @@ func NewAvailabilityRepository(
 
 func NewPaymentRepository(
 	store *db.Queries,
+	conn *pgx.Conn,
 ) ports.PaymentRepository {
-	return &Repository{database: store}
+	return &Repository{database: store, conn: conn}
 }
 
 func NewAppointmentRepository(

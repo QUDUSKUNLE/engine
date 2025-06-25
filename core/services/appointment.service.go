@@ -214,13 +214,6 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	// Get validated DTO
 	dto := context.Get(utils.ValidatedBodyDTO).(*domain.ConfirmAppointmentDTO)
 
-	getReference, err := service.paymentService.VerifyTransaction(dto.ProviderReference)
-	if err != nil {
-		utils.Error("Failed to verify transaction",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
-	}
-
 	// Start transaction
 	tx, err := service.AppointmentRepo.BeginTx(context.Request().Context())
 	if err != nil {
@@ -230,81 +223,89 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	}
 	defer tx.Rollback(context.Request().Context())
 
-	// Get appointment
-	appointment, err := service.AppointmentRepo.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	// Verify and update payment first
+	payment, err := service.verifyAndUpdatePayment(context.Request().Context(), dto.ProviderReference)
 	if err != nil {
+		utils.Error("Payment verification failed",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "reference", Value: dto.ProviderReference})
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+
+	// Get appointment with retries
+	var appointment *db.Appointment
+	for retries := 0; retries < 3; retries++ {
+		appointment, err = service.AppointmentRepo.GetAppointment(context.Request().Context(), dto.AppointmentID)
+		if err == nil {
+			break
+		}
+		if retries < 2 {
+			time.Sleep(time.Duration(retries+1) * 100 * time.Millisecond)
+			continue
+		}
+		utils.Error("Failed to get appointment after retries",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "appointment_id", Value: dto.AppointmentID})
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("appointment not found"), context)
 	}
 
 	// Verify ownership
 	if appointment.PatientID != currentUser.UserID.String() {
+		utils.Error("Unauthorized appointment confirmation attempt",
+			utils.LogField{Key: "appointment_id", Value: appointment.ID},
+			utils.LogField{Key: "user_id", Value: currentUser.UserID})
 		return utils.ErrorResponse(http.StatusForbidden, errors.New("not authorized to confirm this appointment"), context)
 	}
 
 	// Verify appointment status
 	if appointment.Status != db.AppointmentStatusPending {
+		utils.Error("Invalid appointment status for confirmation",
+			utils.LogField{Key: "appointment_id", Value: appointment.ID},
+			utils.LogField{Key: "status", Value: appointment.Status})
 		return utils.ErrorResponse(http.StatusBadRequest, errors.New("appointment cannot be confirmed in its current state"), context)
 	}
 
-	// Verify appointment date is not in the past
+	// Validate appointment time with grace period
 	now := time.Now()
 	appointmentTime := appointment.AppointmentDate.Time
-	// Add 15 minutes grace period for appointments being confirmed today
 	gracePeriod := 15 * time.Minute
 
 	if appointmentTime.Before(now) {
-		// If the appointment is today and within grace period, allow it
-		if appointmentTime.Year() == now.Year() &&
+		isToday := appointmentTime.Year() == now.Year() &&
 			appointmentTime.Month() == now.Month() &&
-			appointmentTime.Day() == now.Day() &&
-			now.Sub(appointmentTime) <= gracePeriod {
-			// Allow the confirmation to proceed
-		} else {
-			utils.Error("Cannot confirm an appointment in the past",
-				utils.LogField{Key: "appointment_id", Value: dto.AppointmentID})
+			appointmentTime.Day() == now.Day()
+
+		if !isToday || now.Sub(appointmentTime) > gracePeriod {
+			utils.Error("Attempt to confirm past appointment",
+				utils.LogField{Key: "appointment_id", Value: appointment.ID},
+				utils.LogField{Key: "appointment_time", Value: appointmentTime},
+				utils.LogField{Key: "current_time", Value: now})
 			return utils.ErrorResponse(http.StatusBadRequest, errors.New("cannot confirm appointments in the past"), context)
 		}
+	}
+
+	// Parse payment ID string to UUID
+	paymentUUID, err := uuid.Parse(payment.ID)
+	if err != nil {
+		utils.Error("Failed to parse payment UUID",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
 	// Update appointment status
 	confirmedAppointment, err := service.AppointmentRepo.UpdateAppointment(context.Request().Context(), db.UpdateAppointmentPaymentParams{
 		ID:            appointment.ID,
-		PaymentID:     appointment.PaymentID,
+		PaymentID:     pgtype.UUID{Bytes: paymentUUID, Valid: true},
 		PaymentStatus: db.NullPaymentStatus{PaymentStatus: db.PaymentStatusSuccess, Valid: true},
-		PaymentAmount: appointment.PaymentAmount,
+		PaymentAmount: payment.Amount,
 		Status:        db.AppointmentStatusConfirmed,
 	})
 	if err != nil {
 		utils.Error("Failed to update appointment status",
 			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "appointment_id", Value: dto.AppointmentID})
+			utils.LogField{Key: "appointment_id", Value: appointment.ID})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
-
-	// Convert payment metadata to JSON
-	metadataBytes, err := utils.MarshalJSONField(getReference.Data, context)
-	if err != nil {
-		utils.Error("Failed to marshal payment metadata",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
-	}
-
-	// Update Payment with serialized metadata
-	update, err := service.PaymentRepo.UpdatePaymentStatus(context.Request().Context(), db.Update_Payment_StatusParams{
-		ID:              appointment.PaymentID.String(),
-		PaymentStatus:   db.PaymentStatus(db.PaymentStatusSuccess),
-		TransactionID:   pgtype.Text{String: getReference.Data.Reference, Valid: true},
-		PaymentMetadata: metadataBytes,
-	})
-	if err != nil {
-		utils.Error("Failed to update payment",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to update payment"), context)
-	}
-
-	utils.Info("Payment updated successfully",
-		utils.LogField{Key: "payment_id", Value: update.ID},
-	)
 
 	// Commit transaction
 	if err := tx.Commit(context.Request().Context()); err != nil {
@@ -315,6 +316,11 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 
 	// Send confirmation email asynchronously
 	go service.sendAppointmentConfirmationEmail(confirmedAppointment)
+
+	utils.Info("Appointment confirmed successfully",
+		utils.LogField{Key: "appointment_id", Value: appointment.ID},
+		utils.LogField{Key: "status", Value: "confirmed"},
+		utils.LogField{Key: "user_id", Value: currentUser.UserID})
 
 	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
 		"message":     "Appointment confirmed successfully",
@@ -514,6 +520,72 @@ func (service *ServicesHandler) RescheduleAppointment(context echo.Context) erro
 	go service.sendAppointmentRescheduleEmail(rescheduledAppointment)
 
 	return utils.ResponseMessage(http.StatusOK, rescheduledAppointment, context)
+}
+
+// Helper function to verify and update payment
+func (service *ServicesHandler) verifyAndUpdatePayment(ctx context.Context, providerReference string) (*db.Payment, error) {
+	// Verify payment with provider
+	verificationResponse, err := service.paymentService.VerifyTransaction(providerReference)
+	if err != nil {
+		utils.Error("Failed to verify transaction",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "reference", Value: providerReference})
+		return nil, fmt.Errorf("payment verification failed: %w", err)
+	}
+
+	if !verificationResponse.Status || verificationResponse.Data.Status != "success" {
+		utils.Error("Payment verification returned unsuccessful status",
+			utils.LogField{Key: "reference", Value: providerReference},
+			utils.LogField{Key: "status", Value: verificationResponse.Data.Status})
+		return nil, errors.New("payment verification unsuccessful")
+	}
+
+	// Convert payment metadata to JSON with error recovery
+	metadataBytes, err := utils.MarshalJSONField(verificationResponse.Data, nil)
+	if err != nil {
+		utils.Error("Failed to marshal payment metadata, using fallback",
+			utils.LogField{Key: "error", Value: err.Error()})
+		// Fallback to basic metadata
+		metadataBytes = []byte(`{"reference":"` + providerReference + `"}`)
+	}
+
+	// Get payment by provider reference
+	payment, err := service.PaymentRepo.GetPaymentByReference(ctx, providerReference)
+	if err != nil {
+		utils.Error("Failed to get payment by reference",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "reference", Value: providerReference})
+		return nil, fmt.Errorf("payment not found: %w", err)
+	}
+
+	// Update payment status with retries
+	var updatedPayment *db.Payment
+	for retries := 0; retries < 3; retries++ {
+		updatedPayment, err = service.PaymentRepo.UpdatePaymentStatus(ctx, db.Update_Payment_StatusParams{
+			ID:              payment.ID,
+			PaymentStatus:   db.PaymentStatus(db.PaymentStatusSuccess),
+			TransactionID:   pgtype.Text{String: verificationResponse.Data.Reference, Valid: true},
+			PaymentMetadata: metadataBytes,
+		})
+		if err == nil {
+			break
+		}
+		utils.Warn("Failed to update payment status, retrying...",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "retry", Value: retries + 1})
+		time.Sleep(time.Duration(retries+1) * 100 * time.Millisecond)
+	}
+	if err != nil {
+		utils.Error("All payment update retries failed",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "payment_id", Value: payment.ID})
+		return nil, fmt.Errorf("failed to update payment after retries: %w", err)
+	}
+
+	utils.Info("Payment verified and updated successfully",
+		utils.LogField{Key: "payment_id", Value: updatedPayment.ID})
+
+	return updatedPayment, nil
 }
 
 // Helper functions to send appointment emails

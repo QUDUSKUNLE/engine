@@ -392,3 +392,23 @@ func convertUserTypesToStrings(types []db.UserEnum) []string {
 	}
 	return strings
 }
+
+// ParseTime parses a date string into a time.Time object
+// It handles common date formats used by payment providers
+func ParseTime(dateStr string) time.Time {
+	// Try common formats
+	formats := []string{
+		time.RFC3339,
+		"2006-01-02T15:04:05Z",
+		"2006-01-02 15:04:05",
+	}
+
+	for _, format := range formats {
+		if t, err := time.Parse(format, dateStr); err == nil {
+			return t
+		}
+	}
+
+	// Return zero time if parsing fails
+	return time.Time{}
+}

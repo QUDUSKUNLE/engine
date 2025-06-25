@@ -20,7 +20,7 @@ type ServicesHandler struct {
 	FileRepo            ports.FileService
 	notificationService ports.NotificationService
 	// Payment Gateway
-	paymentService ports.PaymentService
+	paymentService ports.PaymentProviderService
 }
 
 func ServicesAdapter(
