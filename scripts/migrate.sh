@@ -65,7 +65,7 @@ wait_for_db() {
 # Run migrations
 run_migrations() {
     log "Running database migrations..."
-    log "Database URL: ${DB_URL%\?*}?***" # Hide query params for security
+    log "Database Host: ${DB_HOST%\?*}?***" # Hide query params for security
     log "Migration path: $MIGRATION_PATH"
     
     # Run migrations

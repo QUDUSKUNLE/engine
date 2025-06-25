@@ -151,8 +151,9 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		PaymentMethod:      db.PaymentMethodCard,
 		PaymentProvider:    db.PaymentProviderPAYSTACK,
 		PaymentMetadata:    metadataBytes,
-		ProviderReference: pgtype.Text{String: paymentReference, Valid: true},
-		TransactionID: pgtype.Text{String: paystackResponse.Data.Reference, Valid: true},
+		ProviderMetadata:   metadataBytes,
+		ProviderReference:  pgtype.Text{String: paymentReference, Valid: true},
+		TransactionID:      pgtype.Text{String: paystackResponse.Data.Reference, Valid: true},
 	})
 
 	if err != nil {
@@ -173,7 +174,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	return utils.ResponseMessage(http.StatusCreated, map[string]interface{}{
 		"message":     "Appointment created successfully",
 		"appointment": appointment,
-		"reference": paystackResponse.Data,
+		"reference":   paystackResponse.Data,
 	}, context)
 }
 

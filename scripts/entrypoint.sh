@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Entrypoint script for Medicue Docker container
 set -e
