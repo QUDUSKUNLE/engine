@@ -60,3 +60,6 @@ WHERE
         WHERE p.id = payments.id AND p.refund_amount IS NOT NULL
     )
 RETURNING *;
+
+-- name: GetPaymentByReference :one
+SELECT * FROM payments WHERE provider_reference = $1 LIMIT 1;

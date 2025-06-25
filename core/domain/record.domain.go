@@ -5,15 +5,12 @@ import (
 	"github.com/medicue/adapters/db"
 )
 
-// File represents an uploaded file's metadata and content.
-// Update this struct as needed for your application's requirements.
-type File struct {
-	FileName string
-	FileSize int64
-	Content  []byte
-}
-
 type (
+	File struct {
+		FileName string
+		FileSize int64
+		Content  []byte
+	}
 	CreateMedicalRecordDTO struct {
 		UserID     uuid.UUID `json:"user_id" validate:"required,uuid"`
 		UploaderID uuid.UUID `json:"uploader_id" validate:"required,uuid"`

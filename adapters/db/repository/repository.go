@@ -58,15 +58,15 @@ func NewAppointmentRepository(
 
 func (r *Repository) GetTestTypes(ctx context.Context) ([]string, error) {
 	rows, err := r.conn.Query(ctx, `
-        SELECT enumlabel 
-        FROM pg_enum 
-        WHERE enumtypid = (
-            SELECT oid 
-            FROM pg_type 
-            WHERE typname = 'test_type'
-        )
-        ORDER BY enumsortorder
-    `)
+		SELECT enumlabel 
+		FROM pg_enum 
+		WHERE enumtypid = (
+			SELECT oid 
+			FROM pg_type 
+			WHERE typname = 'test_type'
+		)
+		ORDER BY enumsortorder
+	`)
 	if err != nil {
 		return nil, err
 	}

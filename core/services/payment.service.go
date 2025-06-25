@@ -211,3 +211,45 @@ func (s *ServicesHandler) HandlePaymentWebhook(ctx echo.Context) error {
 
 	return utils.ResponseMessage(http.StatusAccepted, payment, ctx)
 }
+
+// VerifyPayment verifies a payment using Paystack and updates the payment status
+func (s *ServicesHandler) VerifyPayment(c echo.Context, reference string) error {
+	// Verify payment with Paystack
+	verificationResponse, err := s.paymentService.VerifyTransaction(reference)
+	if err != nil {
+		return fmt.Errorf("failed to verify payment: %v", err)
+	}
+
+	// Check if payment was successful
+	if !verificationResponse.Status || verificationResponse.Data.Status != "success" {
+		return fmt.Errorf("payment verification failed: %s", verificationResponse.Message)
+	}
+
+	// Get payment by reference from database
+	payment, err := s.PaymentRepo.GetPaymentByReference(c.Request().Context(), reference)
+	if err != nil {
+		return fmt.Errorf("failed to get payment: %v", err)
+	}
+
+	// Update payment status
+	updatedPayment, err := s.PaymentRepo.UpdatePaymentStatus(c.Request().Context(), db.Update_Payment_StatusParams{
+		PaymentStatus: db.PaymentStatusSuccess,
+		ID:            payment.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update payment status: %v", err)
+	}
+
+	// Update appointment status if necessary
+	// if updatedPayment.AppointmentID.Valid {
+	// 	_, err = s.AppointmentRepo.UpdateAppointment(c.Request().Context(), db.UpdateAppointmentParams{
+	// 		ID:     updatedPayment.AppointmentID.String,
+	// 		Status: db.AppointmentStatusConfirmed,
+	// 	})
+	// 	if err != nil {
+	// 		return fmt.Errorf("failed to update appointment status: %v", err)
+	// 	}
+	// }
+
+	return utils.ResponseMessage(http.StatusOK, updatedPayment, c)
+}

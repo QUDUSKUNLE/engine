@@ -11,6 +11,7 @@ import (
 type PaymentRepository interface {
 	CreatePayment(ctx context.Context, payment db.Create_PaymentParams) (*db.Payment, error)
 	GetPayment(ctx context.Context, id string) (*db.Payment, error)
+	GetPaymentByReference(ctx context.Context, reference string) (*db.Payment, error)
 	ListPayments(ctx context.Context, params db.List_PaymentsParams) ([]*db.Payment, error)
 	RefundPayment(ctx context.Context, params db.Refund_PaymentParams) (*db.Payment, error)
 	UpdatePaymentStatus(ctx context.Context, params db.Update_Payment_StatusParams) (*db.Payment, error)
@@ -18,4 +19,5 @@ type PaymentRepository interface {
 
 type PaymentService interface {
 	InitializeTransaction(email string, amount float64, reference string, metadata map[string]interface{}) (*paystack.PaystackTransactionResponse, error)
+	VerifyTransaction(reference string) (*paystack.PaystackVerificationResponse, error)
 }

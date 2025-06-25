@@ -83,6 +83,38 @@ func (q *Queries) Create_Payment(ctx context.Context, arg Create_PaymentParams) 
 	return &i, err
 }
 
+const getPaymentByReference = `-- name: GetPaymentByReference :one
+SELECT id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at, payment_provider, provider_reference, provider_metadata FROM payments WHERE provider_reference = $1 LIMIT 1
+`
+
+func (q *Queries) GetPaymentByReference(ctx context.Context, providerReference pgtype.Text) (*Payment, error) {
+	row := q.db.QueryRow(ctx, getPaymentByReference, providerReference)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.AppointmentID,
+		&i.PatientID,
+		&i.DiagnosticCentreID,
+		&i.Amount,
+		&i.Currency,
+		&i.PaymentMethod,
+		&i.PaymentStatus,
+		&i.TransactionID,
+		&i.PaymentMetadata,
+		&i.PaymentDate,
+		&i.RefundAmount,
+		&i.RefundReason,
+		&i.RefundDate,
+		&i.RefundedBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PaymentProvider,
+		&i.ProviderReference,
+		&i.ProviderMetadata,
+	)
+	return &i, err
+}
+
 const get_Payment = `-- name: Get_Payment :one
 SELECT id, appointment_id, patient_id, diagnostic_centre_id, amount, currency, payment_method, payment_status, transaction_id, payment_metadata, payment_date, refund_amount, refund_reason, refund_date, refunded_by, created_at, updated_at, payment_provider, provider_reference, provider_metadata FROM payments WHERE id = $1
 `

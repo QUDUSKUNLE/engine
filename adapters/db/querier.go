@@ -41,6 +41,7 @@ type Querier interface {
 	GetMedicalRecords(ctx context.Context, arg GetMedicalRecordsParams) ([]*GetMedicalRecordsRow, error)
 	GetPasswordResetToken(ctx context.Context, token string) (*PasswordResetToken, error)
 	GetPatientAppointments(ctx context.Context, arg GetPatientAppointmentsParams) ([]*Appointment, error)
+	GetPaymentByReference(ctx context.Context, providerReference pgtype.Text) (*Payment, error)
 	// This is just a helper query to make sqlc generate the Doctor type
 	GetSampleDoctor(ctx context.Context) (Doctor, error)
 	// This is just a helper query to make sqlc generate the Doctor type as array
