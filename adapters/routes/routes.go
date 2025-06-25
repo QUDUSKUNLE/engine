@@ -7,6 +7,9 @@ import (
 
 // RoutesAdaptor registers all API routes
 func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Group {
+	// Health check route (no auth required)
+	public.GET("/health", handler.HealthCheck)
+	
 	// Register all domain-specific routes
 	AuthRoutes(public, handler)
 	DiagnosticRoutes(public, handler)

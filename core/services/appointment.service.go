@@ -109,8 +109,18 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		"test_type":      testType,
 	}
 
+	// Get User Email
+	user, err := service.UserRepo.GetUser(context.Request().Context(), currentUser.UserID.String())
+
+	if err != nil {
+		utils.Error("Failed to get user email",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "appointment_id", Value: appointment.ID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
 	paystackResponse, err := service.paymentService.InitializeTransaction(
-		currentUser.UserID.String(),
+		user.Email.String,
 		dto.Amount,
 		paymentReference,
 		metadata,
@@ -163,6 +173,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	return utils.ResponseMessage(http.StatusCreated, map[string]interface{}{
 		"message":     "Appointment created successfully",
 		"appointment": appointment,
+		"reference": paystackResponse.Data,
 	}, context)
 }
 

@@ -1,6 +1,20 @@
 .env
+.env.production
+.env.local
+.env.staging
 tmp
 bin
 # internal/pdf/**.pdf
 __debug_**
 logs
+
+# Docker volumes
+docker-data/
+postgres_data/
+redis_data/
+
+# Deployment secrets
+kubernetes/secrets/
+*.pem
+*.key
+*.crt

@@ -36,9 +36,16 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
+      - name: Install migration tools
+        run: make setup
+
       - name: Run migrations
         run: |
           ./bin/migrate -path adapters/db/migrations -database "$DB_URL" up
+
+      - name: Verify migration status
+        run: |
+          ./bin/migrate -path adapters/db/migrations -database "$DB_URL" version
 
       - name: Build
         run: go build -v ./...

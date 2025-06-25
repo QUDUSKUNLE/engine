@@ -49,6 +49,13 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			handler:     handler.DeleteDiagnosticCentre,
 			description: "Delete diagnostic centre",
 		},
+		{
+			method:      http.MethodGet,
+			path:        "/diagnostic_centres/:diagnostic_centre_id/diagnostic_schedules",
+			handler:     handler.GetDiagnosticCentreSchedules,
+			factory: func () interface{} { return &domain.GetDiagnosticSchedulesByCentreParamDTO{}},
+			description: "Get Diagnostic centre schedules",
+		},
 	}
 
 	registerRoutes(group, diagnosticGroup)
