@@ -46,6 +46,13 @@ func PaymentRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory:     func() interface{} { return &domain.PaymentWebhookDTO{} },
 			description: "Handle payment provider webhook",
 		},
+		{
+			method:      http.MethodGet,
+			path:        "/payments/verify/:reference",
+			handler:     handler.VerifyPayment,
+			factory:     func() interface{} { return &domain.VerifyPaymentDTO{} },
+			description: "Verify payment status",
+		},
 	}
 
 	registerRoutes(group, paymentGroup)

@@ -1,0 +1,42 @@
+version: '3.8'
+
+# Migration-only service for running database migrations independently
+services:
+  migrate:
+    build: .
+    environment:
+      - DB_URL=postgres://medicue_user:medicue_password@db:5432/medicue?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - medicue-network
+    command: ["./bin/migrate", "-path=adapters/db/migrations", "-database", "postgres://medicue_user:medicue_password@db:5432/medicue?sslmode=disable", "up"]
+    restart: "no"
+
+  # Re-use the database service from main compose file
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: medicue
+      POSTGRES_USER: medicue_user
+      POSTGRES_PASSWORD: medicue_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medicue_user -d medicue"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - medicue-network
+
+volumes:
+  postgres_data:
+
+networks:
+  medicue-network:
+    driver: bridge

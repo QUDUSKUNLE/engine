@@ -28,3 +28,14 @@ func (h *HTTPHandler) PaymentWebhook(c echo.Context) error {
 	// TODO: Implement payment webhook handler
 	return h.service.HandlePaymentWebhook(c)
 }
+
+func (h *HTTPHandler) VerifyPayment(c echo.Context) error {
+	reference := c.Param("reference")
+	if reference == "" {
+		return c.JSON(400, map[string]string{
+			"error": "payment reference is required",
+		})
+	}
+
+	return h.service.VerifyPayment(c, reference)
+}

@@ -40,7 +40,8 @@ type Querier interface {
 	// Retrieves a paginated list of medical records for a specific user, ordered by creation date (most recent first).
 	GetMedicalRecords(ctx context.Context, arg GetMedicalRecordsParams) ([]*GetMedicalRecordsRow, error)
 	GetPasswordResetToken(ctx context.Context, token string) (*PasswordResetToken, error)
-	GetPatientAppointments(ctx context.Context, arg GetPatientAppointmentsParams) ([]*Appointment, error)
+	GetPatientAppointments(ctx context.Context, arg GetPatientAppointmentsParams) ([]*GetPatientAppointmentsRow, error)
+	GetPaymentByReference(ctx context.Context, providerReference pgtype.Text) (*Payment, error)
 	// This is just a helper query to make sqlc generate the Doctor type
 	GetSampleDoctor(ctx context.Context) (Doctor, error)
 	// This is just a helper query to make sqlc generate the Doctor type as array

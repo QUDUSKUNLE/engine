@@ -14,13 +14,18 @@ INSERT INTO appointments (
 
 -- name: GetAppointment :one
 SELECT * FROM appointments WHERE id = $1;
-
 -- name: GetPatientAppointments :many
-SELECT * FROM appointments 
-WHERE patient_id = $1
-AND status = ANY($2::appointment_status[])
-AND appointment_date BETWEEN $3 AND $4
-ORDER BY appointment_date ASC
+SELECT 
+    a.*,
+    dc.diagnostic_centre_name as diagnostic_centre_name,
+    dc.address as diagnostic_centre_address
+FROM appointments a
+JOIN diagnostic_centres dc ON a.diagnostic_centre_id = dc.id
+JOIN diagnostic_schedules s ON a.schedule_id = s.id
+WHERE a.patient_id = $1
+    AND a.status = ANY($2::appointment_status[])
+    AND a.appointment_date BETWEEN $3 AND $4
+ORDER BY a.appointment_date ASC, a.time_slot ASC
 LIMIT $5 OFFSET $6;
 
 -- name: GetCentreAppointments :many
@@ -104,16 +109,10 @@ RETURNING *;
 -- name: UpdateAppointmentPayment :one
 UPDATE appointments 
 SET 
-    payment_id = $2,
-    payment_status = $3,
-    payment_amount = $4,
-    payment_date = CURRENT_TIMESTAMP,
-    status = CASE 
-        WHEN $3 = 'success' THEN 'confirmed' 
-        WHEN $3 = 'failed' THEN 'pending'
-        WHEN $3 = 'cancelled' THEN 'cancelled'
-        ELSE status 
-    END,
+    payment_id = COALESCE($2, payment_id),
+    payment_status = COALESCE($3, payment_status),
+    payment_amount = COALESCE($4, payment_amount),
+    status = COALESCE($5, status),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 
 RETURNING *;

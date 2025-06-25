@@ -19,28 +19,28 @@ func AppointmentRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			description: "Create a new appointment",
 		},
 		{
-			method:      http.MethodGet,
-			path:        "/appointments/:appointment_id",
-			handler:     handler.GetAppointment,
-			factory: func () interface{}  {
+			method:  http.MethodGet,
+			path:    "/appointments/:appointment_id",
+			handler: handler.GetAppointment,
+			factory: func() interface{} {
 				return &domain.GetAppointmentDTO{}
 			},
 			description: "Get appointment by appointment_id",
 		},
 		{
-			method:      http.MethodGet,
-			path:        "/appointments",
-			handler:     handler.ListAppointments,
-			factory: func () interface{} {
+			method:  http.MethodGet,
+			path:    "/appointments",
+			handler: handler.ListAppointments,
+			factory: func() interface{} {
 				return &domain.ListAppointmentsDTO{}
 			},
 			description: "List appointments with filters",
 		},
 		{
-			method:      http.MethodPost,
-			path:        "/appointments/:appointment_id/cancel",
-			handler:     handler.CancelAppointment,
-			factory: func () interface{} {
+			method:  http.MethodPost,
+			path:    "/appointments/:appointment_id/cancel",
+			handler: handler.CancelAppointment,
+			factory: func() interface{} {
 				return &domain.CancelAppointmentDTO{}
 			},
 			description: "Cancel an appointment",
@@ -51,6 +51,13 @@ func AppointmentRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			handler:     handler.RescheduleAppointment,
 			factory:     func() interface{} { return &domain.RescheduleAppointmentDTO{} },
 			description: "Reschedule an appointment",
+		},
+		{
+			method:      http.MethodPost,
+			path:        "/appointments/confirm_appointment",
+			handler:     handler.ConfirmAppointment,
+			factory:     func() interface{} { return &domain.ConfirmAppointmentDTO{} },
+			description: "Confirm an appointment",
 		},
 	}
 

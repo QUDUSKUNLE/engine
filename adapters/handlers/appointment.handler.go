@@ -120,3 +120,7 @@ func (h *HTTPHandler) RescheduleAppointment(c echo.Context) error {
 	// Validation happens in middleware
 	return h.service.RescheduleAppointment(c)
 }
+
+func (h *HTTPHandler) ConfirmAppointment(c echo.Context) error {
+	return h.service.ConfirmAppointment(c)
+}

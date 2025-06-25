@@ -23,6 +23,88 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type MockDiagnosticRepo struct{ mock.Mock }
+
+func (m *MockDiagnosticRepo) GetDiagnosticCentreByManager(ctx context.Context, params db.Get_Diagnostic_Centre_ByManagerParams) (*db.Get_Diagnostic_Centre_ByManagerRow, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.Get_Diagnostic_Centre_ByManagerRow), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) GetDiagnosticCentreByOwner(ctx context.Context, params db.Get_Diagnostic_Centre_ByOwnerParams) (*db.Get_Diagnostic_Centre_ByOwnerRow, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.Get_Diagnostic_Centre_ByOwnerRow), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) GetDiagnosticCentre(ctx context.Context, id string) (*db.Get_Diagnostic_CentreRow, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.Get_Diagnostic_CentreRow), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) CreateDiagnosticCentre(ctx context.Context, params db.Create_Diagnostic_CentreParams) (*db.DiagnosticCentre, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.DiagnosticCentre), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) DeleteDiagnosticCentreByOwner(ctx context.Context, params db.Delete_Diagnostic_Centre_ByOwnerParams) (*db.DiagnosticCentre, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.DiagnosticCentre), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) GetNearestDiagnosticCentres(ctx context.Context, params db.Get_Nearest_Diagnostic_CentresParams) ([]*db.Get_Nearest_Diagnostic_CentresRow, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*db.Get_Nearest_Diagnostic_CentresRow), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) ListDiagnosticCentresByOwner(ctx context.Context, params db.List_Diagnostic_Centres_ByOwnerParams) ([]*db.List_Diagnostic_Centres_ByOwnerRow, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*db.List_Diagnostic_Centres_ByOwnerRow), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) RetrieveDiagnosticCentres(ctx context.Context, params db.Retrieve_Diagnostic_CentresParams) ([]*db.Retrieve_Diagnostic_CentresRow, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*db.Retrieve_Diagnostic_CentresRow), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) SearchDiagnosticCentres(ctx context.Context, params db.Search_Diagnostic_CentresParams) ([]*db.Search_Diagnostic_CentresRow, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*db.Search_Diagnostic_CentresRow), args.Error(1)
+}
+
+func (m *MockDiagnosticRepo) UpdateDiagnosticCentreByOwner(ctx context.Context, params db.Update_Diagnostic_Centre_ByOwnerParams) (*db.DiagnosticCentre, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*db.DiagnosticCentre), args.Error(1)
+}
+
 type MockFileRepo struct{ mock.Mock }
 
 func (m *MockFileRepo) UploadFile(ctx context.Context, filePath []byte) (string, error) {
@@ -100,7 +182,6 @@ func (m *MockRecordRepo) GetUploaderMedicalRecords(ctx context.Context, params d
 	}
 	return args.Get(0).([]*db.GetUploaderMedicalRecordsRow), args.Error(1)
 }
-
 
 func TestCreateMedicalRecord_Success(t *testing.T) {
 	DiagnosticRepo := new(MockDiagnosticRepo)
@@ -540,7 +621,6 @@ func TestGetSharedMedicalRecords_NotFound(t *testing.T) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	c.Set("user", token)
-
 
 	// Verify mock expectations
 	RecordRepo.AssertExpectations(t)

@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: medicue-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /v1/health
+    plan: starter
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DB_URL
+        fromDatabase:
+          name: medicue-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: JWT_EXPIRATION_HOURS
+        value: 24
+      - key: ALLOW_ORIGINS
+        value: https://yourdomain.com
+
+databases:
+  - name: medicue-db
+    databaseName: medicue
+    user: medicue_user
+    plan: starter

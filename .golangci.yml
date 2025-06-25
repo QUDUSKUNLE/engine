@@ -1,0 +1,101 @@
+linters:
+  enable:
+    - gofmt
+    - govet
+    - staticcheck
+    - revive
+    - errcheck
+    - gosimple
+    - ineffassign
+    - typecheck
+    - unused
+    - bodyclose
+    - misspell
+    - gocyclo
+    - funlen
+    - gocritic
+    - whitespace
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  funlen:
+    lines: 100
+    statements: 50
+  gocritic:
+    enabled-checks:
+      - appendAssign
+      - argOrder
+      - assignOp
+      - badCall
+      - badCond
+      - captLocal
+      - caseOrder
+      - commentedOutCode
+      - commentedOutImport
+      - defaultCaseOrder
+      - deprecatedComment
+      - dupArg
+      - dupBranchBody
+      - dupCase
+      - dupSubExpr
+      - exitAfterDefer
+      - flagName
+      - hexLiteral
+      - indexAlloc
+      - nilValReturn
+      - rangeValCopy
+      - sloppyLen
+      - switchTrue
+      - typeSwitchVar
+      - underef
+      - unlambda
+      - unslice
+      - valSwap
+      - weakCond
+      - wrapperFunc
+  revive:
+    rules:
+      - name: exported
+        arguments:
+          - disableStutteringCheck
+        severity: warning
+      - name: package-comments
+        severity: warning
+      - name: var-naming
+        severity: warning
+      - name: dot-imports
+        severity: warning
+      - name: blank-imports
+        severity: warning
+      - name: var-declaration
+        severity: warning
+      - name: receiver-naming
+        severity: warning
+      - name: errorf
+        severity: warning
+
+run:
+  timeout: 5m
+  tests: false
+  skip-dirs:
+    - vendor/
+    - docs/
+  skip-files:
+    - ".*_test\\.go$"
+    - "\\.pb\\.go$"
+
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - errcheck
+        - funlen
+        - gocyclo
+  max-same-issues: 10
+  max-issues-per-linter: 50
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true

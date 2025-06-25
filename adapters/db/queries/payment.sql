@@ -8,9 +8,11 @@ INSERT INTO payments (
     payment_method,
     payment_metadata,
     payment_provider,
-    provider_reference
+    provider_reference,
+    provider_metadata,
+    transaction_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 ) RETURNING *;
 
 -- name: Get_Payment :one
@@ -30,13 +32,10 @@ LIMIT $6 OFFSET $7;
 -- name: Update_Payment_Status :one
 UPDATE payments 
 SET 
-    payment_status = $2,
-    payment_date = CASE 
-        WHEN $2 = 'success' THEN CURRENT_TIMESTAMP 
-        ELSE payment_date 
-    END,
-    transaction_id = $3,
+    payment_status = COALESCE($2, payment_status),
+    transaction_id = COALESCE($3, transaction_id),
     payment_metadata = COALESCE($4, payment_metadata),
+    payment_date = CURRENT_TIMESTAMP,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 
 RETURNING *;
@@ -58,3 +57,6 @@ WHERE
         WHERE p.id = payments.id AND p.refund_amount IS NOT NULL
     )
 RETURNING *;
+
+-- name: GetPaymentByReference :one
+SELECT * FROM payments WHERE provider_reference = $1 LIMIT 1;

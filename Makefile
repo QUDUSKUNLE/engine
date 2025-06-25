@@ -36,3 +36,57 @@ migrate-rollback:
 
 migration-version:
 	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgres://abumuhsinah:abumuhsinah@localhost:5432/medicue?sslmode=disable" version
+
+# Docker-based migration commands
+migrate-docker-up:
+	docker-compose -f docker-compose.migrate.yml up migrate
+
+migrate-docker-down:
+	docker-compose -f docker-compose.migrate.yml run --rm migrate ./bin/migrate -path=adapters/db/migrations -database "$(DB_URL)" down $(V)
+
+migrate-docker-force:
+	@if [ -z "$(V)" ]; then \
+		echo "error: please specify version argument V"; \
+		exit 1; \
+	fi; \
+	docker-compose -f docker-compose.migrate.yml run --rm migrate ./bin/migrate -path=adapters/db/migrations -database "$(DB_URL)" force $(V)
+
+migrate-docker-version:
+	docker-compose -f docker-compose.migrate.yml run --rm migrate ./bin/migrate -path=adapters/db/migrations -database "$(DB_URL)" version
+
+# Production migration commands (use with caution)
+migrate-prod-up:
+	@if [ -z "$(PROD_DB_URL)" ]; then \
+		echo "error: please set PROD_DB_URL environment variable"; \
+		exit 1; \
+	fi; \
+	$(GOBIN)/migrate -path="adapters/db/migrations" -database "$(PROD_DB_URL)" up
+
+migrate-prod-version:
+	@if [ -z "$(PROD_DB_URL)" ]; then \
+		echo "error: please set PROD_DB_URL environment variable"; \
+		exit 1; \
+	fi; \
+	$(GOBIN)/migrate -path="adapters/db/migrations" -database "$(PROD_DB_URL)" version
+
+# Create new migration
+create-migration:
+	@if [ -z "$(NAME)" ]; then \
+		echo "error: please specify migration name with NAME argument"; \
+		echo "example: make create-migration NAME=add_user_table"; \
+		exit 1; \
+	fi; \
+	$(GOBIN)/migrate create -ext sql -dir adapters/db/migrations -seq $(NAME)
+
+# Migration help
+migrate-help:
+	@echo "Available migration commands:"
+	@echo "  migrate-up           - Run all pending migrations (local)"
+	@echo "  migrate-down         - Rollback one migration (local)"
+	@echo "  migrate-version      - Show current migration version (local)"
+	@echo "  migrate-docker-up    - Run migrations using Docker"
+	@echo "  migrate-docker-down  - Rollback migrations using Docker (V=number)"
+	@echo "  migrate-docker-force - Force migration version using Docker (V=version)"
+	@echo "  migrate-prod-up      - Run migrations on production (PROD_DB_URL required)"
+	@echo "  create-migration     - Create new migration (NAME required)"
+	@echo "  migrate-help         - Show this help"
