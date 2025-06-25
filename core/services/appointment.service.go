@@ -133,7 +133,10 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	fmt.Println(paystackResponse, "YYYYYYY")
+	utils.Info("Payment initialized successfully",
+		utils.LogField{Key: "paystack_response", Value: paystackResponse},
+		utils.LogField{Key: "appointment_id", Value: appointment.ID},
+	)
 
 	metadataBytes, err := utils.MarshalJSONField(paystackResponse, context)
 	if err != nil {
