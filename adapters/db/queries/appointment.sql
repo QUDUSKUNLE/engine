@@ -104,16 +104,10 @@ RETURNING *;
 -- name: UpdateAppointmentPayment :one
 UPDATE appointments 
 SET 
-    payment_id = $2,
-    payment_status = $3,
-    payment_amount = $4,
-    payment_date = CURRENT_TIMESTAMP,
-    status = CASE 
-        WHEN $3 = 'success' THEN 'confirmed' 
-        WHEN $3 = 'failed' THEN 'pending'
-        WHEN $3 = 'cancelled' THEN 'cancelled'
-        ELSE status 
-    END,
+    payment_id = COALESCE($2, payment_id),
+    payment_status = COALESCE($3, payment_status),
+    payment_amount = COALESCE($4, payment_amount),
+    status = COALESCE($5, status),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 
 RETURNING *;

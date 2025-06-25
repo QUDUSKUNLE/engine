@@ -432,16 +432,10 @@ func (q *Queries) RescheduleAppointment(ctx context.Context, arg RescheduleAppoi
 const updateAppointmentPayment = `-- name: UpdateAppointmentPayment :one
 UPDATE appointments 
 SET 
-    payment_id = $2,
-    payment_status = $3,
-    payment_amount = $4,
-    payment_date = CURRENT_TIMESTAMP,
-    status = CASE 
-        WHEN $3 = 'success' THEN 'confirmed' 
-        WHEN $3 = 'failed' THEN 'pending'
-        WHEN $3 = 'cancelled' THEN 'cancelled'
-        ELSE status 
-    END,
+    payment_id = COALESCE($2, payment_id),
+    payment_status = COALESCE($3, payment_status),
+    payment_amount = COALESCE($4, payment_amount),
+    status = COALESCE($5, status),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 
 RETURNING id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at
@@ -452,6 +446,7 @@ type UpdateAppointmentPaymentParams struct {
 	PaymentID     pgtype.UUID       `db:"payment_id" json:"payment_id"`
 	PaymentStatus NullPaymentStatus `db:"payment_status" json:"payment_status"`
 	PaymentAmount pgtype.Numeric    `db:"payment_amount" json:"payment_amount"`
+	Status        AppointmentStatus `db:"status" json:"status"`
 }
 
 func (q *Queries) UpdateAppointmentPayment(ctx context.Context, arg UpdateAppointmentPaymentParams) (*Appointment, error) {
@@ -460,6 +455,7 @@ func (q *Queries) UpdateAppointmentPayment(ctx context.Context, arg UpdateAppoin
 		arg.PaymentID,
 		arg.PaymentStatus,
 		arg.PaymentAmount,
+		arg.Status,
 	)
 	var i Appointment
 	err := row.Scan(

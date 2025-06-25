@@ -53,6 +53,16 @@ type (
 		PaymentProvider string  `json:"payment_provider" validate:"oneof=PAYSTACK FLUTTERWAVE STRIPE MONNIFY"`
 		Notes           string  `json:"notes" validate:"max=500"`
 	}
+	// CreatePaymentDTO represents the request body for creating a payment
+	ConfirmAppointmentDTO struct {
+		AppointmentID     string      `json:"appointment_id" validate:"required,uuid"`
+		Amount            float64     `json:"amount" validate:"required,gt=0"`
+		Currency          string      `json:"currency" validate:"required,len=3"`
+		PaymentMethod     string      `json:"payment_method" validate:"required,oneof=card transfer cash wallet"`
+		PaymentProvider   string      `json:"payment_provider" validate:"required,oneof=PAYSTACK FLUTTERWAVE STRIPE MONNIFY"`
+		PaymentMetadata   interface{} `json:"payment_metadata,omitempty"`
+		ProviderReference string      `json:"provider_reference" validate:"required"`
+	}
 	// GetAppointmentDTO represents the request parameters for getting an appointment
 	GetAppointmentDTO struct {
 		AppointmentID string `param:"appointment_id" validate:"required,uuid"`
