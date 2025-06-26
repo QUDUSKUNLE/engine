@@ -41,6 +41,33 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
+      - name: Create .env file from secrets
+        run: |
+          cat << EOF > .env
+          PORT=${{ secrets.PORT }}
+          DB_URL=${{ secrets.DB_URL }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          JWT_EXPIRATION_HOURS=${{ secrets.JWT_EXPIRATION_HOURS }}
+          ALLOW_ORIGINS=${{ secrets.ALLOW_ORIGINS }}
+          CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+          CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+          EMAIL_HOST=${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT=${{ secrets.EMAIL_PORT }}
+          GMAIL_USERNAME=${{ secrets.GMAIL_USERNAME }}
+          GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_FROM_ADDRESS=${{ secrets.GMAIL_FROM_ADDRESS }}
+          PAYSTACK_SECRET_KEY=${{ secrets.PAYSTACK_SECRET_KEY }}
+          PAYSTACK_PUBLIC_KEY=${{ secrets.PAYSTACK_PUBLIC_KEY }}
+          PAYSTACK_BASE_URL=${{ secrets.PAYSTACK_BASE_URL }}
+          SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}
+          EMAIL_FROM_ADDRESS=${{ secrets.EMAIL_FROM_ADDRESS }}
+          APP_URL=${{ secrets.APP_URL }}
+          EOF
+
+      - name: Copy .env for Docker build
+        run: cp .env .env.docker
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -49,17 +76,17 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            ENV_FILE=.env.docker
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Uncomment and configure one of the deployment sections below:
-
-      # # Deploy to Railway
-      # - name: Deploy to Railway
-      #   uses: railwayapp/railway-deploy@v1
-      #   with:
-      #     railway-token: ${{ secrets.RAILWAY_TOKEN }}
-      #     service: medicue-api
+      # Deploy to Railway
+      - name: Deploy to Railway
+        uses: railwayapp/cli-action@v1
+        with:
+          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
+          command: up --service=medicue-api
 
       # # Deploy to Render
       # - name: Deploy to Render

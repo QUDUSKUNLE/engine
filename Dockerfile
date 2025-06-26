@@ -43,7 +43,7 @@ COPY --from=builder /app/scripts/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 # Copy config files
-COPY --from=builder /app/.env .env
+# COPY .env .env
 
 # Create logs directory
 RUN mkdir -p logs
