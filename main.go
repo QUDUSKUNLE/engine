@@ -35,9 +35,9 @@ import (
 func main() {
 	// Initialize logger with custom configuration
 	logConfig := utils.LogConfig{
-		Level:       "debug", // Set to debug in development, info in production
+		Level:       "info", // Set to debug in development, info in production
 		OutputPath:  "logs/medicue.log",
-		Development: true, // Set to false in production
+		Development: false, // Set to false in production
 	}
 	if err := utils.InitLogger(logConfig); err != nil {
 		panic(err)
@@ -168,9 +168,15 @@ func main() {
 		return c.String(http.StatusOK, "OK")
 	})
 
+	// Get port from environment (Railway and most PaaS set PORT)
+	port := cfg.Port
+	if port == "" {
+		port = "8080"
+	}
+
 	// Start server with graceful shutdown
 	go func() {
-		if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil &&
+		if err := e.Start(":" + port); err != nil &&
 			!errors.Is(err, http.ErrServerClosed) {
 			log.Fatal("Server error:", err)
 		} else {
