@@ -50,7 +50,7 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 	// Initialize DB connection
-	store, conn, err := db.DatabaseConnection(cfg.DB_URL)
+	store, conn, err := db.DatabaseConnection(context.Background(), cfg.DB_URL)
 	if err != nil {
 		log.Fatalf("Error connecting to the database")
 	}

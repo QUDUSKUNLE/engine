@@ -3,14 +3,14 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/medicue/adapters/db"
 	"github.com/medicue/core/ports"
 )
 
 type Repository struct {
 	database *db.Queries
-	conn     *pgx.Conn
+	conn     *pgxpool.Pool
 }
 
 func NewUserRepository(
@@ -45,14 +45,14 @@ func NewAvailabilityRepository(
 
 func NewPaymentRepository(
 	store *db.Queries,
-	conn *pgx.Conn,
+	conn *pgxpool.Pool,
 ) ports.PaymentRepository {
 	return &Repository{database: store, conn: conn}
 }
 
 func NewAppointmentRepository(
 	store *db.Queries,
-	conn *pgx.Conn,
+	conn *pgxpool.Pool,
 ) ports.AppointmentRepository {
 	return &Repository{database: store, conn: conn}
 }
