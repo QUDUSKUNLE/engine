@@ -109,6 +109,7 @@ func main() {
 				"GET /v1/diagnostic_centres":                       true,
 				"GET /v1/diagnostic_centres/:diagnostic_centre_id": true,
 				"POST /v1/auth/google":                             true,
+				"GET /v1/health":                                   true,
 			}
 			if noAuthRoutes[key] {
 				return next(c)
@@ -161,6 +162,11 @@ func main() {
 		},
 		Store: middleware.NewRateLimiterMemoryStore(rate.Limit(10)),
 	}))
+
+	// Health check route
+	e.GET("/health", func(c echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
 
 	// Start server with graceful shutdown
 	go func() {
