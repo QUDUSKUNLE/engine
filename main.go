@@ -168,6 +168,10 @@ func main() {
 		return c.String(http.StatusOK, "OK")
 	})
 
+	e.GET("", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]string{"Home": "Welcome to Medicue"})
+	})
+
 	// Get port from environment (Railway and most PaaS set PORT)
 	port := cfg.Port
 	if port == "" {
