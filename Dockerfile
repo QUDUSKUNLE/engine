@@ -39,8 +39,8 @@ COPY --from=builder /app/bin/migrate ./bin/migrate
 COPY --from=builder /app/adapters/db/migrations ./adapters/db/migrations
 
 # Copy scripts
-COPY --from=builder /app/scripts/entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+COPY --from=builder /app/scripts/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Copy config files
 # COPY .env .env
@@ -52,5 +52,5 @@ RUN mkdir -p logs
 EXPOSE 8080
 
 # Use entrypoint script
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
 CMD ["./main"]
