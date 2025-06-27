@@ -157,7 +157,7 @@ var (
 			<p>Best regards,<br><strong>The Medicue Team</strong></p>
 			<div class="small-text">
 				<p style="margin: 0;">If you're having trouble with the button, copy and paste this URL into your web browser:</p>
-				<p class="link-text" style="margin: 8px 0;">%[1]s/v1/verify-email?token=%[2]s&email=%[3]s</p>
+				<p class="link-text" style="margin: 8px 0;">%[1]s/v1/verify_email?token=%[2]s&email=%[3]s</p>
 			</div>
 		</div>
 	</div>
