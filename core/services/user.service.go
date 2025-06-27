@@ -35,7 +35,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	createdUser, err := service.createUserHelper(
 		context, newUser, db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumUSER)
 	if err != nil {
-		return err
+		return utils.ErrorResponse(http.StatusConflict, err, context)
 	}
 
 	// Generate verification token
