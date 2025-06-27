@@ -1,3 +1,3 @@
 #!/bin/bash
 
-swag init
+swag init -o swaggerdocs
