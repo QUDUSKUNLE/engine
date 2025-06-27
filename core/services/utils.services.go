@@ -123,7 +123,9 @@ func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.Creat
 	}
 
 	availableTests := make([]string, len(value.AvailableTests))
-	copy(availableTests, value.AvailableTests)
+	for i, test := range value.AvailableTests {
+		availableTests[i] = string(test.AvailableTest)
+	}
 
 	doctors := make([]string, len(value.Doctors))
 	for i, doctor := range value.Doctors {
