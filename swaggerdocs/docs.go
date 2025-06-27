@@ -4524,9 +4524,6 @@ const docTemplate = `{
                     "maxLength": 20,
                     "minLength": 6
                 },
-                "phone_number": {
-                    "type": "string"
-                },
                 "user_type": {
                     "enum": [
                         "USER",
