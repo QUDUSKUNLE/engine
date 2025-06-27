@@ -23,7 +23,7 @@ import (
 	"github.com/medicue/adapters/routes"
 	"github.com/medicue/core/services"
 	"github.com/medicue/core/utils"
-	_ "github.com/medicue/docs"
+	_ "github.com/medicue/swaggerdocs"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"golang.org/x/time/rate"
 )
