@@ -32,7 +32,7 @@ import (
 // @version 1.0
 // @description Medicue API
 // @host medivue-api-production.up.railway.app
-// @BasePath /v1
+// @BasePath /
 func main() {
 	// Initialize logger with custom configuration
 	logConfig := utils.LogConfig{

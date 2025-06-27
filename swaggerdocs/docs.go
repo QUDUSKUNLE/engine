@@ -4516,9 +4516,6 @@ const docTemplate = `{
                     "maxLength": 20,
                     "minLength": 6
                 },
-                "diagnostic_Centre": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
@@ -4791,7 +4788,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "medivue-api-production.up.railway.app",
-	BasePath:         "/v1",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Medicue",
 	Description:      "Medicue API",
