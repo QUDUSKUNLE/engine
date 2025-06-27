@@ -3036,61 +3036,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/auth/google": {
-            "post": {
-                "description": "Authenticate a user using Google OAuth",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Login with Google",
-                "parameters": [
-                    {
-                        "description": "Google ID token",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/domain.GoogleAuthDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "token: JWT token for authentication",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid token",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication failed",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/diagnostic_centre_manager": {
             "post": {
                 "security": [
@@ -4068,17 +4013,6 @@ const docTemplate = `{
                 },
                 "fileSize": {
                     "type": "integer"
-                }
-            }
-        },
-        "domain.GoogleAuthDTO": {
-            "type": "object",
-            "required": [
-                "id_token"
-            ],
-            "properties": {
-                "id_token": {
-                    "type": "string"
                 }
             }
         },

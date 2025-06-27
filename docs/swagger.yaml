@@ -416,13 +416,6 @@ definitions:
       fileSize:
         type: integer
     type: object
-  domain.GoogleAuthDTO:
-    properties:
-      id_token:
-        type: string
-    required:
-    - id_token
-    type: object
   domain.RequestPasswordResetDTO:
     properties:
       email:
@@ -3005,42 +2998,6 @@ paths:
       summary: Reschedule appointment
       tags:
       - Appointments
-  /v1/auth/google:
-    post:
-      consumes:
-      - application/json
-      description: Authenticate a user using Google OAuth
-      parameters:
-      - description: Google ID token
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/domain.GoogleAuthDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 'token: JWT token for authentication'
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Invalid token
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "401":
-          description: Authentication failed
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      summary: Login with Google
-      tags:
-      - User
   /v1/diagnostic_centre_manager:
     post:
       consumes:
