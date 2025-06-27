@@ -15,40 +15,83 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/diagnostic_centres": {
-            "get": {
+        "/api/v1/availability": {
+            "post": {
+                "description": "Create a new availability slot for the diagnostic centre",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "DiagnosticCentre"
+                    "Availability"
                 ],
-                "summary": "Search for diagnostic centres",
+                "summary": "Create availability for a diagnostic centre",
                 "parameters": [
                     {
-                        "type": "number",
-                        "description": "Latitude",
-                        "name": "latitude",
-                        "in": "query",
-                        "required": true
+                        "description": "Availability information",
+                        "name": "availability",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateAvailabilityDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AvailabilitySlot"
+                        }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/availability/{diagnostic_centre_id}": {
+            "get": {
+                "description": "Get availability slots for the diagnostic centre, optionally filtered by day of week",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "Get availability for a diagnostic centre",
+                "parameters": [
                     {
-                        "type": "number",
-                        "description": "Longitude",
-                        "name": "longitude",
-                        "in": "query",
+                        "type": "string",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Doctor",
-                        "name": "doctor",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Available Test",
-                        "name": "available_tests",
+                        "description": "Day of week (monday, tuesday, etc.)",
+                        "name": "day_of_week",
                         "in": "query"
                     }
                 ],
@@ -58,21 +101,293 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "additionalProperties": true
+                                "$ref": "#/definitions/domain.AvailabilitySlot"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update multiple availability slots for the diagnostic centre",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "Bulk update availability for a diagnostic centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated availability information",
+                        "name": "availability",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateManyAvailabilityDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.AvailabilitySlot"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/availability/{diagnostic_centre_id}/{day_of_week}": {
+            "put": {
+                "description": "Update an existing availability slot for the diagnostic centre",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "Update availability for a diagnostic centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Day of week (monday, tuesday, etc.)",
+                        "name": "day_of_week",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated availability information",
+                        "name": "availability",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateAvailabilityDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AvailabilitySlot"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an availability slot for the diagnostic centre",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "Delete availability for a diagnostic centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Day of week (monday, tuesday, etc.)",
+                        "name": "day_of_week",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres": {
+            "get": {
+                "description": "Search for diagnostic centres based on location, available doctors, and test types",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Search for diagnostic centres",
+                "parameters": [
+                    {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                        "description": "Latitude (-90 to 90)",
+                        "name": "latitude",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                        "description": "Longitude (-180 to 180)",
+                        "name": "longitude",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by doctor specialization",
+                        "name": "doctor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by available test type",
+                        "name": "available_tests",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number for pagination",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of results per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of diagnostic centres",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
                         }
                     }
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new diagnostic centre with location, contact details, and available services",
                 "consumes": [
                     "application/json"
                 ],
@@ -83,19 +398,191 @@ const docTemplate = `{
                     "DiagnosticCentre"
                 ],
                 "summary": "Create a new diagnostic centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Diagnostic centre details",
+                        "name": "diagnostic_centre",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateDiagnosticDTO"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Diagnostic centre created successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input data",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "User is not a diagnostic centre owner",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres/manager": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all diagnostic centres managed by the authenticated diagnostic centre manager",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "List manager's diagnostic centres",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of diagnostic centres",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "User is not a manager",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres/owner": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all diagnostic centres owned by the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "List owner's diagnostic centres",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of diagnostic centres",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
                         }
                     }
                 }
@@ -103,6 +590,7 @@ const docTemplate = `{
         },
         "/diagnostic_centres/{diagnostic_centre_id}": {
             "get": {
+                "description": "Retrieve detailed information about a specific diagnostic centre",
                 "produces": [
                     "application/json"
                 ],
@@ -113,6 +601,147 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID (UUID format)",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Diagnostic centre details retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid diagnostic centre ID format",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Diagnostic centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing diagnostic centre's information (owner only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Update a diagnostic centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID (UUID format)",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated diagnostic centre details",
+                        "name": "diagnostic_centre",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateDiagnosticBodyDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Diagnostic centre updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required/invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "User is not the owner of this diagnostic centre",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Diagnostic centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an existing diagnostic centre (owner only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Delete a diagnostic centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -121,17 +750,2342 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Diagnostic centre deleted successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "User is not the owner",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Diagnostic centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all schedules for a specific diagnostic centre with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "List schedules for a diagnostic centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of records to return",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Number of records to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of schedules",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.ScheduleSwagger"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid diagnostic centre ID",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Diagnostic centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules/{schedule_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific schedule for a diagnostic centre. Accessible by diagnostic centre staff.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Get a schedule by diagnostic centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Schedule ID",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schedule details",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ScheduleSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID format",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update a schedule's acceptance status. Only accessible by diagnostic centre staff.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Update schedule status by centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Schedule ID",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated schedule status",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateDiagnosticScheduleByCentreDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schedule updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ScheduleSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres/{diagnostic_centre_id}/manager": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update or assign a new manager to a diagnostic centre (owner only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Update diagnostic centre manager",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Manager details",
+                        "name": "manager_details",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateDiagnosticManagerDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Manager updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres/{diagnostic_centre_id}/records": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all medical records uploaded by a diagnostic centre",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Get diagnostic centre medical records",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "LAB_REPORT",
+                            "PRESCRIPTION",
+                            "IMAGING",
+                            "DISCHARGE_SUMMARY",
+                            "OTHER"
+                        ],
+                        "type": "string",
+                        "description": "Filter by document type",
+                        "name": "document_type",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of medical records",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.MedicalRecordSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres/{diagnostic_centre_id}/schedules": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all schedules for a diagnostic centre with pagination and filtering",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Get diagnostic centre schedules",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "PENDING",
+                            "ACCEPTED",
+                            "REJECTED"
+                        ],
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of schedules",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_centres/{diagnostic_centre_id}/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get statistical information about a diagnostic centre (appointments, tests, etc.)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Get diagnostic centre statistics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Centre statistics",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Diagnostic centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_schedules": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all diagnostic schedules for the authenticated user with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "List user's diagnostic schedules",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of records to return",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Number of records to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of schedules",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.ScheduleSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Schedule a diagnostic test at a diagnostic centre. Requires user authentication.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Create a new diagnostic schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Schedule details",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateScheduleDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Schedule created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ScheduleSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid schedule data/Invalid datetime format",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnostic_schedules/{schedule_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve details of a specific diagnostic schedule by ID. Only accessible by the schedule owner.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Get a specific diagnostic schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Schedule ID (UUID format)",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schedule details retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ScheduleSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid schedule ID",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not the schedule owner",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing diagnostic schedule. Only accessible by the schedule owner.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Update a diagnostic schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Schedule ID (UUID format)",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated schedule details",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateScheduleDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schedule updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ScheduleSwagger"
+                        }
+                    },
+                    "204": {
+                        "description": "Schedule updated successfully with no content to return"
+                    },
+                    "400": {
+                        "description": "Invalid schedule data/Invalid datetime format",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not the schedule owner",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an existing diagnostic schedule. Only accessible by the schedule owner.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Delete a diagnostic schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Schedule ID (UUID format)",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Schedule deleted successfully"
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not the schedule owner",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/medical_records": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all medical records for the authenticated user with pagination and filtering",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MedicalRecord"
+                ],
+                "summary": "List user's medical records",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Records per page",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "LAB_REPORT",
+                            "PRESCRIPTION",
+                            "IMAGING",
+                            "DISCHARGE_SUMMARY",
+                            "OTHER"
+                        ],
+                        "type": "string",
+                        "description": "Filter by document type",
+                        "name": "document_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by date from (YYYY-MM-DD)",
+                        "name": "from_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by date to (YYYY-MM-DD)",
+                        "name": "to_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of medical records",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.MedicalRecordSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload a new medical record with metadata and file attachment",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MedicalRecord"
+                ],
+                "summary": "Upload a new medical record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Uploader ID (for diagnostic centres)",
+                        "name": "uploader_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Associated Schedule ID",
+                        "name": "schedule_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Record title",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "LAB_REPORT",
+                            "PRESCRIPTION",
+                            "IMAGING",
+                            "DISCHARGE_SUMMARY",
+                            "OTHER"
+                        ],
+                        "type": "string",
+                        "description": "Type of medical document",
+                        "name": "document_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Date of the document",
+                        "name": "document_date",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Healthcare provider name",
+                        "name": "provider_name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Medical specialty",
+                        "name": "specialty",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Medical record file (PDF/Image)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Medical record created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.MedicalRecordSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data/file format",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "File too large",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/medical_records/diagnostic_centre/{diagnostic_centre_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all medical records uploaded by a diagnostic centre with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MedicalRecord"
+                ],
+                "summary": "List uploaded medical records",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Records per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of medical records",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.MedicalRecordSwagger"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid diagnostic centre ID",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to access these records",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Diagnostic centre not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/medical_records/{record_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific medical record. Access limited to record owner or authorized diagnostic centre.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MedicalRecord"
+                ],
+                "summary": "Get a medical record by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Medical Record ID",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Medical record details",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.MedicalRecordSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid record ID",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Record not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update metadata of an existing medical record. File content cannot be updated.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MedicalRecord"
+                ],
+                "summary": "Update a medical record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Medical Record ID",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated record details",
+                        "name": "record",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateMedicalRecordDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Record updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.MedicalRecordSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to update this record",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Record not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/medical_records/{record_id}/diagnostic_centre/{diagnostic_centre_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a medical record uploaded by a diagnostic centre",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MedicalRecord"
+                ],
+                "summary": "Get an uploaded medical record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Medical Record ID",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Medical record details",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.MedicalRecordSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID format",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to access this record",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Record not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deactivate user's account (soft delete)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Deactivate user account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Account deactivation details",
+                        "name": "deactivate",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.DeactivateAccountDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Account deactivated successfully",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required/Invalid password",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/password": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allow user to change their current password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Change user password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Password change details",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.ChangePasswordDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Password changed successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required/Invalid current password",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Password validation failed",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the user's profile information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User profile details",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UserSwagger"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update user's profile information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Profile update details",
+                        "name": "profile",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateUserProfileDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated profile details",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UserSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/appointments": {
+            "get": {
+                "description": "List appointments with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Appointments"
+                ],
+                "summary": "List appointments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by diagnostic centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending, confirmed, in_progress, completed, cancelled, rescheduled)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (RFC3339)",
+                        "name": "from_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (RFC3339)",
+                        "name": "to_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.AppointmentSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new appointment for a diagnostic test",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Appointments"
+                ],
+                "summary": "Create appointment",
+                "parameters": [
+                    {
+                        "description": "Appointment details",
+                        "name": "appointment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateAppointmentDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AppointmentSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Diagnostic centre or schedule not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/appointments/{appointment_id}": {
+            "get": {
+                "description": "Get an appointment by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Appointments"
+                ],
+                "summary": "Get appointment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Appointment ID",
+                        "name": "appointment_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AppointmentSwagger"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to view this appointment",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Appointment not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing appointment's details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Appointments"
+                ],
+                "summary": "Update appointment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Appointment ID",
+                        "name": "appointment_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated appointment details",
+                        "name": "appointment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateAppointmentDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AppointmentSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to update this appointment",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Appointment not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/appointments/{appointment_id}/cancel": {
+            "post": {
+                "description": "Cancel an existing appointment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Appointments"
+                ],
+                "summary": "Cancel appointment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Appointment ID",
+                        "name": "appointment_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Cancellation details",
+                        "name": "cancellation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CancelAppointmentDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cancellation success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data or appointment state",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to cancel this appointment",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Appointment not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/appointments/{appointment_id}/confirm": {
+            "post": {
+                "description": "Confirm an appointment by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Appointments"
+                ],
+                "summary": "Confirm appointment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Appointment ID",
+                        "name": "appointment_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Appointment confirmed successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Appointment not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/appointments/{appointment_id}/reschedule": {
+            "post": {
+                "description": "Reschedule an existing appointment to a new time",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Appointments"
+                ],
+                "summary": "Reschedule appointment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Appointment ID",
+                        "name": "appointment_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Rescheduling details",
+                        "name": "reschedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.RescheduleAppointmentDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AppointmentSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data or appointment state",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not authorized to reschedule this appointment",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Appointment not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/google": {
+            "post": {
+                "description": "Authenticate a user using Google OAuth",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Login with Google",
+                "parameters": [
+                    {
+                        "description": "Google ID token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.GoogleAuthDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "token: JWT token for authentication",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
                         }
                     }
                 }
@@ -139,7 +3093,12 @@ const docTemplate = `{
         },
         "/v1/diagnostic_centre_manager": {
             "post": {
-                "description": "Create a new diagnostic centre manager",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new diagnostic centre manager account. Only accessible by diagnostic centre owners.",
                 "consumes": [
                     "application/json"
                 ],
@@ -150,12 +3109,99 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Create a diagnostic centre manager",
-                "responses": {}
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Manager details",
+                        "name": "manager",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.DiagnosticCentreManagerRegisterDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Manager account created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UserSwagger"
+                        }
+                    },
+                    "202": {
+                        "description": "Manager invite sent successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data/Email already exists",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not a diagnostic centre owner",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid manager type",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/health": {
+            "get": {
+                "description": "Returns the health status of the service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HealthResponse"
+                        }
+                    }
+                }
             }
         },
         "/v1/login": {
             "post": {
-                "description": "Authenticate a user and return a token",
+                "description": "Authenticate a user and return a JWT token for API access",
                 "consumes": [
                     "application/json"
                 ],
@@ -166,12 +3212,57 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "User login",
-                "responses": {}
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UserSignInDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "token: JWT token for authentication",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid email or password",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/v1/register": {
             "post": {
-                "description": "Register a new user",
+                "description": "Register a new user (patient) or diagnostic centre owner in the system",
                 "consumes": [
                     "application/json"
                 ],
@@ -182,7 +3273,1581 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Register a new user",
-                "responses": {}
+                "parameters": [
+                    {
+                        "description": "User registration details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UserRegisterDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UserSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data/Email already exists",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid user type/Validation failed",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/request_password_reset": {
+            "post": {
+                "description": "Send a password reset link to user's email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Request password reset",
+                "parameters": [
+                    {
+                        "description": "Password reset request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.RequestPasswordResetDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Reset link sent if email exists",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid email format",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/resend_verification": {
+            "post": {
+                "description": "Resend the email verification token to the user's email address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Resend verification email",
+                "parameters": [
+                    {
+                        "description": "Email address",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.ResendVerificationDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Verification email sent",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/reset_password": {
+            "post": {
+                "description": "Reset user's password using the token received via email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Reset password",
+                "parameters": [
+                    {
+                        "description": "Password reset details",
+                        "name": "reset",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.ResetPasswordDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Password reset successful",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input/Expired token",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Password validation failed",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/verify_email": {
+            "post": {
+                "description": "Verify a user's email address using the token sent to their email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Verify user email",
+                "parameters": [
+                    {
+                        "description": "Email verification details",
+                        "name": "verification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.EmailVerificationDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Email verified successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "db.Doctor": {
+            "type": "string",
+            "enum": [
+                "Female",
+                "Male"
+            ],
+            "x-enum-varnames": [
+                "DoctorFemale",
+                "DoctorMale"
+            ]
+        },
+        "db.DocumentType": {
+            "type": "string",
+            "enum": [
+                "LAB_REPORT",
+                "PRESCRIPTION",
+                "DISCHARGE_SUMMARY",
+                "IMAGING",
+                "VACCINATION",
+                "ALLERGY",
+                "SURGERY",
+                "CHRONIC_CONDITION",
+                "FAMILY_HISTORY"
+            ],
+            "x-enum-varnames": [
+                "DocumentTypeLABREPORT",
+                "DocumentTypePRESCRIPTION",
+                "DocumentTypeDISCHARGESUMMARY",
+                "DocumentTypeIMAGING",
+                "DocumentTypeVACCINATION",
+                "DocumentTypeALLERGY",
+                "DocumentTypeSURGERY",
+                "DocumentTypeCHRONICCONDITION",
+                "DocumentTypeFAMILYHISTORY"
+            ]
+        },
+        "db.ScheduleAcceptanceStatus": {
+            "type": "string",
+            "enum": [
+                "PENDING",
+                "ACCEPTED",
+                "REJECTED"
+            ],
+            "x-enum-varnames": [
+                "ScheduleAcceptanceStatusPENDING",
+                "ScheduleAcceptanceStatusACCEPTED",
+                "ScheduleAcceptanceStatusREJECTED"
+            ]
+        },
+        "db.ScheduleStatus": {
+            "type": "string",
+            "enum": [
+                "SCHEDULED",
+                "COMPLETED",
+                "CANCELED"
+            ],
+            "x-enum-varnames": [
+                "ScheduleStatusSCHEDULED",
+                "ScheduleStatusCOMPLETED",
+                "ScheduleStatusCANCELED"
+            ]
+        },
+        "db.UserEnum": {
+            "type": "string",
+            "enum": [
+                "USER",
+                "DIAGNOSTIC_CENTRE",
+                "HOSPITAL",
+                "ADMIN",
+                "DIAGNOSTIC_MANAGER",
+                "DIAGNOSTIC_CENTRE_OWNER",
+                "DIAGNOSTIC_CENTRE_MANAGER"
+            ],
+            "x-enum-varnames": [
+                "UserEnumUSER",
+                "UserEnumDIAGNOSTICCENTRE",
+                "UserEnumHOSPITAL",
+                "UserEnumADMIN",
+                "UserEnumDIAGNOSTICMANAGER",
+                "UserEnumDIAGNOSTICCENTREOWNER",
+                "UserEnumDIAGNOSTICCENTREMANAGER"
+            ]
+        },
+        "domain.Address": {
+            "type": "object",
+            "required": [
+                "city",
+                "country",
+                "state",
+                "street"
+            ],
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "country": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "state": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "street": {
+                    "type": "string",
+                    "maxLength": 250
+                }
+            }
+        },
+        "domain.AppointmentStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "confirmed",
+                "in_progress",
+                "completed",
+                "cancelled",
+                "rescheduled"
+            ],
+            "x-enum-varnames": [
+                "AppointmentStatusPending",
+                "AppointmentStatusConfirmed",
+                "AppointmentStatusInProgress",
+                "AppointmentStatusCompleted",
+                "AppointmentStatusCancelled",
+                "AppointmentStatusRescheduled"
+            ]
+        },
+        "domain.AvailabilitySlot": {
+            "type": "object",
+            "properties": {
+                "break_time": {
+                    "description": "minutes",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "day_of_week": {
+                    "type": "string"
+                },
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "max_appointments": {
+                    "type": "integer"
+                },
+                "slot_duration": {
+                    "description": "minutes",
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.CancelAppointmentDTO": {
+            "type": "object",
+            "required": [
+                "appointmentID",
+                "reason"
+            ],
+            "properties": {
+                "appointmentID": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string",
+                    "maxLength": 500
+                }
+            }
+        },
+        "domain.ChangePasswordDTO": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "current_password",
+                "new_password"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "current_password": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                }
+            }
+        },
+        "domain.Contact": {
+            "type": "object",
+            "required": [
+                "email",
+                "phone"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "domain.CreateAppointmentDTO": {
+            "type": "object",
+            "required": [
+                "amount",
+                "appointment_date",
+                "diagnostic_centre_id",
+                "test_type"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "TimeSlot           TimeSlot  ` + "`" + `json:\"time_slot\" validate:\"required\"` + "`" + `",
+                    "type": "number"
+                },
+                "appointment_date": {
+                    "type": "string"
+                },
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "payment_provider": {
+                    "type": "string",
+                    "enum": [
+                        "PAYSTACK",
+                        "FLUTTERWAVE",
+                        "STRIPE",
+                        "MONNIFY"
+                    ]
+                },
+                "preferred_doctor": {
+                    "type": "string",
+                    "enum": [
+                        "Male",
+                        "Female"
+                    ]
+                },
+                "test_type": {
+                    "type": "string",
+                    "enum": [
+                        "BLOOD_TEST",
+                        "URINE_TEST",
+                        "X_RAY",
+                        "MRI",
+                        "CT_SCAN",
+                        "ULTRASOUND",
+                        "ECG",
+                        "EEG",
+                        "BIOPSY",
+                        "SKIN_TEST",
+                        "IMMUNOLOGY_TEST",
+                        "HORMONE_TEST",
+                        "VIRAL_TEST",
+                        "BACTERIAL_TEST",
+                        "PARASITIC_TEST",
+                        "FUNGAL_TEST",
+                        "MOLECULAR_TEST",
+                        "TOXICOLOGY_TEST",
+                        "ECHO",
+                        "COVID_19_TEST",
+                        "BLOOD_SUGAR_TEST",
+                        "LIPID_PROFILE",
+                        "HEMOGLOBIN_TEST",
+                        "THYROID_TEST",
+                        "LIVER_FUNCTION_TEST",
+                        "KIDNEY_FUNCTION_TEST",
+                        "URIC_ACID_TEST",
+                        "VITAMIN_D_TEST",
+                        "VITAMIN_B12_TEST",
+                        "HEMOGRAM",
+                        "COMPLETE_BLOOD_COUNT",
+                        "BLOOD_GROUPING",
+                        "HEPATITIS_B_TEST",
+                        "HEPATITIS_C_TEST",
+                        "HIV_TEST",
+                        "MALARIA_TEST",
+                        "DENGUE_TEST",
+                        "TYPHOID_TEST",
+                        "COVID_19_ANTIBODY_TEST",
+                        "COVID_19_RAPID_ANTIGEN_TEST",
+                        "COVID_19_RT_PCR_TEST",
+                        "PREGNANCY_TEST",
+                        "ALLERGY_TEST",
+                        "GENETIC_TEST",
+                        "OTHER"
+                    ]
+                }
+            }
+        },
+        "domain.CreateAvailabilityDTO": {
+            "type": "object",
+            "required": [
+                "diagnostic_centre_id",
+                "slots"
+            ],
+            "properties": {
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
+                "slots": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/domain.Slots"
+                    }
+                }
+            }
+        },
+        "domain.CreateDiagnosticDTO": {
+            "type": "object",
+            "required": [
+                "address",
+                "admin_id",
+                "available_tests",
+                "contact",
+                "diagnostic_centre_name",
+                "doctors",
+                "latitude",
+                "longitude"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/domain.Address"
+                },
+                "admin_id": {
+                    "type": "string"
+                },
+                "available_tests": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "contact": {
+                    "$ref": "#/definitions/domain.Contact"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "diagnostic_centre_name": {
+                    "type": "string",
+                    "maxLength": 250,
+                    "minLength": 10
+                },
+                "doctors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/db.Doctor"
+                    }
+                },
+                "latitude": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "longitude": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                }
+            }
+        },
+        "domain.CreateScheduleDTO": {
+            "type": "object",
+            "required": [
+                "doctor",
+                "schedule_time",
+                "test_type"
+            ],
+            "properties": {
+                "acceptance_status": {
+                    "enum": [
+                        "PENDING",
+                        "ACCEPTED",
+                        "REJECTED"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.ScheduleAcceptanceStatus"
+                        }
+                    ]
+                },
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
+                "doctor": {
+                    "enum": [
+                        "Male",
+                        "Female"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.Doctor"
+                        }
+                    ]
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "schedule_time": {
+                    "type": "string"
+                },
+                "test_type": {
+                    "type": "string",
+                    "enum": [
+                        "BLOOD_TEST",
+                        "URINE_TEST",
+                        "X_RAY",
+                        "MRI",
+                        "CT_SCAN",
+                        "ULTRASOUND",
+                        "ECG",
+                        "COVID_TEST",
+                        "DNA_TEST",
+                        "ALLERGY_TEST",
+                        "GENETIC_TEST",
+                        "OTHER",
+                        "EEG",
+                        "BIOPSY",
+                        "SKIN_TEST",
+                        "IMMUNOLOGY_TEST",
+                        "HORMONE_TEST",
+                        "VIRAL_TEST",
+                        "BACTERIAL_TEST",
+                        "PARASITIC_TEST",
+                        "FUNGAL_TEST",
+                        "MOLECULAR_TEST",
+                        "TOXICOLOGY_TEST",
+                        "ECHO",
+                        "COVID_19_TEST",
+                        "BLOOD_SUGAR_TEST",
+                        "LIPID_PROFILE",
+                        "HEMOGLOBIN_TEST",
+                        "THYROID_TEST",
+                        "LIVER_FUNCTION_TEST",
+                        "KIDNEY_FUNCTION_TEST",
+                        "URIC_ACID_TEST",
+                        "VITAMIN_D_TEST",
+                        "VITAMIN_B12_TEST",
+                        "HEMOGRAM",
+                        "COMPLETE_BLOOD_COUNT",
+                        "BLOOD_GROUPING",
+                        "HEPATITIS_B_TEST",
+                        "HEPATITIS_C_TEST",
+                        "HIV_TEST",
+                        "MALARIA_TEST",
+                        "DENGUE_TEST",
+                        "TYPHOID_TEST",
+                        "COVID_19_ANTIBODY_TEST",
+                        "COVID_19_RAPID_ANTIGEN_TEST",
+                        "COVID_19_RT_PCR_TEST",
+                        "PREGNANCY_TEST"
+                    ]
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.DeactivateAccountDTO": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.DiagnosticCentreManagerRegisterDTO": {
+            "type": "object",
+            "required": [
+                "email",
+                "user_type"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "user_type": {
+                    "$ref": "#/definitions/db.UserEnum"
+                }
+            }
+        },
+        "domain.EmailVerificationDTO": {
+            "type": "object",
+            "required": [
+                "email",
+                "token"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.File": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "fileSize": {
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.GoogleAuthDTO": {
+            "type": "object",
+            "required": [
+                "id_token"
+            ],
+            "properties": {
+                "id_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.RequestPasswordResetDTO": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.RescheduleAppointmentDTO": {
+            "type": "object",
+            "required": [
+                "appointmentID",
+                "new_date",
+                "new_schedule_id",
+                "new_time_slot",
+                "reschedule_reason"
+            ],
+            "properties": {
+                "appointmentID": {
+                    "type": "string"
+                },
+                "new_date": {
+                    "type": "string"
+                },
+                "new_schedule_id": {
+                    "type": "string"
+                },
+                "new_time_slot": {
+                    "type": "string"
+                },
+                "reschedule_reason": {
+                    "type": "string",
+                    "maxLength": 500
+                }
+            }
+        },
+        "domain.ResendVerificationDTO": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.ResetPasswordDTO": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "email",
+                "new_password",
+                "token"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Slots": {
+            "type": "object",
+            "required": [
+                "break_time",
+                "day_of_week",
+                "end_time",
+                "max_appointments",
+                "slot_duration",
+                "start_time"
+            ],
+            "properties": {
+                "break_time": {
+                    "description": "minutes",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "day_of_week": {
+                    "type": "string",
+                    "enum": [
+                        "monday",
+                        "tuesday",
+                        "wednesday",
+                        "thursday",
+                        "friday",
+                        "saturday",
+                        "sunday"
+                    ]
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "max_appointments": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "slot_duration": {
+                    "description": "minutes",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UpdateAppointmentDTO": {
+            "type": "object",
+            "required": [
+                "appointmentID",
+                "status"
+            ],
+            "properties": {
+                "appointmentID": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "status": {
+                    "enum": [
+                        "pending",
+                        "confirmed",
+                        "in_progress",
+                        "completed",
+                        "cancelled",
+                        "rescheduled"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.AppointmentStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "domain.UpdateAvailabilityDTO": {
+            "type": "object",
+            "properties": {
+                "break_time": {
+                    "description": "minutes",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "max_appointments": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "slot_duration": {
+                    "description": "minutes",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UpdateDiagnosticBodyDTO": {
+            "type": "object",
+            "required": [
+                "admin_id"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/domain.Address"
+                },
+                "admin_id": {
+                    "type": "string"
+                },
+                "available_tests": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "contact": {
+                    "$ref": "#/definitions/domain.Contact"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "diagnostic_centre_name": {
+                    "type": "string"
+                },
+                "doctors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            }
+        },
+        "domain.UpdateDiagnosticManagerDTO": {
+            "type": "object",
+            "required": [
+                "manager_id"
+            ],
+            "properties": {
+                "manager_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UpdateDiagnosticScheduleByCentreDTO": {
+            "type": "object",
+            "required": [
+                "acceptance_status"
+            ],
+            "properties": {
+                "acceptance_status": {
+                    "enum": [
+                        "PENDING",
+                        "ACCEPTED",
+                        "REJECTED"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.ScheduleAcceptanceStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "domain.UpdateManyAvailabilityDTO": {
+            "type": "object",
+            "required": [
+                "slots"
+            ],
+            "properties": {
+                "slots": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/domain.UpdateManyAvailabilitySlot"
+                    }
+                }
+            }
+        },
+        "domain.UpdateManyAvailabilitySlot": {
+            "type": "object",
+            "required": [
+                "day_of_week",
+                "diagnostic_centre_id"
+            ],
+            "properties": {
+                "break_time": {
+                    "description": "minutes",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "day_of_week": {
+                    "type": "string"
+                },
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "max_appointments": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "slot_duration": {
+                    "description": "minutes",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UpdateMedicalRecordDTO": {
+            "type": "object",
+            "required": [
+                "diagnostic_centre_id",
+                "record_id",
+                "title"
+            ],
+            "properties": {
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
+                "document_date": {
+                    "type": "string"
+                },
+                "document_type": {
+                    "enum": [
+                        "LAB_REPORT",
+                        "PRESCRIPTION",
+                        "DISCHARGE_SUMMARY",
+                        "IMAGING",
+                        "VACCINATION",
+                        "ALLERGY",
+                        "SURGERY",
+                        "CHRONIC_CONDITION",
+                        "FAMILY_HISTORY"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.DocumentType"
+                        }
+                    ]
+                },
+                "fileUpload": {
+                    "description": "Define File type below or import from the correct package",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.File"
+                        }
+                    ]
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "file_type": {
+                    "type": "string"
+                },
+                "is_shared": {
+                    "type": "boolean"
+                },
+                "provider_name": {
+                    "type": "string"
+                },
+                "record_id": {
+                    "type": "string"
+                },
+                "shared_until": {
+                    "type": "string"
+                },
+                "specialty": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 12
+                },
+                "uploaded_at": {
+                    "type": "string"
+                },
+                "uploader_admin_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UpdateScheduleDTO": {
+            "type": "object",
+            "properties": {
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
+                "doctor": {
+                    "enum": [
+                        "Male",
+                        "Female"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.Doctor"
+                        }
+                    ]
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "schedule_status": {
+                    "enum": [
+                        "SCHEDULED",
+                        "CANCELED"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.ScheduleStatus"
+                        }
+                    ]
+                },
+                "schedule_time": {
+                    "type": "string"
+                },
+                "test_type": {
+                    "type": "string",
+                    "enum": [
+                        "BLOOD_TEST",
+                        "URINE_TEST",
+                        "X_RAY",
+                        "MRI",
+                        "CT_SCAN",
+                        "ULTRASOUND",
+                        "ECG",
+                        "COVID_TEST",
+                        "DNA_TEST",
+                        "ALLERGY_TEST",
+                        "GENETIC_TEST",
+                        "OTHER",
+                        "EEG",
+                        "BIOPSY",
+                        "SKIN_TEST",
+                        "IMMUNOLOGY_TEST",
+                        "HORMONE_TEST",
+                        "VIRAL_TEST",
+                        "BACTERIAL_TEST",
+                        "PARASITIC_TEST",
+                        "FUNGAL_TEST",
+                        "MOLECULAR_TEST",
+                        "TOXICOLOGY_TEST",
+                        "ECHO",
+                        "COVID_19_TEST",
+                        "BLOOD_SUGAR_TEST",
+                        "LIPID_PROFILE",
+                        "HEMOGLOBIN_TEST",
+                        "THYROID_TEST",
+                        "LIVER_FUNCTION_TEST",
+                        "KIDNEY_FUNCTION_TEST",
+                        "URIC_ACID_TEST",
+                        "VITAMIN_D_TEST",
+                        "VITAMIN_B12_TEST",
+                        "HEMOGRAM",
+                        "COMPLETE_BLOOD_COUNT",
+                        "BLOOD_GROUPING",
+                        "HEPATITIS_B_TEST",
+                        "HEPATITIS_C_TEST",
+                        "HIV_TEST",
+                        "MALARIA_TEST",
+                        "DENGUE_TEST",
+                        "TYPHOID_TEST",
+                        "COVID_19_ANTIBODY_TEST",
+                        "COVID_19_RAPID_ANTIGEN_TEST",
+                        "COVID_19_RT_PCR_TEST",
+                        "PREGNANCY_TEST"
+                    ]
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UpdateUserProfileDTO": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "first_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "last_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "nin": {
+                    "type": "string",
+                    "minLength": 11
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UserRegisterDTO": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "email",
+                "password",
+                "user_type"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                },
+                "diagnostic_Centre": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "user_type": {
+                    "enum": [
+                        "USER",
+                        "DIAGNOSTIC_CENTRE_OWNER"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.UserEnum"
+                        }
+                    ]
+                }
+            }
+        },
+        "domain.UserSignInDTO": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                }
+            }
+        },
+        "handlers.AppointmentSwagger": {
+            "description": "Appointment response for Swagger",
+            "type": "object",
+            "properties": {
+                "appointment_date": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-26T21:00:00Z"
+                },
+                "created_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-26T20:00:00Z"
+                },
+                "diagnostic_centre_id": {
+                    "type": "string",
+                    "example": "dc-001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "patient_id": {
+                    "type": "string",
+                    "example": "user-001"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
+                },
+                "updated_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-26T20:30:00Z"
+                }
+            }
+        },
+        "handlers.DiagnosticCentreSwagger": {
+            "description": "Diagnostic centre response for Swagger",
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "123 Main St, Lagos"
+                },
+                "created_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-26T20:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@medicue.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "dc-001"
+                },
+                "latitude": {
+                    "type": "number",
+                    "example": 6.5244
+                },
+                "longitude": {
+                    "type": "number",
+                    "example": 3.3792
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Medicue Diagnostics"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+2348000000000"
+                },
+                "updated_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-26T20:30:00Z"
+                }
+            }
+        },
+        "handlers.ErrorResponse": {
+            "description": "Error response for Swagger",
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "BAD_REQUEST"
+                },
+                "details": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Invalid request"
+                }
+            }
+        },
+        "handlers.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "service": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.MedicalRecordSwagger": {
+            "description": "Medical record response for Swagger",
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-26T20:00:00Z"
+                },
+                "diagnostic_centre_id": {
+                    "type": "string",
+                    "example": "dc-001"
+                },
+                "file_type": {
+                    "type": "string",
+                    "example": "PDF"
+                },
+                "file_url": {
+                    "type": "string",
+                    "example": "https://medicue.com/records/rec-001.pdf"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "rec-001"
+                },
+                "patient_id": {
+                    "type": "string",
+                    "example": "user-001"
+                },
+                "updated_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-26T20:30:00Z"
+                }
+            }
+        },
+        "handlers.ScheduleSwagger": {
+            "description": "Diagnostic schedule response for Swagger",
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-25T20:00:00Z"
+                },
+                "diagnostic_centre_id": {
+                    "type": "string",
+                    "example": "dc-001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "sched-001"
+                },
+                "schedule_time": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-26T09:00:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
+                },
+                "test_type": {
+                    "type": "string",
+                    "example": "Blood Test"
+                },
+                "updated_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-25T21:00:00Z"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "user-001"
+                }
+            }
+        },
+        "handlers.UserSwagger": {
+            "description": "User response for Swagger",
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-27T12:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "full_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "user-001"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "PATIENT"
+                },
+                "updated_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-27T12:00:00Z"
+                }
             }
         }
     }
@@ -191,13 +4856,15 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:7556",
 	BasePath:         "/v1",
 	Schemes:          []string{},
 	Title:            "Medicue",
 	Description:      "Medicue API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
 }
 
 func init() {
