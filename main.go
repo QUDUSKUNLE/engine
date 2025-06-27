@@ -31,7 +31,7 @@ import (
 // @title Medicue
 // @version 1.0
 // @description Medicue API
-// @host localhost:7556
+// @host medicue-api-production.up.railway.app
 // @BasePath /v1
 func main() {
 	// Initialize logger with custom configuration
