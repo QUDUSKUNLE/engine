@@ -129,6 +129,17 @@ definitions:
       updated_at:
         type: string
     type: object
+  domain.AvailableTest:
+    properties:
+      available_test:
+        type: string
+      test_price:
+        minimum: 500
+        type: number
+    required:
+    - available_test
+    - test_price
+    type: object
   domain.CancelAppointmentDTO:
     properties:
       appointmentID:
@@ -265,7 +276,7 @@ definitions:
         type: string
       available_tests:
         items:
-          type: string
+          $ref: '#/definitions/domain.AvailableTest'
         type: array
       contact:
         $ref: '#/definitions/domain.Contact'

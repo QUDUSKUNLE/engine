@@ -17,6 +17,7 @@ type ServicesHandler struct {
 	AvailabilityRepo    ports.AvailabilityRepository
 	PaymentRepo         ports.PaymentRepository
 	AppointmentRepo     ports.AppointmentRepository
+	TestPriceRepo       ports.TestPriceRepository
 	FileRepo            ports.FileService
 	notificationService ports.NotificationService
 	// Payment Gateway
@@ -31,6 +32,7 @@ func ServicesAdapter(
 	record ports.RecordRepository,
 	paymentPort ports.PaymentRepository,
 	appointmentPort ports.AppointmentRepository,
+	testPriceRepo ports.TestPriceRepository,
 	conn config.Config,
 ) *ServicesHandler {
 	return &ServicesHandler{
@@ -41,6 +43,7 @@ func ServicesAdapter(
 		PaymentRepo:      paymentPort,
 		AppointmentRepo:  appointmentPort,
 		RecordRepo:       record,
+		TestPriceRepo:    testPriceRepo,
 		notificationService: ex.NewNotificationAdapter(&ex.GmailConfig{
 			Host:     conn.EMAIL_HOST,
 			Port:     func() int { p, _ := strconv.Atoi(conn.EMAIL_PORT); return p }(),

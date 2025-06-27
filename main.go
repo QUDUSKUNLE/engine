@@ -74,6 +74,7 @@ func main() {
 	recordRepo := repository.NewRecordRepository(store)
 	paymentRepo := repository.NewPaymentRepository(store, conn)
 	appointmentRepo := repository.NewAppointmentRepository(store, conn)
+	testPriceRepo := repository.NewTestPriceRepository(store)
 	core := services.ServicesAdapter(
 		userRepo,
 		scheduleRepo,
@@ -82,6 +83,7 @@ func main() {
 		recordRepo,
 		paymentRepo,
 		appointmentRepo,
+		testPriceRepo,
 		*cfg,
 	)
 	// Initialize CronConfig
