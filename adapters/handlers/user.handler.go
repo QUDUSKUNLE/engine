@@ -4,6 +4,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// UserSwagger is used for Swagger documentation only
+// @Description User response for Swagger
+// @name UserSwagger
+type UserSwagger struct {
+	ID        string `json:"id" example:"user-001"`
+	Email     string `json:"email" example:"user@example.com"`
+	FullName  string `json:"full_name" example:"John Doe"`
+	Role      string `json:"role" example:"PATIENT"`
+	CreatedAt string `json:"created_at" example:"2025-06-27T12:00:00Z"` // format: date-time
+	UpdatedAt string `json:"updated_at" example:"2025-06-27T12:00:00Z"` // format: date-time
+	// ...add other fields as needed for docs
+}
+
 // Register godoc
 // @Summary Register a new user
 // @Description Register a new user (patient) or diagnostic centre owner in the system
@@ -11,10 +24,10 @@ import (
 // @Accept json
 // @Produce json
 // @Param user body domain.UserRegisterDTO true "User registration details"
-// @Success 201 {object} db.User "User created successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data/Email already exists"
-// @Failure 422 {object} utils.ErrorResponse "Invalid user type/Validation failed"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 201 {object} handlers.UserSwagger "User created successfully"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data/Email already exists"
+// @Failure 422 {object} handlers.ErrorResponse "Invalid user type/Validation failed"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /v1/register [post]
 func (handler *HTTPHandler) Register(context echo.Context) error {
 	return handler.service.Create(context)
@@ -28,10 +41,10 @@ func (handler *HTTPHandler) Register(context echo.Context) error {
 // @Produce json
 // @Param credentials body domain.UserSignInDTO true "User credentials"
 // @Success 200 {object} map[string]string "token: JWT token for authentication"
-// @Failure 400 {object} utils.ErrorResponse "Invalid credentials"
-// @Failure 401 {object} utils.ErrorResponse "Invalid email or password"
-// @Failure 404 {object} utils.ErrorResponse "User not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid credentials"
+// @Failure 401 {object} handlers.ErrorResponse "Invalid email or password"
+// @Failure 404 {object} handlers.ErrorResponse "User not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /v1/login [post]
 func (handler *HTTPHandler) SignIn(context echo.Context) error {
 	return handler.service.Login(context)
@@ -46,13 +59,13 @@ func (handler *HTTPHandler) SignIn(context echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param manager body domain.DiagnosticCentreManagerRegisterDTO true "Manager details"
-// @Success 201 {object} db.User "Manager account created successfully"
+// @Success 201 {object} handlers.UserSwagger "Manager account created successfully"
 // @Success 202 {object} map[string]string "Manager invite sent successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data/Email already exists"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 403 {object} utils.ErrorResponse "Not a diagnostic centre owner"
-// @Failure 422 {object} utils.ErrorResponse "Invalid manager type"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data/Email already exists"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 403 {object} handlers.ErrorResponse "Not a diagnostic centre owner"
+// @Failure 422 {object} handlers.ErrorResponse "Invalid manager type"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /v1/diagnostic_centre_manager [post]
 func (handler *HTTPHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	return handler.service.CreateDiagnosticCentreManager(context)
@@ -66,9 +79,9 @@ func (handler *HTTPHandler) CreateDiagnosticCentreManager(context echo.Context) 
 // @Produce json
 // @Param request body domain.RequestPasswordResetDTO true "Password reset request"
 // @Success 200 {object} map[string]string "message: Reset link sent if email exists"
-// @Failure 400 {object} utils.ErrorResponse "Invalid email format"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
-// @Router /v1/request-password-reset [post]
+// @Failure 400 {object} handlers.ErrorResponse "Invalid email format"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Router /v1/request_password_reset [post]
 func (handler *HTTPHandler) RequestPasswordReset(context echo.Context) error {
 	return handler.service.RequestPasswordReset(context)
 }
@@ -81,10 +94,10 @@ func (handler *HTTPHandler) RequestPasswordReset(context echo.Context) error {
 // @Produce json
 // @Param reset body domain.ResetPasswordDTO true "Password reset details"
 // @Success 200 {object} map[string]string "message: Password reset successful"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input/Expired token"
-// @Failure 422 {object} utils.ErrorResponse "Password validation failed"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
-// @Router /v1/reset-password [post]
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input/Expired token"
+// @Failure 422 {object} handlers.ErrorResponse "Password validation failed"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Router /v1/reset_password [post]
 func (handler *HTTPHandler) ResetPassword(context echo.Context) error {
 	return handler.service.ResetPassword(context)
 }
@@ -99,10 +112,10 @@ func (handler *HTTPHandler) ResetPassword(context echo.Context) error {
 // @Param Authorization header string true "Bearer token"
 // @Param password body domain.ChangePasswordDTO true "Password change details"
 // @Success 200 {object} map[string]string "message: Password changed successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required/Invalid current password"
-// @Failure 422 {object} utils.ErrorResponse "Password validation failed"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required/Invalid current password"
+// @Failure 422 {object} handlers.ErrorResponse "Password validation failed"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /v1/account/password [put]
 func (handler *HTTPHandler) ChangePassword(context echo.Context) error {
 	// return handler.service.ChangePassword(context)
@@ -117,10 +130,10 @@ func (handler *HTTPHandler) ChangePassword(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Success 200 {object} domain.UserProfileResponse "User profile details"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 404 {object} utils.ErrorResponse "User not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.UserSwagger "User profile details"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 404 {object} handlers.ErrorResponse "User not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /v1/account/profile [get]
 func (handler *HTTPHandler) GetProfile(context echo.Context) error {
 	return handler.service.GetProfile(context)
@@ -135,10 +148,10 @@ func (handler *HTTPHandler) GetProfile(context echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param profile body domain.UpdateUserProfileDTO true "Profile update details"
-// @Success 200 {object} domain.UserProfileResponse "Updated profile details"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.UserSwagger "Updated profile details"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /v1/account/profile [put]
 func (handler *HTTPHandler) UpdateProfile(context echo.Context) error {
 	return handler.service.UpdateProfile(context)
@@ -154,9 +167,9 @@ func (handler *HTTPHandler) UpdateProfile(context echo.Context) error {
 // @Param Authorization header string true "Bearer token"
 // @Param deactivate body domain.DeactivateAccountDTO true "Account deactivation details"
 // @Success 200 {object} map[string]string "message: Account deactivated successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required/Invalid password"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required/Invalid password"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /v1/account [delete]
 func (handler *HTTPHandler) DeactivateAccount(context echo.Context) error {
 	// return handler.service.DeactivateAccount(context)
@@ -171,10 +184,10 @@ func (handler *HTTPHandler) DeactivateAccount(context echo.Context) error {
 // @Produce json
 // @Param verification body domain.EmailVerificationDTO true "Email verification details"
 // @Success 200 {object} map[string]string "message: Email verified successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data"
-// @Failure 401 {object} utils.ErrorResponse "Invalid or expired token"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
-// @Router /v1/verify-email [post]
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
+// @Failure 401 {object} handlers.ErrorResponse "Invalid or expired token"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Router /v1/verify_email [post]
 func (handler *HTTPHandler) VerifyEmail(context echo.Context) error {
 	return handler.service.VerifyEmail(context)
 }
@@ -187,10 +200,10 @@ func (handler *HTTPHandler) VerifyEmail(context echo.Context) error {
 // @Produce json
 // @Param email body domain.ResendVerificationDTO true "Email address"
 // @Success 200 {object} map[string]string "message: Verification email sent"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data"
-// @Failure 404 {object} utils.ErrorResponse "User not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
-// @Router /v1/resend-verification [post]
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
+// @Failure 404 {object} handlers.ErrorResponse "User not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Router /v1/resend_verification [post]
 func (handler *HTTPHandler) ResendVerification(context echo.Context) error {
 	return handler.service.ResendVerification(context)
 }
@@ -203,9 +216,9 @@ func (handler *HTTPHandler) ResendVerification(context echo.Context) error {
 // @Produce json
 // @Param body body domain.GoogleAuthDTO true "Google ID token"
 // @Success 200 {object} map[string]string "token: JWT token for authentication"
-// @Failure 400 {object} utils.ErrorResponse "Invalid token"
-// @Failure 401 {object} utils.ErrorResponse "Authentication failed"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid token"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication failed"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /v1/auth/google [post]
 func (handler *HTTPHandler) GoogleLogin(context echo.Context) error {
 	return handler.service.GoogleLogin(context)

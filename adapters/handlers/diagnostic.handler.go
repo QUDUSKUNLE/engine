@@ -2,6 +2,22 @@ package handlers
 
 import "github.com/labstack/echo/v4"
 
+// DiagnosticCentreSwagger is used for Swagger documentation only
+// @Description Diagnostic centre response for Swagger
+// @name DiagnosticCentreSwagger
+type DiagnosticCentreSwagger struct {
+	ID        string  `json:"id" example:"dc-001"`
+	Name      string  `json:"name" example:"Medicue Diagnostics"`
+	Latitude  float64 `json:"latitude" example:"6.5244"`
+	Longitude float64 `json:"longitude" example:"3.3792"`
+	Address   string  `json:"address" example:"123 Main St, Lagos"`
+	Phone     string  `json:"phone" example:"+2348000000000"`
+	Email     string  `json:"email" example:"info@medicue.com"`
+	CreatedAt string  `json:"created_at" example:"2025-06-26T20:00:00Z"` // format: date-time
+	UpdatedAt string  `json:"updated_at" example:"2025-06-26T20:30:00Z"` // format: date-time
+	// ...add other fields as needed for docs
+}
+
 // CreateDiagnostic godoc
 // @Summary Create a new diagnostic centre
 // @Description Create a new diagnostic centre with location, contact details, and available services
@@ -11,11 +27,11 @@ import "github.com/labstack/echo/v4"
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre body domain.CreateDiagnosticDTO true "Diagnostic centre details"
-// @Success 201 {object} domain.DiagnosticCentreResponse "Diagnostic centre created successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required/invalid token"
-// @Failure 403 {object} utils.ErrorResponse "User is not a diagnostic centre owner"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 201 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre created successfully"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required/invalid token"
+// @Failure 403 {object} handlers.ErrorResponse "User is not a diagnostic centre owner"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres [post]
 func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 	return handler.service.CreateDiagnosticCentre(context)
@@ -27,10 +43,10 @@ func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 // @Tags DiagnosticCentre
 // @Produce json
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID (UUID format)" format(uuid)
-// @Success 200 {object} domain.DiagnosticCentreResponse "Diagnostic centre details retrieved successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid diagnostic centre ID format"
-// @Failure 404 {object} utils.ErrorResponse "Diagnostic centre not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre details retrieved successfully"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid diagnostic centre ID format"
+// @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/{diagnostic_centre_id} [get]
 func (handler *HTTPHandler) GetDiagnosticCentre(context echo.Context) error {
 	return handler.service.GetDiagnosticCentre(context)
@@ -47,9 +63,9 @@ func (handler *HTTPHandler) GetDiagnosticCentre(context echo.Context) error {
 // @Param available_tests query string false "Filter by available test type"
 // @Param page query integer false "Page number for pagination" default(1) minimum(1)
 // @Param per_page query integer false "Number of results per page" default(10) minimum(1) maximum(100)
-// @Success 200 {array} domain.DiagnosticCentreResponse "List of diagnostic centres"
-// @Failure 400 {object} utils.ErrorResponse "Invalid query parameters"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid query parameters"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres [get]
 func (handler *HTTPHandler) SearchDiagnosticCentre(context echo.Context) error {
 	return handler.service.SearchDiagnosticCentre(context)
@@ -65,12 +81,12 @@ func (handler *HTTPHandler) SearchDiagnosticCentre(context echo.Context) error {
 // @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID (UUID format)" format(uuid)
 // @Param diagnostic_centre body domain.UpdateDiagnosticBodyDTO true "Updated diagnostic centre details"
-// @Success 200 {object} domain.DiagnosticCentreResponse "Diagnostic centre updated successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input data"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required/invalid token"
-// @Failure 403 {object} utils.ErrorResponse "User is not the owner of this diagnostic centre"
-// @Failure 404 {object} utils.ErrorResponse "Diagnostic centre not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre updated successfully"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required/invalid token"
+// @Failure 403 {object} handlers.ErrorResponse "User is not the owner of this diagnostic centre"
+// @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/{diagnostic_centre_id} [put]
 func (handler *HTTPHandler) UpdateDiagnosticCentre(context echo.Context) error {
 	return handler.service.UpdateDiagnosticCentre(context)
@@ -84,11 +100,11 @@ func (handler *HTTPHandler) UpdateDiagnosticCentre(context echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
-// @Success 200 {object} utils.SuccessResponse "Diagnostic centre deleted successfully"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 403 {object} utils.ErrorResponse "User is not the owner"
-// @Failure 404 {object} utils.ErrorResponse "Diagnostic centre not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre deleted successfully"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 403 {object} handlers.ErrorResponse "User is not the owner"
+// @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/{diagnostic_centre_id} [delete]
 func (handler *HTTPHandler) DeleteDiagnosticCentre(context echo.Context) error {
 	return handler.service.DeleteDiagnosticCentre(context)
@@ -103,9 +119,9 @@ func (handler *HTTPHandler) DeleteDiagnosticCentre(context echo.Context) error {
 // @Param Authorization header string true "Bearer token"
 // @Param page query integer false "Page number" minimum(1) default(1)
 // @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
-// @Success 200 {array} domain.DiagnosticCentreResponse "List of diagnostic centres"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/owner [get]
 func (handler *HTTPHandler) GetDiagnosticCentresByOwner(context echo.Context) error {
 	return handler.service.GetDiagnosticCentresByOwner(context)
@@ -119,11 +135,11 @@ func (handler *HTTPHandler) GetDiagnosticCentresByOwner(context echo.Context) er
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
-// @Success 200 {object} domain.DiagnosticCentreStats "Centre statistics"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 403 {object} utils.ErrorResponse "Access denied"
-// @Failure 404 {object} utils.ErrorResponse "Diagnostic centre not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.DiagnosticCentreSwagger "Centre statistics"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 403 {object} handlers.ErrorResponse "Access denied"
+// @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/{diagnostic_centre_id}/stats [get]
 func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreStats(context)
@@ -138,10 +154,10 @@ func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error
 // @Param Authorization header string true "Bearer token"
 // @Param page query integer false "Page number" minimum(1) default(1)
 // @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
-// @Success 200 {array} domain.DiagnosticCentreResponse "List of diagnostic centres"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 403 {object} utils.ErrorResponse "User is not a manager"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 403 {object} handlers.ErrorResponse "User is not a manager"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/manager [get]
 func (handler *HTTPHandler) GetDiagnosticCentresByManager(context echo.Context) error {
 	return handler.service.GetDiagnosticCentresByManager(context)
@@ -157,12 +173,12 @@ func (handler *HTTPHandler) GetDiagnosticCentresByManager(context echo.Context) 
 // @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
 // @Param manager_details body domain.UpdateDiagnosticManagerDTO true "Manager details"
-// @Success 200 {object} domain.DiagnosticCentreResponse "Manager updated successfully"
-// @Failure 400 {object} utils.ErrorResponse "Invalid input"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 403 {object} utils.ErrorResponse "Not authorized"
-// @Failure 404 {object} utils.ErrorResponse "Centre not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.DiagnosticCentreSwagger "Manager updated successfully"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 403 {object} handlers.ErrorResponse "Not authorized"
+// @Failure 404 {object} handlers.ErrorResponse "Centre not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/{diagnostic_centre_id}/manager [put]
 func (handler *HTTPHandler) UpdateDiagnosticCentreManager(context echo.Context) error {
 	return handler.service.UpdateDiagnosticCentreManager(context)
@@ -181,11 +197,11 @@ func (handler *HTTPHandler) UpdateDiagnosticCentreManager(context echo.Context) 
 // @Param status query string false "Filter by status" Enums(PENDING,ACCEPTED,REJECTED)
 // @Param page query integer false "Page number" minimum(1) default(1)
 // @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
-// @Success 200 {array} domain.ScheduleResponse "List of schedules"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 403 {object} utils.ErrorResponse "Access denied"
-// @Failure 404 {object} utils.ErrorResponse "Centre not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {array} handlers.DiagnosticCentreSwagger "List of schedules"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 403 {object} handlers.ErrorResponse "Access denied"
+// @Failure 404 {object} handlers.ErrorResponse "Centre not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/{diagnostic_centre_id}/schedules [get]
 func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreSchedules(context)
@@ -204,11 +220,11 @@ func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) e
 // @Param document_type query string false "Filter by document type" Enums(LAB_REPORT,PRESCRIPTION,IMAGING,DISCHARGE_SUMMARY,OTHER)
 // @Param page query integer false "Page number" minimum(1) default(1)
 // @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
-// @Success 200 {array} db.MedicalRecord "List of medical records"
-// @Failure 401 {object} utils.ErrorResponse "Authentication required"
-// @Failure 403 {object} utils.ErrorResponse "Access denied"
-// @Failure 404 {object} utils.ErrorResponse "Centre not found"
-// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Success 200 {array} handlers.MedicalRecordSwagger "List of medical records"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 403 {object} handlers.ErrorResponse "Access denied"
+// @Failure 404 {object} handlers.ErrorResponse "Centre not found"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
 // @Router /diagnostic_centres/{diagnostic_centre_id}/records [get]
 func (handler *HTTPHandler) GetDiagnosticCentreRecords(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreRecords(context)

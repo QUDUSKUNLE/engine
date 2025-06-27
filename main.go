@@ -23,6 +23,7 @@ import (
 	"github.com/medicue/adapters/routes"
 	"github.com/medicue/core/services"
 	"github.com/medicue/core/utils"
+	_ "github.com/medicue/docs"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"golang.org/x/time/rate"
 )
@@ -30,7 +31,7 @@ import (
 // @title Medicue
 // @version 1.0
 // @description Medicue API
-// @host localhost:8080
+// @host localhost:7556
 // @BasePath /v1
 func main() {
 	// Initialize logger with custom configuration
