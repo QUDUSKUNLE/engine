@@ -3704,7 +3704,6 @@ const docTemplate = `{
             ],
             "properties": {
                 "amount": {
-                    "description": "TimeSlot           TimeSlot  ` + "`" + `json:\"time_slot\" validate:\"required\"` + "`" + `",
                     "type": "number"
                 },
                 "appointment_date": {
@@ -4787,8 +4786,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "medivue-api-production.up.railway.app",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Medicue",
-	Description:      "Medicue API",
+	Title:            "Medivue",
+	Description:      "Medivue API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

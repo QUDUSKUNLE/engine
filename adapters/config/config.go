@@ -54,7 +54,7 @@ func LoadConfig(serviceName string) (*Config, error) {
 	config := &Config{}
 
 	switch serviceName {
-	case "MEDICUE":
+	case "MEDIVUE":
 		config.Port = os.Getenv("PORT")
 		config.DB_URL = os.Getenv("DB_URL")
 		config.JwtKey = os.Getenv("JWT_SECRET_KEY")

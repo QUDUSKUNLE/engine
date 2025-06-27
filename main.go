@@ -28,9 +28,9 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// @title Medicue
+// @title Medivue
 // @version 1.0
-// @description Medicue API
+// @description Medivue API
 // @host medivue-api-production.up.railway.app
 // @BasePath /
 func main() {
@@ -46,7 +46,7 @@ func main() {
 	defer utils.Logger.Sync()
 
 	// Load configuration
-	cfg, err := config.LoadConfig("MEDICUE")
+	cfg, err := config.LoadConfig("MEDIVUE")
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}

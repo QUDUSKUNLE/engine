@@ -170,7 +170,6 @@ definitions:
   domain.CreateAppointmentDTO:
     properties:
       amount:
-        description: TimeSlot           TimeSlot  `json:"time_slot" validate:"required"`
         type: number
       appointment_date:
         type: string
@@ -967,8 +966,8 @@ definitions:
 host: medivue-api-production.up.railway.app
 info:
   contact: {}
-  description: Medicue API
-  title: Medicue
+  description: Medivue API
+  title: Medivue
   version: "1.0"
 paths:
   /api/v1/availability:

@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Medicue API",
-        "title": "Medicue",
+        "description": "Medivue API",
+        "title": "Medivue",
         "contact": {},
         "version": "1.0"
     },
@@ -3698,7 +3698,6 @@
             ],
             "properties": {
                 "amount": {
-                    "description": "TimeSlot           TimeSlot  `json:\"time_slot\" validate:\"required\"`",
                     "type": "number"
                 },
                 "appointment_date": {
