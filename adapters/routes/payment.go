@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/handlers"
-	"github.com/medicue/core/domain"
+	"github.com/medivue/adapters/handlers"
+	"github.com/medivue/core/domain"
 )
 
 // PaymentRoutes registers all payment-related routes

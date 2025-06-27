@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/core/ports"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/core/ports"
 )
 
 // Ensure Repository implements ports.UserRepository

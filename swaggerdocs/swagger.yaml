@@ -841,7 +841,7 @@ definitions:
         example: "2025-06-26T20:00:00Z"
         type: string
       email:
-        example: info@medicue.com
+        example: info@medivue.com
         type: string
       id:
         example: dc-001
@@ -900,7 +900,7 @@ definitions:
         example: PDF
         type: string
       file_url:
-        example: https://medicue.com/records/rec-001.pdf
+        example: https://medivue.com/records/rec-001.pdf
         type: string
       id:
         example: rec-001

@@ -4612,7 +4612,7 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string",
-                    "example": "info@medicue.com"
+                    "example": "info@medivue.com"
                 },
                 "id": {
                     "type": "string",
@@ -4694,7 +4694,7 @@ const docTemplate = `{
                 },
                 "file_url": {
                     "type": "string",
-                    "example": "https://medicue.com/records/rec-001.pdf"
+                    "example": "https://medivue.com/records/rec-001.pdf"
                 },
                 "id": {
                     "type": "string",

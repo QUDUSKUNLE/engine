@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/medicue/adapters/db"
+	"github.com/medivue/adapters/db"
 )
 
 type UserRepository interface {
@@ -21,7 +21,7 @@ type UserRepository interface {
 	MarkResetTokenUsed(ctx context.Context, id string) error
 	UpdateUserPassword(ctx context.Context, arg db.UpdateUserPasswordParams) error
 
-		CreateEmailVerificationToken(ctx context.Context, arg db.CreateEmailVerificationTokenParams) (*db.EmailVerificationToken, error)
+	CreateEmailVerificationToken(ctx context.Context, arg db.CreateEmailVerificationTokenParams) (*db.EmailVerificationToken, error)
 	GetEmailVerificationToken(ctx context.Context, arg string) (*db.EmailVerificationToken, error)
 	MarkEmailVerificationTokenUsed(ctx context.Context, arg string) error
 	MarkEmailAsVerified(ctx context.Context, email string) error

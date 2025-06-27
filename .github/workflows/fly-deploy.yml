@@ -24,11 +24,11 @@ jobs:
       - name: Health Check
         run: |
           sleep 30
-          curl -f https://medicue.fly.dev/v1/health || exit 1
+          curl -f https://medivue.fly.dev/v1/health || exit 1
 
       - name: Notify Success
         if: success()
         run: |
           echo "✅ Deployment successful!"
-          echo "🌐 App URL: https://medicue.fly.dev"
-          echo "🏥 Health Check: https://medicue.fly.dev/v1/health"
+          echo "🌐 App URL: https://medivue.fly.dev"
+          echo "🏥 Health Check: https://medivue.fly.dev/v1/health"

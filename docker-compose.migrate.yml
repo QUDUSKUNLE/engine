@@ -5,20 +5,20 @@ services:
   migrate:
     build: .
     environment:
-      - DB_URL=postgres://medicue_user:medicue_password@db:5432/medicue?sslmode=disable
+      - DB_URL=postgres://medicue_user:medicue_password@db:5432/medivue?sslmode=disable
     depends_on:
       db:
         condition: service_healthy
     networks:
-      - medicue-network
-    command: ["./bin/migrate", "-path=adapters/db/migrations", "-database", "postgres://medicue_user:medicue_password@db:5432/medicue?sslmode=disable", "up"]
+      - medivue-network
+    command: ["./bin/migrate", "-path=adapters/db/migrations", "-database", "postgres://medicue_user:medicue_password@db:5432/medivue?sslmode=disable", "up"]
     restart: "no"
 
   # Re-use the database service from main compose file
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: medicue
+      POSTGRES_DB: medivue
       POSTGRES_USER: medicue_user
       POSTGRES_PASSWORD: medicue_password
     ports:
@@ -26,17 +26,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U medicue_user -d medicue"]
+      test: ["CMD-SHELL", "pg_isready -U medicue_user -d medivue"]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: unless-stopped
     networks:
-      - medicue-network
+      - medivue-network
 
 volumes:
   postgres_data:
 
 networks:
-  medicue-network:
+  medivue-network:
     driver: bridge

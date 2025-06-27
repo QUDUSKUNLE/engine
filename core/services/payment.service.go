@@ -12,9 +12,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/core/domain"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/core/domain"
+	"github.com/medivue/core/utils"
 )
 
 // PaymentError represents a payment service error with context
@@ -607,21 +607,21 @@ func (s *ServicesHandler) verifyAndUpdatePaymentWithRetry(ctx context.Context, r
 			Status:  paystackResponse.Status,
 			Message: paystackResponse.Message,
 			Data: domain.PaystackVerificationData{
-				Status:     paystackResponse.Data.Status,
-				Reference:  paystackResponse.Data.Reference,
-				Amount:     paystackResponse.Data.Amount,
-				Channel:    paystackResponse.Data.Channel,
-				Currency:   paystackResponse.Data.Currency,
-				PaidAt:     ParseTime(paystackResponse.Data.PaidAt),
-				CreatedAt:  ParseTime(paystackResponse.Data.CreatedAt),
+				Status:    paystackResponse.Data.Status,
+				Reference: paystackResponse.Data.Reference,
+				Amount:    paystackResponse.Data.Amount,
+				Channel:   paystackResponse.Data.Channel,
+				Currency:  paystackResponse.Data.Currency,
+				PaidAt:    ParseTime(paystackResponse.Data.PaidAt),
+				CreatedAt: ParseTime(paystackResponse.Data.CreatedAt),
 				Customer: domain.PaystackCustomer{
-					ID:           paystackResponse.Data.Customer.ID,
-					FirstName:    paystackResponse.Data.Customer.FirstName,
-					LastName:     paystackResponse.Data.Customer.LastName,
-					Email:        paystackResponse.Data.Customer.Email,
-					Phone:        paystackResponse.Data.Customer.Phone,
+					ID:        paystackResponse.Data.Customer.ID,
+					FirstName: paystackResponse.Data.Customer.FirstName,
+					LastName:  paystackResponse.Data.Customer.LastName,
+					Email:     paystackResponse.Data.Customer.Email,
+					Phone:     paystackResponse.Data.Customer.Phone,
 				},
-				Metadata:   paystackResponse.Data.Metadata,
+				Metadata: paystackResponse.Data.Metadata,
 			},
 		}
 		if !verificationResponse.Status || verificationResponse.Data.Status != "success" {

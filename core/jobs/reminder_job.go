@@ -6,9 +6,9 @@ import (
 	// "time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/adapters/ex/templates"
-	// "github.com/medicue/core/utils"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/adapters/ex/templates"
+	// "github.com/medivue/core/utils"
 )
 
 func (j *ReminderJob) Start() {

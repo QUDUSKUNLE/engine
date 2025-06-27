@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/medicue/core/ports"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/core/ports"
+	"github.com/medivue/core/utils"
 )
 
 // Supported file types and their extensions

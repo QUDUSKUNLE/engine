@@ -1,4 +1,4 @@
-module github.com/medicue
+module github.com/medivue
 
 go 1.24.3
 

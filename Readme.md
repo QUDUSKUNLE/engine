@@ -1,6 +1,6 @@
-# Medicue
+# Medivue
 
-Medicue is a Golang-based project designed to streamline healthcare workflows and improve patient management. This repository contains the backend services, APIs, and documentation necessary to deploy and extend Medicue.
+Medivue is a Golang-based project designed to streamline healthcare workflows and improve patient management. This repository contains the backend services, APIs, and documentation necessary to deploy and extend Medicue.
 
 ## Features
 
@@ -21,8 +21,8 @@ Medicue is a Golang-based project designed to streamline healthcare workflows an
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/medicue.git
-cd medicue
+git clone https://github.com/yourusername/medivue.git
+cd medivue
 go mod tidy
 ```
 

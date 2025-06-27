@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/medicue/adapters/db"
+	"github.com/medivue/adapters/db"
 )
 
 func (r *Repository) CreateAvailability(ctx context.Context, req db.Create_AvailabilityParams) ([]*db.DiagnosticCentreAvailability, error) {

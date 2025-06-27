@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/handlers"
-	"github.com/medicue/core/domain"
+	"github.com/medivue/adapters/handlers"
+	"github.com/medivue/core/domain"
 )
 
 // DiagnosticRoutes registers all diagnostic centre-related routes
@@ -53,7 +53,7 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodGet,
 			path:        "/diagnostic_centres/:diagnostic_centre_id/diagnostic_schedules",
 			handler:     handler.GetDiagnosticCentreSchedules,
-			factory: func () interface{} { return &domain.GetDiagnosticSchedulesByCentreParamDTO{}},
+			factory:     func() interface{} { return &domain.GetDiagnosticSchedulesByCentreParamDTO{} },
 			description: "Get Diagnostic centre schedules",
 		},
 	}

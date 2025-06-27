@@ -28,7 +28,7 @@ func (h *HTTPHandler) HealthCheck(c echo.Context) error {
 		Status:    "healthy",
 		Timestamp: time.Now(),
 		Version:   "1.0.0",
-		Service:   "medicue-api",
+		Service:   "medivue-api",
 	}
 
 	return c.JSON(http.StatusOK, response)

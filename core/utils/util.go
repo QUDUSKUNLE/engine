@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/core/domain"
-	"github.com/medicue/core/utils/response"
+	"github.com/medivue/core/domain"
+	"github.com/medivue/core/utils/response"
 	"go.uber.org/zap"
 )
 

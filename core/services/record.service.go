@@ -7,9 +7,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/core/domain"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/core/domain"
+	"github.com/medivue/core/utils"
 )
 
 // CreateMedicalRecord handles the creation of a new medical record.
@@ -274,14 +274,14 @@ func (service *ServicesHandler) UpdateMedicalRecord(context echo.Context) error 
 		UploaderID:      dto.UploaderID.String(),
 		UploaderAdminID: pgtype.UUID{Bytes: dto.UploaderAdminID, Valid: true},
 		// FilePath:        fileUrl,
-		Title:           dto.Title,
-		DocumentType:    dto.DocumentType,
-		DocumentDate:    documentDate,
-		FileType:        pgtype.Text{String: dto.FileType, Valid: dto.FileType != ""},
-		ProviderName:    pgtype.Text{String: dto.ProviderName, Valid: dto.ProviderName != ""},
-		Specialty:       pgtype.Text{String: dto.Specialty, Valid: dto.Specialty != ""},
-		IsShared:        pgtype.Bool{Bool: dto.IsShared, Valid: true},
-		SharedUntil:     sharedUntilTime,
+		Title:        dto.Title,
+		DocumentType: dto.DocumentType,
+		DocumentDate: documentDate,
+		FileType:     pgtype.Text{String: dto.FileType, Valid: dto.FileType != ""},
+		ProviderName: pgtype.Text{String: dto.ProviderName, Valid: dto.ProviderName != ""},
+		Specialty:    pgtype.Text{String: dto.Specialty, Valid: dto.Specialty != ""},
+		IsShared:     pgtype.Bool{Bool: dto.IsShared, Valid: true},
+		SharedUntil:  sharedUntilTime,
 	}
 
 	// Only update file path if a new file was uploaded

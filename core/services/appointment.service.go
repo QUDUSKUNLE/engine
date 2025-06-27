@@ -11,10 +11,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/adapters/ex/templates"
-	"github.com/medicue/core/domain"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/adapters/ex/templates"
+	"github.com/medivue/core/domain"
+	"github.com/medivue/core/utils"
 )
 
 // CreateAppointment creates a new appointment and associated schedule

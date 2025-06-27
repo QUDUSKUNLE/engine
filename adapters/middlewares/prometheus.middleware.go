@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/metrics"
+	"github.com/medivue/adapters/metrics"
 )
 
 // PrometheusMiddleware adds custom metrics tracking to Echo
