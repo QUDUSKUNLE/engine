@@ -37,7 +37,7 @@ if curl -f http://localhost:8080/v1/health > /dev/null 2>&1; then
     # Check migration status
     echo "🔍 Checking database migration status..."
     if docker-compose exec -T app ./bin/migrate -path=adapters/db/migrations -database "$DB_URL" version > /dev/null 2>&1; then
-        MIGRATION_VERSION=$(docker-compose exec -T app ./bin/migrate -path=adapters/db/migrations -database "postgres://medicue_user:medicue_password@db:5432/medicue?sslmode=disable" version 2>/dev/null | tail -1)
+        MIGRATION_VERSION=$(docker-compose exec -T app ./bin/migrate -path=adapters/db/migrations -database "postgres://medicue_user:medicue_password@db:5432/medivue?sslmode=disable" version 2>/dev/null | tail -1)
         echo "📋 Current migration version: $MIGRATION_VERSION"
     else
         echo "⚠️  Could not check migration status"

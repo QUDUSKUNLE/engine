@@ -15,15 +15,15 @@ import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/medicue/adapters/config"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/adapters/db/repository"
-	"github.com/medicue/adapters/handlers"
-	"github.com/medicue/adapters/middlewares"
-	"github.com/medicue/adapters/routes"
-	"github.com/medicue/core/services"
-	"github.com/medicue/core/utils"
-	_ "github.com/medicue/swaggerdocs"
+	"github.com/medivue/adapters/config"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/adapters/db/repository"
+	"github.com/medivue/adapters/handlers"
+	"github.com/medivue/adapters/middlewares"
+	"github.com/medivue/adapters/routes"
+	"github.com/medivue/core/services"
+	"github.com/medivue/core/utils"
+	_ "github.com/medivue/swaggerdocs"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"golang.org/x/time/rate"
 )
@@ -37,7 +37,7 @@ func main() {
 	// Initialize logger with custom configuration
 	logConfig := utils.LogConfig{
 		Level:       "info", // Set to debug in development, info in production
-		OutputPath:  "logs/medicue.log",
+		OutputPath:  "logs/medivue.log",
 		Development: false, // Set to false in production
 	}
 	if err := utils.InitLogger(logConfig); err != nil {

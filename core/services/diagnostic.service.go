@@ -7,10 +7,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/adapters/metrics"
-	"github.com/medicue/core/domain"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/adapters/metrics"
+	"github.com/medivue/core/domain"
+	"github.com/medivue/core/utils"
 )
 
 func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) error {

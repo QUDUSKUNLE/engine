@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/medicue/adapters/db"
+	"github.com/medivue/adapters/db"
 )
 
 type (

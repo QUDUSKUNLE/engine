@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/medicue/adapters/db"
+	"github.com/medivue/adapters/db"
 )
 
 // AppointmentRepository defines the interface for appointment data operations

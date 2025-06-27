@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/medicue/adapters/db"
+	"github.com/medivue/adapters/db"
 )
 
 // DiagnosticRepository defines the interface for diagnostic centre data access

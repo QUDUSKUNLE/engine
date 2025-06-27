@@ -141,7 +141,7 @@ type MedicalRecordSwagger struct {
 	PatientID          string `json:"patient_id" example:"user-001"`
 	DiagnosticCentreID string `json:"diagnostic_centre_id" example:"dc-001"`
 	FileType           string `json:"file_type" example:"PDF"`
-	FileURL            string `json:"file_url" example:"https://medicue.com/records/rec-001.pdf"`
+	FileURL            string `json:"file_url" example:"https://medivue.com/records/rec-001.pdf"`
 	CreatedAt          string `json:"created_at" example:"2025-06-26T20:00:00Z"` // format: date-time
 	UpdatedAt          string `json:"updated_at" example:"2025-06-26T20:30:00Z"` // format: date-time
 	// ...add other fields as needed for docs

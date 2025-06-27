@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
-	"github.com/medicue/core/ports"
+	"github.com/medivue/core/ports"
 )
 
 type ReminderJob struct {

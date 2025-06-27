@@ -10,7 +10,7 @@ import (
 
 	"github.com/cloudinary/cloudinary-go"
 	"github.com/cloudinary/cloudinary-go/api/uploader"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/core/utils"
 )
 
 func cloudinaryUploader(ctx context.Context, file []byte) (string, error) {
@@ -32,7 +32,7 @@ func cloudinaryUploader(ctx context.Context, file []byte) (string, error) {
 		utils.LogField{Key: "file_size", Value: len(file)})
 
 	uploadResult, err := cld.Upload.Upload(ctx, strings.NewReader(string(file)), uploader.UploadParams{
-		Folder:       "medicue",
+		Folder:       "medivue",
 		ResourceType: "auto",
 	})
 	if err != nil {

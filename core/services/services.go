@@ -3,10 +3,10 @@ package services
 import (
 	"strconv"
 
-	"github.com/medicue/adapters/config"
-	"github.com/medicue/adapters/ex"
-	"github.com/medicue/adapters/ex/paystack"
-	"github.com/medicue/core/ports"
+	"github.com/medivue/adapters/config"
+	"github.com/medivue/adapters/ex"
+	"github.com/medivue/adapters/ex/paystack"
+	"github.com/medivue/core/ports"
 )
 
 type ServicesHandler struct {
@@ -50,7 +50,7 @@ func ServicesAdapter(
 		}),
 		paymentService: paystack.NewPaystackAdapter(&paystack.PaystackConfig{
 			SecretKey: conn.PAYSTACK_SECRET_KEY,
-			BaseURL: conn.PAYSTACK_BASE_URL,
+			BaseURL:   conn.PAYSTACK_BASE_URL,
 		}),
 	}
 }

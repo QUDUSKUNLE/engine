@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/middlewares"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/adapters/middlewares"
+	"github.com/medivue/core/utils"
 )
 
 // routeConfig defines the structure for route configuration
@@ -16,7 +16,6 @@ type routeConfig struct {
 	factory     func() interface{}
 	description string // Added for better logging and documentation
 }
-
 
 // registerRoutes registers the given routes with the specified group
 func registerRoutes(group *echo.Group, routes []routeConfig) {

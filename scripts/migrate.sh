@@ -4,7 +4,7 @@
 set -e
 
 # Default values
-DB_URL="${DB_URL:-postgres://medicue_user:medicue_password@localhost:5432/medicue?sslmode=disable}"
+DB_URL="${DB_URL:-postgres://medicue_user:medicue_password@localhost:5432/medivue?sslmode=disable}"
 MIGRATION_PATH="${MIGRATION_PATH:-adapters/db/migrations}"
 MIGRATE_BINARY="${MIGRATE_BINARY:-./bin/migrate}"
 

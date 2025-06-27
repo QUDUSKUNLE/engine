@@ -3,8 +3,8 @@ package ports
 import (
 	"context"
 
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/adapters/ex/paystack"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/adapters/ex/paystack"
 )
 
 // DBTX represents a database transaction interface

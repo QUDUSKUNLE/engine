@@ -66,7 +66,7 @@ docker-compose logs -f app
 
 2. **Manual Setup**
    - Create Web Service from Docker
-   - Set build command: `docker build -t medicue .`
+   - Set build command: `docker build -t medivue .`
    - Set start command: `./main`
 
 ### 3. DigitalOcean App Platform
@@ -87,12 +87,12 @@ docker-compose logs -f app
 1. **Build and Push Image**
    ```bash
    # Build for AWS
-   docker build -t medicue-api .
+   docker build -t medivue-api .
    
    # Tag and push to ECR
    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_ECR_URI
-   docker tag medicue-api:latest YOUR_ECR_URI/medicue-api:latest
-   docker push YOUR_ECR_URI/medicue-api:latest
+   docker tag medivue-api:latest YOUR_ECR_URI/medivue-api:latest
+   docker push YOUR_ECR_URI/medivue-api:latest
    ```
 
 2. **Create ECS Service**
@@ -104,7 +104,7 @@ docker-compose logs -f app
 
 ```bash
 # Deploy to Cloud Run
-gcloud run deploy medicue-api \
+gcloud run deploy medivue-api \
   --source . \
   --platform managed \
   --region us-central1 \
@@ -131,30 +131,30 @@ gcloud run deploy medicue-api \
 4. **Manual Setup**
    ```bash
    # Create app and database
-   flyctl launch --no-deploy --name medicue
-   flyctl postgres create --name medicue-db
-   flyctl postgres attach --app medicue medicue-db
+   flyctl launch --no-deploy --name medivue
+   flyctl postgres create --name medivue-db
+   flyctl postgres attach --app medivue medivue-db
    
    # Set environment variables
-   flyctl secrets set JWT_SECRET_KEY="$(openssl rand -base64 32)" --app medicue
-   flyctl secrets set ALLOW_ORIGINS="https://medicue.fly.dev" --app medicue
+   flyctl secrets set JWT_SECRET_KEY="$(openssl rand -base64 32)" --app medivue
+   flyctl secrets set ALLOW_ORIGINS="https://medivue.fly.dev" --app medivue
    
    # Deploy
-   flyctl deploy --app medicue
+   flyctl deploy --app medivue
    ```
 
 5. **Monitor Deployment**
    ```bash
-   flyctl logs --app medicue
-   flyctl status --app medicue
+   flyctl logs --app medivue
+   flyctl status --app medivue
    ```
 
 ### 7. VPS Deployment
 
 ```bash
 # On your VPS
-git clone https://github.com/your-username/medicue.git
-cd medicue
+git clone https://github.com/your-username/medivue.git
+cd medivue
 
 # Copy production environment
 cp .env.production .env
@@ -163,7 +163,7 @@ cp .env.production .env
 docker-compose up -d
 
 # Setup reverse proxy (nginx example)
-sudo nano /etc/nginx/sites-available/medicue
+sudo nano /etc/nginx/sites-available/medivue
 ```
 
 ## 🔧 Configuration
@@ -320,5 +320,5 @@ docker-compose restart app
 git pull && docker-compose up --build -d
 
 # Database backup
-docker-compose exec db pg_dump -U medicue_user medicue > backup.sql
+docker-compose exec db pg_dump -U medicue_user medivue > backup.sql
 ```

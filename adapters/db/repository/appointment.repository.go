@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/core/ports"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/core/ports"
 )
 
 func (r *Repository) IsValidTestType(ctx context.Context, testType string) bool {

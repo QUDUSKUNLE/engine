@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/core/ports"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/core/ports"
 )
 
 // Ensure Repository implements RecordRepository

@@ -8,8 +8,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/core/domain"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/core/domain"
+	"github.com/medivue/core/utils"
 )
 
 const (

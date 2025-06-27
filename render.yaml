@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: medicue-api
+    name: medivue-api
     env: docker
     dockerfilePath: ./Dockerfile
     healthCheckPath: /v1/health
@@ -10,7 +10,7 @@ services:
         value: 8080
       - key: DB_URL
         fromDatabase:
-          name: medicue-db
+          name: medivue-db
           property: connectionString
       - key: JWT_SECRET_KEY
         generateValue: true
@@ -20,7 +20,7 @@ services:
         value: https://yourdomain.com
 
 databases:
-  - name: medicue-db
-    databaseName: medicue
+  - name: medivue-db
+    databaseName: medivue
     user: medicue_user
     plan: starter

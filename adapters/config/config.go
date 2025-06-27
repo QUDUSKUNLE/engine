@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/core/utils"
 )
 
 func LoadEnvironmentVariable() error {
@@ -41,7 +41,7 @@ type Config struct {
 	GMAIL_FROM_ADDRESS string
 
 	// Paystack Service
-	PAYSTACK_BASE_URL string
+	PAYSTACK_BASE_URL   string
 	PAYSTACK_SECRET_KEY string
 	PAYSTACK_PUBLIC_KEY string
 }

@@ -6,9 +6,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medicue/adapters/db"
-	"github.com/medicue/core/domain"
-	"github.com/medicue/core/utils"
+	"github.com/medivue/adapters/db"
+	"github.com/medivue/core/domain"
+	"github.com/medivue/core/utils"
 )
 
 const (
@@ -308,7 +308,7 @@ func (s *ServicesHandler) GetAvailability(ctx echo.Context) error {
 	if len(slots) == 0 {
 		return utils.ResponseMessage(http.StatusOK, []*domain.AvailabilitySlot{}, ctx)
 	}
-	
+
 	result := make([]*domain.AvailabilitySlot, len(slots))
 	for i, slot := range slots {
 		result[i] = &domain.AvailabilitySlot{
