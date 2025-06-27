@@ -1,4 +1,4 @@
-basePath: /v1
+basePath: /
 definitions:
   db.Doctor:
     enum:
@@ -767,8 +767,6 @@ definitions:
       confirm_password:
         maxLength: 20
         minLength: 6
-        type: string
-      diagnostic_Centre:
         type: string
       email:
         type: string
