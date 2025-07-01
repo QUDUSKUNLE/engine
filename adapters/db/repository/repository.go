@@ -57,6 +57,12 @@ func NewAppointmentRepository(
 	return &Repository{database: store, conn: conn}
 }
 
+func NewTestPriceRepository(
+	store *db.Queries,
+) ports.TestPriceRepository {
+	return &Repository{database: store}
+}
+
 func (r *Repository) GetTestTypes(ctx context.Context) ([]string, error) {
 	rows, err := r.conn.Query(ctx, `
 		SELECT enumlabel 

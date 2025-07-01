@@ -3639,6 +3639,22 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.AvailableTest": {
+            "type": "object",
+            "required": [
+                "available_test",
+                "test_price"
+            ],
+            "properties": {
+                "available_test": {
+                    "type": "string"
+                },
+                "test_price": {
+                    "type": "number",
+                    "minimum": 500
+                }
+            }
+        },
         "domain.CancelAppointmentDTO": {
             "type": "object",
             "required": [
@@ -3825,7 +3841,7 @@ const docTemplate = `{
                 "available_tests": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/domain.AvailableTest"
                     }
                 },
                 "contact": {

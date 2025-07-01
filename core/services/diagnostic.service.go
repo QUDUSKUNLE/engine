@@ -32,6 +32,8 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
 	}
 
+	// Implement test Price here 
+
 	params.CreatedBy = currentUser.UserID.String()
 
 	// Create diagnostic centre

@@ -926,6 +926,17 @@ type DiagnosticCentreAvailability struct {
 	UpdatedAt          pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
+type DiagnosticCentreTestPrice struct {
+	ID                 string             `db:"id" json:"id"`
+	DiagnosticCentreID string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	TestType           string             `db:"test_type" json:"test_type"`
+	Price              pgtype.Numeric     `db:"price" json:"price"`
+	Currency           string             `db:"currency" json:"currency"`
+	IsActive           bool               `db:"is_active" json:"is_active"`
+	CreatedAt          pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+}
+
 type DiagnosticSchedule struct {
 	ID                 string                   `db:"id" json:"id"`
 	UserID             string                   `db:"user_id" json:"user_id"`

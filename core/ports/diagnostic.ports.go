@@ -24,3 +24,7 @@ type DiagnosticRepository interface {
 	RetrieveDiagnosticCentres(ctx context.Context, params db.Retrieve_Diagnostic_CentresParams) ([]*db.Retrieve_Diagnostic_CentresRow, error)
 	SearchDiagnosticCentres(ctx context.Context, params db.Search_Diagnostic_CentresParams) ([]*db.Search_Diagnostic_CentresRow, error)
 }
+
+type TestPriceRepository interface {
+	CreateTestPrice(ctx context.Context, test_price db.Create_Test_PriceParams) ([]*db.DiagnosticCentreTestPrice, error)
+}
