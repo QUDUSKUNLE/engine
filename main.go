@@ -64,37 +64,27 @@ func main() {
 	e.Use(middlewares.PrometheusMiddleware)
 	e.Use(echoprometheus.NewMiddleware("Medicue"))
 
-	availabilityRepo := repository.NewAvailabilityRepository(store)
+	// Initialize all repositories
+	repos := repository.InitializeRepositories(store, conn)
+
 	// Plug echo into validationAdaptor
 	e = middlewares.ValidationAdaptor(e)
 
-	userRepo := repository.NewUserRepository(store)
-	scheduleRepo := repository.NewScheduleRepository(store)
-	diagnosticRepo := repository.NewDiagnosticCentreRepository(store)
-	recordRepo := repository.NewRecordRepository(store)
-	paymentRepo := repository.NewPaymentRepository(store, conn)
-	appointmentRepo := repository.NewAppointmentRepository(store, conn)
-	testPriceRepo := repository.NewTestPriceRepository(store)
-	core := services.ServicesAdapter(
-		userRepo,
-		scheduleRepo,
-		diagnosticRepo,
-		availabilityRepo,
-		recordRepo,
-		paymentRepo,
-		appointmentRepo,
-		testPriceRepo,
-		*cfg,
-	)
-	// Initialize CronConfig
-	cronConfig := config.GetConfig(userRepo, diagnosticRepo, appointmentRepo, *cfg)
-	err = cronConfig.Start()
+	// Initialize all services
+	services, err := services.InitializeServices(repos, cfg)
 	if err != nil {
+		log.Fatalf("Error initializing services: %v", err)
+	}
+
+	// Initialize CronConfig with repositories
+	cronConfig := config.GetConfig(repos.User, repos.Diagnostic, repos.Appointment, *cfg)
+	if err := cronConfig.Start(); err != nil {
 		log.Printf("Warning: Failed to start background services: %v", err)
 	}
 	defer cronConfig.Cleanup()
 
-	httpHandler := handlers.HttpAdapter(core)
+	// Initialize HTTP handlers with core services
+	httpHandler := handlers.HttpAdapter(services.Core)
 
 	v1 := e.Group("/v1")
 	// Add a middleware to skip JWT validation for specific routes under /v1
