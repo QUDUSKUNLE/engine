@@ -71,10 +71,7 @@ func main() {
 	e = middlewares.ValidationAdaptor(e)
 
 	// Initialize all services
-	services, err := services.InitializeServices(repos, cfg)
-	if err != nil {
-		log.Fatalf("Error initializing services: %v", err)
-	}
+	services := services.InitializeServices(repos, cfg)
 
 	// Initialize CronConfig with repositories
 	cronConfig := config.GetConfig(repos.User, repos.Diagnostic, repos.Appointment, *cfg)

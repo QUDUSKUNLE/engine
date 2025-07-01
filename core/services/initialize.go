@@ -10,7 +10,7 @@ type Services struct {
 }
 
 // InitializeServices creates and returns all services
-func InitializeServices(repos *repository.Repositories, cfg *config.Config) (*Services, error) {
+func InitializeServices(repos *repository.Repositories, cfg *config.Config) (*Services) {
 	core := ServicesAdapter(
 		repos.User,
 		repos.Schedule,
@@ -24,5 +24,5 @@ func InitializeServices(repos *repository.Repositories, cfg *config.Config) (*Se
 	)
 	return &Services{
 		Core: core,
-	}, nil
+	}
 }
