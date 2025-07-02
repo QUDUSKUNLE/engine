@@ -49,6 +49,15 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			description: "Verify email",
 		},
 		{
+			method:  http.MethodPut,
+			path:    "/account/profile",
+			handler: handler.UpdateProfile,
+			factory: func() interface{} {
+				return &domain.UpdateUserProfileDTO{}
+			},
+			description: "Update User Profile",
+		},
+		{
 			method:  http.MethodPost,
 			path:    "/diagnostic_centre_manager",
 			handler: handler.CreateDiagnosticCentreManager,
