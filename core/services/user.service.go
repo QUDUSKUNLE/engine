@@ -544,10 +544,23 @@ func (service *ServicesHandler) GetProfile(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	utils.Info("User profile retrieved successfully",
-		utils.LogField{Key: "user_id", Value: user.ID})
+	db_user := &db.User{
+		ID:              user.ID,
+		Email:           user.Email,
+		Nin:             user.Nin,
+		UserType:        user.UserType,
+		Fullname:        user.Fullname,
+		EmailVerified:   user.EmailVerified,
+		EmailVerifiedAt: user.EmailVerifiedAt,
+		PhoneNumber:     user.PhoneNumber,
+		CreatedAt:       user.CreatedAt,
+		UpdatedAt:       user.UpdatedAt,
+	}
 
-	return utils.ResponseMessage(http.StatusOK, user, context)
+	utils.Info("User profile retrieved successfully",
+		utils.LogField{Key: "user_id", Value: db_user.ID})
+
+	return utils.ResponseMessage(http.StatusOK, db_user, context)
 }
 
 func generateResetToken() string {
