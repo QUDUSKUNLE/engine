@@ -100,8 +100,8 @@ type (
 	}
 
 	EmailVerificationDTO struct {
-		Email string `json:"email" validate:"email,required"`
-		Token string `json:"token" validate:"required"`
+		Email string `query:"email" validate:"email,required"`
+		Token string `query:"token" validate:"required"`
 	}
 
 	ResendVerificationDTO struct {
