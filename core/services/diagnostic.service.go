@@ -76,14 +76,14 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	submit_price, err := service.TestPriceRepo.CreateTestPrice(context.Request().Context(), *buildPrice)
+	_, err = service.TestPriceRepo.CreateTestPrice(context.Request().Context(), *buildPrice)
 	if err != nil {
 		utils.Error("Failed to submit test price",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "admin_id", Value: dto.AdminId.String()})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	fmt.Println(submit_price, "********")
+
 	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
 		ID:                   diagnostic_centre.ID,
 		DiagnosticCentreName: diagnostic_centre.DiagnosticCentreName,
