@@ -405,16 +405,6 @@ definitions:
     - email
     - user_type
     type: object
-  domain.EmailVerificationDTO:
-    properties:
-      email:
-        type: string
-      token:
-        type: string
-    required:
-    - email
-    - token
-    type: object
   domain.File:
     properties:
       content:
@@ -3255,17 +3245,10 @@ paths:
       tags:
       - User
   /v1/verify_email:
-    post:
+    get:
       consumes:
       - application/json
       description: Verify a user's email address using the token sent to their email
-      parameters:
-      - description: Email verification details
-        in: body
-        name: verification
-        required: true
-        schema:
-          $ref: '#/definitions/domain.EmailVerificationDTO'
       produces:
       - application/json
       responses:
