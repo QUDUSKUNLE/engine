@@ -3890,7 +3890,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_type": {
-                    "$ref": "#/definitions/db.UserEnum"
+                    "enum": [
+                        "DIAGNOSTIC_CENTRE_MANAGER"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.UserEnum"
+                        }
+                    ]
                 }
             }
         },
