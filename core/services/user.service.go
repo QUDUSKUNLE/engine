@@ -278,7 +278,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 }
 
 func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
-	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.EmailVerificationDTO)
+	dto, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.EmailVerificationDTO)
 
 	// Get user by email
 	user, err := service.UserRepo.GetUserByEmail(

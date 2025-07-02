@@ -3417,7 +3417,7 @@ const docTemplate = `{
             }
         },
         "/v1/verify_email": {
-            "post": {
+            "get": {
                 "description": "Verify a user's email address using the token sent to their email",
                 "consumes": [
                     "application/json"
@@ -3429,17 +3429,6 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Verify user email",
-                "parameters": [
-                    {
-                        "description": "Email verification details",
-                        "name": "verification",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/domain.EmailVerificationDTO"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "message: Email verified successfully",
@@ -3996,21 +3985,6 @@ const docTemplate = `{
                 },
                 "user_type": {
                     "$ref": "#/definitions/db.UserEnum"
-                }
-            }
-        },
-        "domain.EmailVerificationDTO": {
-            "type": "object",
-            "required": [
-                "email",
-                "token"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "token": {
-                    "type": "string"
                 }
             }
         },

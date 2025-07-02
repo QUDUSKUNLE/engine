@@ -92,7 +92,7 @@ func main() {
 			noAuthRoutes := map[string]bool{
 				"POST /v1/login":                                   true,
 				"POST /v1/register":                                true,
-				"POST /v1/verify_email":                            true,
+				"GET /v1/verify_email":                             true,
 				"POST /v1/reset_password":                          true,
 				"POST /v1/resend_verification":                     true,
 				"POST /v1/request_password_reset":                  true,
@@ -159,7 +159,7 @@ func main() {
 	})
 
 	e.GET("", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"Home": "Welcome to Medicue"})
+		return c.JSON(http.StatusOK, map[string]string{"Home": "Welcome to Medivue"})
 	})
 
 	// Get port from environment (Railway and most PaaS set PORT)

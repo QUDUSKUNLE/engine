@@ -182,12 +182,11 @@ func (handler *HTTPHandler) DeactivateAccount(context echo.Context) error {
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param verification body domain.EmailVerificationDTO true "Email verification details"
 // @Success 200 {object} map[string]string "message: Email verified successfully"
 // @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
 // @Failure 401 {object} handlers.ErrorResponse "Invalid or expired token"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /v1/verify_email [post]
+// @Router /v1/verify_email [get]
 func (handler *HTTPHandler) VerifyEmail(context echo.Context) error {
 	return handler.service.VerifyEmail(context)
 }
