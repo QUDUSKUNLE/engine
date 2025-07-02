@@ -189,7 +189,7 @@ var (
 			<p><strong>Hi there,</strong></p>
 			<p>We received a request to reset your password for your Medicue account. Click the button below to set a new password:</p>
 			<button style="text-align: left;">
-				<a href="%[1]s/v1/reset-password?token=%[2]s&email=%[3]s" class="button">Reset Password</a>
+				<a href="%[1]s/v1/reset_password?token=%[2]s&email=%[3]s" class="button">Reset Password</a>
 			</button>
 			<div class="note">
 				<p><strong>Important:</strong> This password reset link will expire in 15 minutes for security reasons.</p>
@@ -200,7 +200,7 @@ var (
 			<p>Best regards,<br><strong>The Medicue Team</strong></p>
 			<div class="small-text">
 				<p style="margin: 0;">If you're having trouble with the button, copy and paste this URL into your web browser:</p>
-				<p class="link-text" style="margin: 8px 0;">%[1]s/v1/reset-password?token=%[2]s&email=%[3]s</p>
+				<p class="link-text" style="margin: 8px 0;">%[1]s/v1/reset_password?token=%[2]s&email=%[3]s</p>
 			</div>
 		</div>
 	</div>
