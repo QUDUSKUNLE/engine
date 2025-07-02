@@ -495,7 +495,7 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateUserProfileDTO)
 
 	// Get current user from context
-	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER, db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		utils.Error("Failed to get current user",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -589,10 +589,15 @@ func (service *ServicesHandler) createUserHelper(
 
 	// Convert CreateUserRow to User
 	user := &db.User{
-		ID:       createdRow.ID,
-		Email:    createdRow.Email,
-		Nin:      createdRow.Nin,
-		UserType: createdRow.UserType,
+		ID:              createdRow.ID,
+		Email:           createdRow.Email,
+		Nin:             createdRow.Nin,
+		UserType:        createdRow.UserType,
+		EmailVerified:   createdRow.EmailVerified,
+		EmailVerifiedAt: createdRow.EmailVerifiedAt,
+		CreatedAt:       createdRow.CreatedAt,
+		UpdatedAt:       createdRow.UpdatedAt,
+		Fullname:        createdRow.Fullname,
 	}
 
 	return user, nil
