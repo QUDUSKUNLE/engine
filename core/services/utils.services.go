@@ -107,6 +107,41 @@ func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_Centres
 	return buildDiagnosticCentreResponse(row, address, contact), nil
 }
 
+func buildTestPrice(value *domain.CreateDiagnosticDTO, diagnostic_centre_id string) (*db.Create_Test_PriceParams, error) {
+	if value == nil || len(value.AvailableTests) == 0 {
+		return nil, errors.New("no available tests to build price params")
+	}
+
+	paramsList := &db.Create_Test_PriceParams{
+		Column1: []string{},
+		Column2: []string{},
+		Column3: []float64{},
+		Column4: []string{},
+		Column5: []bool{},
+	}
+
+	for _, test := range value.AvailableTests {
+		// Ensure test has required fields
+		if test.AvailableTest == "" || test.TestPrice <= 0 {
+			utils.Warn("skipping test with missing name or invalid price",
+				utils.LogField{Key: "test", Value: test.AvailableTest},
+				utils.LogField{Key: "price", Value: test.TestPrice},
+			)
+			continue
+		}
+
+		paramsList = &db.Create_Test_PriceParams{
+			Column1: append(paramsList.Column1, diagnostic_centre_id), // or
+			Column2: append(paramsList.Column2, string(test.AvailableTest)),
+			Column3: append(paramsList.Column3, float64(test.TestPrice)),
+			Column4: append(paramsList.Column4, "NGN"),
+			Column5: append(paramsList.Column5, true),
+		}
+	}
+
+	return paramsList, nil
+}
+
 func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.CreateDiagnosticDTO) (*db.Create_Diagnostic_CentreParams, error) {
 	addressBytes, err := utils.MarshalJSONField(value.Address, context)
 	if err != nil {

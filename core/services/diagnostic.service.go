@@ -2,12 +2,14 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/medivue/adapters/db"
+	"github.com/medivue/adapters/ex/templates"
 	"github.com/medivue/adapters/metrics"
 	"github.com/medivue/core/domain"
 	"github.com/medivue/core/utils"
@@ -32,12 +34,18 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
 	}
 
-	// Implement test Price here 
+	admin, err := service.UserRepo.GetUser(context.Request().Context(), dto.AdminId.String())
+	if err != nil {
+		utils.Error("Failed to get admin",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "admin_id", Value: dto.AdminId.String()})
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
 
 	params.CreatedBy = currentUser.UserID.String()
 
 	// Create diagnostic centre
-	response, err := service.DiagnosticRepo.CreateDiagnosticCentre(
+	diagnostic_centre, err := service.DiagnosticRepo.CreateDiagnosticCentre(
 		context.Request().Context(), *params)
 	if err != nil {
 		utils.Error("Failed to create diagnostic centre",
@@ -61,21 +69,46 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create diagnostic centre")
 		}
 	}
+	// Implement test Price here
+	buildPrice, err := buildTestPrice(dto, diagnostic_centre.ID)
+	if err != nil {
+		utils.Error("Failed to build test prices",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+	_, err = service.TestPriceRepo.CreateTestPrice(context.Request().Context(), *buildPrice)
+	if err != nil {
+		utils.Error("Failed to submit test price",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "admin_id", Value: dto.AdminId.String()})
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+
 	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
-		ID:                   response.ID,
-		DiagnosticCentreName: response.DiagnosticCentreName,
-		Latitude:             response.Latitude,
-		Longitude:            response.Longitude,
-		Address:              response.Address,
-		Contact:              response.Contact,
-		Doctors:              response.Doctors,
-		AvailableTests:       response.AvailableTests,
-		CreatedAt:            response.CreatedAt,
-		UpdatedAt:            response.UpdatedAt,
+		ID:                   diagnostic_centre.ID,
+		DiagnosticCentreName: diagnostic_centre.DiagnosticCentreName,
+		Latitude:             diagnostic_centre.Latitude,
+		Longitude:            diagnostic_centre.Longitude,
+		Address:              diagnostic_centre.Address,
+		Contact:              diagnostic_centre.Contact,
+		Doctors:              diagnostic_centre.Doctors,
+		AvailableTests:       diagnostic_centre.AvailableTests,
+		CreatedAt:            diagnostic_centre.CreatedAt,
+		UpdatedAt:            diagnostic_centre.UpdatedAt,
 	}
 	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+	// Send Notification email
+	subject := "Diagnsotic Centre Manager - Diagnostic Centre Management Notification"
+	address := fmt.Sprintf("%s %s %s %s", dto.Address.Street, dto.Address.City, dto.Address.State, dto.Address.Country)
+	body := fmt.Sprintf(templates.DiagnosticCentreManagerNotificationTemplate,
+		diagnostic_centre.DiagnosticCentreName, address)
+	err = service.notificationService.SendEmail(admin.Email.String, subject, body)
+	if err != nil {
+		utils.Error("Failed to send diagnostic centre management notification",
+			utils.LogField{Key: "error", Value: err.Error()})
 	}
 	return utils.ResponseMessage(http.StatusCreated, res, context)
 }
