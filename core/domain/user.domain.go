@@ -57,6 +57,7 @@ type (
 		NewPassword     string `json:"new_password" validate:"gte=6,lte=20,required"`
 		ConfirmPassword string `json:"confirm_password" validate:"eqfield=NewPassword,required"`
 	}
+	GetProfileDTO struct {}
 
 	RequestPasswordResetDTO struct {
 		Email string `json:"email" validate:"email,required"`
