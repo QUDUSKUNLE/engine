@@ -1,13 +1,13 @@
 package templates
 
 var (
-	DiagnosticCentreManagerEmailVerificationTemplate = `
+	DiagnosticCentreManagerNotificationTemplate = `
 <!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Diagnostic Centre Manager Notification - Medivue</title>
+	<title>Diagnostic Centre Management Notification - Medivue</title>
 	<style>
 		:root {
 			--primary-color: #2563eb;
@@ -140,15 +140,15 @@ var (
 <body>
 	<div class="container">
 		<div class="header">
-			<h1>🎉 Welcome to Medivue!</h1>
+			<h1>🎉 Management Notification!</h1>
 		</div>
 		<div class="content">
 			<p><strong>Hi there,</strong></p>
-			<p>Thank you for registering with Medivue. We're excited to have you join us! To ensure the security of your account, please find below your login details:</p>
-		<p><strong>Email:</strong> %[1]s</p>
-		<p><strong>Password:</strong> %[2]s</p>
+			<p>You have been assigned a Manager Role in the diagnostic centre below:</p>
+		<p><strong>Diagnostic Centre Name:</strong> %[1]s</p>
+		<p><strong>Address:</strong> %[2]s</p>
 		<div>
-			It's advisable you change your password.
+			Wish your the very best
 		</div>
 		</div>
 		<div class="footer">
