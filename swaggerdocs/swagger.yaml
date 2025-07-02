@@ -151,21 +151,6 @@ definitions:
     - appointmentID
     - reason
     type: object
-  domain.ChangePasswordDTO:
-    properties:
-      confirm_password:
-        type: string
-      current_password:
-        type: string
-      new_password:
-        maxLength: 20
-        minLength: 6
-        type: string
-    required:
-    - confirm_password
-    - current_password
-    - new_password
-    type: object
   domain.Contact:
     properties:
       email:
@@ -2568,53 +2553,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Deactivate user account
-      tags:
-      - User
-  /v1/account/password:
-    put:
-      consumes:
-      - application/json
-      description: Allow user to change their current password
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: Password change details
-        in: body
-        name: password
-        required: true
-        schema:
-          $ref: '#/definitions/domain.ChangePasswordDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 'message: Password changed successfully'
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Invalid input data
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "401":
-          description: Authentication required/Invalid current password
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "422":
-          description: Password validation failed
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Change user password
       tags:
       - User
   /v1/account/profile:

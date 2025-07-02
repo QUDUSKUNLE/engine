@@ -2391,79 +2391,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/account/password": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Allow user to change their current password",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Change user password",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Password change details",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/domain.ChangePasswordDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "message: Password changed successfully",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input data",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication required/Invalid current password",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Password validation failed",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/account/profile": {
             "get": {
                 "security": [
@@ -3657,27 +3584,6 @@ const docTemplate = `{
                 "reason": {
                     "type": "string",
                     "maxLength": 500
-                }
-            }
-        },
-        "domain.ChangePasswordDTO": {
-            "type": "object",
-            "required": [
-                "confirm_password",
-                "current_password",
-                "new_password"
-            ],
-            "properties": {
-                "confirm_password": {
-                    "type": "string"
-                },
-                "current_password": {
-                    "type": "string"
-                },
-                "new_password": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 6
                 }
             }
         },
