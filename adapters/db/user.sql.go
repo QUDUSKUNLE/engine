@@ -17,28 +17,33 @@ INSERT INTO users (
   nin,
   password,
   user_type,
-  phone_number
+  phone_number,
+  email_verified
 ) VALUES  (
-  $1, $2, $3, $4, $5
-) RETURNING id, email, nin, user_type, phone_number, created_at, updated_at
+  $1, $2, $3, $4, $5, $6
+) RETURNING id, email, nin, user_type, fullname, phone_number, email_verified, email_verified_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	Email       pgtype.Text `db:"email" json:"email"`
-	Nin         pgtype.Text `db:"nin" json:"nin"`
-	Password    string      `db:"password" json:"password"`
-	UserType    UserEnum    `db:"user_type" json:"user_type"`
-	PhoneNumber pgtype.Text `db:"phone_number" json:"phone_number"`
+	Email         pgtype.Text `db:"email" json:"email"`
+	Nin           pgtype.Text `db:"nin" json:"nin"`
+	Password      string      `db:"password" json:"password"`
+	UserType      UserEnum    `db:"user_type" json:"user_type"`
+	PhoneNumber   pgtype.Text `db:"phone_number" json:"phone_number"`
+	EmailVerified pgtype.Bool `db:"email_verified" json:"email_verified"`
 }
 
 type CreateUserRow struct {
-	ID          string             `db:"id" json:"id"`
-	Email       pgtype.Text        `db:"email" json:"email"`
-	Nin         pgtype.Text        `db:"nin" json:"nin"`
-	UserType    UserEnum           `db:"user_type" json:"user_type"`
-	PhoneNumber pgtype.Text        `db:"phone_number" json:"phone_number"`
-	CreatedAt   pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID              string             `db:"id" json:"id"`
+	Email           pgtype.Text        `db:"email" json:"email"`
+	Nin             pgtype.Text        `db:"nin" json:"nin"`
+	UserType        UserEnum           `db:"user_type" json:"user_type"`
+	Fullname        pgtype.Text        `db:"fullname" json:"fullname"`
+	PhoneNumber     pgtype.Text        `db:"phone_number" json:"phone_number"`
+	EmailVerified   pgtype.Bool        `db:"email_verified" json:"email_verified"`
+	EmailVerifiedAt pgtype.Timestamptz `db:"email_verified_at" json:"email_verified_at"`
+	CreatedAt       pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error) {
@@ -48,6 +53,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*Create
 		arg.Password,
 		arg.UserType,
 		arg.PhoneNumber,
+		arg.EmailVerified,
 	)
 	var i CreateUserRow
 	err := row.Scan(
@@ -55,7 +61,10 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*Create
 		&i.Email,
 		&i.Nin,
 		&i.UserType,
+		&i.Fullname,
 		&i.PhoneNumber,
+		&i.EmailVerified,
+		&i.EmailVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -159,7 +168,7 @@ SET
   phone_number = COALESCE($4, phone_number),
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, email, nin, user_type, phone_number, created_at, updated_at
+RETURNING id, email, nin, user_type, fullname, phone_number, email_verified, email_verified_at, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -170,13 +179,16 @@ type UpdateUserParams struct {
 }
 
 type UpdateUserRow struct {
-	ID          string             `db:"id" json:"id"`
-	Email       pgtype.Text        `db:"email" json:"email"`
-	Nin         pgtype.Text        `db:"nin" json:"nin"`
-	UserType    UserEnum           `db:"user_type" json:"user_type"`
-	PhoneNumber pgtype.Text        `db:"phone_number" json:"phone_number"`
-	CreatedAt   pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt   pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID              string             `db:"id" json:"id"`
+	Email           pgtype.Text        `db:"email" json:"email"`
+	Nin             pgtype.Text        `db:"nin" json:"nin"`
+	UserType        UserEnum           `db:"user_type" json:"user_type"`
+	Fullname        pgtype.Text        `db:"fullname" json:"fullname"`
+	PhoneNumber     pgtype.Text        `db:"phone_number" json:"phone_number"`
+	EmailVerified   pgtype.Bool        `db:"email_verified" json:"email_verified"`
+	EmailVerifiedAt pgtype.Timestamptz `db:"email_verified_at" json:"email_verified_at"`
+	CreatedAt       pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error) {
@@ -192,7 +204,10 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (*Update
 		&i.Email,
 		&i.Nin,
 		&i.UserType,
+		&i.Fullname,
 		&i.PhoneNumber,
+		&i.EmailVerified,
+		&i.EmailVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

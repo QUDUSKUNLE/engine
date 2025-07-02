@@ -7,10 +7,11 @@ INSERT INTO users (
   nin,
   password,
   user_type,
-  phone_number
+  phone_number,
+  email_verified
 ) VALUES  (
-  $1, $2, $3, $4, $5
-) RETURNING id, email, nin, user_type, phone_number, created_at, updated_at;
+  $1, $2, $3, $4, $5, $6
+) RETURNING id, email, nin, user_type, fullname, phone_number, email_verified, email_verified_at, created_at, updated_at;
 
 -- name: GetUserByEmail :one
 SELECT * FROM users WHERE email = $1;
@@ -28,4 +29,4 @@ SET
   phone_number = COALESCE($4, phone_number),
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, email, nin, user_type, phone_number, created_at, updated_at;
+RETURNING id, email, nin, user_type, fullname, phone_number, email_verified, email_verified_at, created_at, updated_at;

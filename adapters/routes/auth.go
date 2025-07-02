@@ -16,28 +16,28 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			path:        "/register",
 			handler:     handler.Register,
 			factory:     func() interface{} { return &domain.UserRegisterDTO{} },
-			description: "User registration",
+			description: "User Registration",
 		},
 		{
 			method:      http.MethodPost,
 			path:        "/login",
 			handler:     handler.SignIn,
 			factory:     func() interface{} { return &domain.UserSignInDTO{} },
-			description: "User login",
+			description: "User Login",
 		},
 		{
 			method:      http.MethodPost,
 			path:        "/request_password_reset",
 			handler:     handler.RequestPasswordReset,
 			factory:     func() interface{} { return &domain.RequestPasswordResetDTO{} },
-			description: "Request password reset",
+			description: "Request Password Reset",
 		},
 		{
 			method:      http.MethodPost,
 			path:        "/reset_password",
 			handler:     handler.ResetPassword,
 			factory:     func() interface{} { return &domain.ResetPasswordDTO{} },
-			description: "Reset password",
+			description: "Reset Password",
 		},
 		{
 			method:  http.MethodGet,
@@ -46,7 +46,25 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory: func() interface{} {
 				return &domain.EmailVerificationDTO{}
 			},
-			description: "Verify email",
+			description: "Verify Email",
+		},
+		{
+			method:  http.MethodPut,
+			path:    "/account/profile",
+			handler: handler.UpdateProfile,
+			factory: func() interface{} {
+				return &domain.UpdateUserProfileDTO{}
+			},
+			description: "Update User Profile",
+		},
+		{
+			method:  http.MethodGet,
+			path:    "/account/profile",
+			handler: handler.GetProfile,
+			factory: func() interface{} {
+				return &domain.GetProfileDTO{}
+			},
+			description: "Get A User Profile",
 		},
 		{
 			method:  http.MethodPost,
@@ -55,7 +73,7 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory: func() interface{} {
 				return &domain.DiagnosticCentreManagerRegisterDTO{}
 			},
-			description: "Create a diagnostic centre manager",
+			description: "Create A Diagnostic Centre Manager",
 		},
 	}
 

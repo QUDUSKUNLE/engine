@@ -102,26 +102,6 @@ func (handler *HTTPHandler) ResetPassword(context echo.Context) error {
 	return handler.service.ResetPassword(context)
 }
 
-// ChangePassword godoc
-// @Summary Change user password
-// @Description Allow user to change their current password
-// @Tags User
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param Authorization header string true "Bearer token"
-// @Param password body domain.ChangePasswordDTO true "Password change details"
-// @Success 200 {object} map[string]string "message: Password changed successfully"
-// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required/Invalid current password"
-// @Failure 422 {object} handlers.ErrorResponse "Password validation failed"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /v1/account/password [put]
-func (handler *HTTPHandler) ChangePassword(context echo.Context) error {
-	// return handler.service.ChangePassword(context)
-	return nil
-}
-
 // GetProfile godoc
 // @Summary Get user profile
 // @Description Retrieve the user's profile information
