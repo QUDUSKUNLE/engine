@@ -385,7 +385,10 @@ definitions:
       email:
         type: string
       user_type:
-        $ref: '#/definitions/db.UserEnum'
+        allOf:
+        - $ref: '#/definitions/db.UserEnum'
+        enum:
+        - DIAGNOSTIC_CENTRE_MANAGER
     required:
     - email
     - user_type

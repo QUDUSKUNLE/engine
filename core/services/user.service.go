@@ -31,7 +31,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 			utils.LogField{Key: "user_type", Value: dto.UserType})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-
+	newUser.EmailVerified = pgtype.Bool{Bool: false, Valid: true}
 	createdUser, err := service.createUserHelper(
 		context, newUser, db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumUSER)
 	if err != nil {
@@ -61,7 +61,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	}
 
 	// Send verification email
-	subject := "Sign up for Medicue - Email Verification"
+	subject := "Sign up for Medivue - Email Verification"
 	appURL := os.Getenv("APP_URL")
 	escapedEmail := url.QueryEscape(createdUser.Email.String)
 	body := fmt.Sprintf(templates.EmailVerificationTemplate,
@@ -97,7 +97,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 	}
 
 	// Generate password and create user
-	password, err := GenerateRandomPassword(20)
+	password, err := GenerateRandomPassword(12)
 	if err != nil {
 		utils.Error("Failed to generate random password",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -115,10 +115,21 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-
+	newUser.EmailVerified = pgtype.Bool{Bool: true, Valid: true}
 	createdUser, err := service.createUserHelper(context, newUser, db.UserEnumDIAGNOSTICCENTREMANAGER)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusConflict, err, context)
+	}
+
+	// Send registration email
+	subject := "Sign up for Medivue - Registration Notification"
+	body := fmt.Sprintf(templates.DiagnosticCentreManagerEmailVerificationTemplate,
+		createdUser.Email.String, password)
+
+	err = service.notificationService.SendEmail(createdUser.Email.String, subject, body)
+	if err != nil {
+		utils.Error("Failed to registration email",
+			utils.LogField{Key: "error", Value: err.Error()})
 	}
 
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)

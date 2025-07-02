@@ -34,7 +34,7 @@ type (
 	}
 	DiagnosticCentreManagerRegisterDTO struct {
 		Email    string      `json:"email" validate:"email,required"`
-		UserType db.UserEnum `json:"user_type" validate:"required"`
+		UserType db.UserEnum `json:"user_type" validate:"required,oneof=DIAGNOSTIC_CENTRE_MANAGER"`
 	}
 	UserSignInDTO struct {
 		Email    string `json:"email" validate:"email,required"`
@@ -57,7 +57,7 @@ type (
 		NewPassword     string `json:"new_password" validate:"gte=6,lte=20,required"`
 		ConfirmPassword string `json:"confirm_password" validate:"eqfield=NewPassword,required"`
 	}
-	GetProfileDTO struct {}
+	GetProfileDTO struct{}
 
 	RequestPasswordResetDTO struct {
 		Email string `json:"email" validate:"email,required"`
