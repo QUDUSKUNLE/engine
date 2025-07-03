@@ -104,7 +104,7 @@ func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_Centres
 		return nil, err
 	}
 
-	var price []domain.TestPrices
+	var price []domain.TestPrice
 	if err := utils.UnmarshalJSONField(row.TestPrices, &price, c); err != nil {
 		utils.Error("Failed to unmarshal Test Prices",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -129,18 +129,18 @@ func buildTestPrice(value *domain.CreateDiagnosticDTO, diagnostic_centre_id stri
 
 	for _, test := range value.AvailableTests {
 		// Ensure test has required fields
-		if test.AvailableTest == "" || test.TestPrice <= 0 {
+		if test.TestType == "" || test.Price <= 0 {
 			utils.Warn("skipping test with missing name or invalid price",
-				utils.LogField{Key: "test", Value: test.AvailableTest},
-				utils.LogField{Key: "price", Value: test.TestPrice},
+				utils.LogField{Key: "test", Value: test.TestType},
+				utils.LogField{Key: "price", Value: test.Price},
 			)
 			continue
 		}
 
 		paramsList = &db.Create_Test_PriceParams{
 			Column1: append(paramsList.Column1, diagnostic_centre_id), // or
-			Column2: append(paramsList.Column2, string(test.AvailableTest)),
-			Column3: append(paramsList.Column3, float64(test.TestPrice)),
+			Column2: append(paramsList.Column2, string(test.TestType)),
+			Column3: append(paramsList.Column3, float64(test.Price)),
 			Column4: append(paramsList.Column4, "NGN"),
 			Column5: append(paramsList.Column5, true),
 		}
@@ -166,7 +166,7 @@ func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.Creat
 
 	availableTests := make([]string, len(value.AvailableTests))
 	for i, test := range value.AvailableTests {
-		availableTests[i] = string(test.AvailableTest)
+		availableTests[i] = string(test.TestType)
 	}
 
 	doctors := make([]string, len(value.Doctors))
@@ -232,7 +232,7 @@ func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domai
 }
 
 // Helper to build diagnostic centre response
-func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRow, address domain.Address, contact domain.Contact, price []domain.TestPrices) map[string]interface{} {
+func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRow, address domain.Address, contact domain.Contact, price []domain.TestPrice) map[string]interface{} {
 	return map[string]interface{}{
 		"diagnostic_centre_id":   response.ID,
 		"diagnostic_centre_name": response.DiagnosticCentreName,
@@ -241,10 +241,10 @@ func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRo
 		"address":                address,
 		"contact":                contact,
 		"doctors":                response.Doctors,
-		"created_at":   response.CreatedAt,
-		"updated_at":   response.UpdatedAt,
-		"availability": response.Availability,
-		"test_prices":  price,
+		"created_at":             response.CreatedAt,
+		"updated_at":             response.UpdatedAt,
+		"availability":           response.Availability,
+		"test_prices":            price,
 	}
 }
 

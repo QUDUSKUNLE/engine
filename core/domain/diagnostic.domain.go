@@ -26,24 +26,20 @@ type (
 		Phone []string `json:"phone" validate:"required,min_one,dive"`
 		Email string   `json:"email" validate:"required,email"`
 	}
-	AvailableTest struct {
-		AvailableTest string  `json:"available_test" validate:"required,oneof=BLOOD_TEST URINE_TEST X_RAY MRI CT_SCAN ULTRASOUND ECG EEG BIOPSY SKIN_TEST ALLERGY_TEST GENETIC_TEST IMMUNOLOGY_TEST HORMONE_TEST VIRAL_TEST BACTERIAL_TEST PARASITIC_TEST FUNGAL_TEST MOLECULAR_TEST TOXICOLOGY_TEST ECHO COVID_19_TEST OTHER BLOOD_SUGAR_TEST LIPID_PROFILE HEMOGLOBIN_TEST THYROID_TEST LIVER_FUNCTION_TEST KIDNEY_FUNCTION_TEST URIC_ACID_TEST VITAMIN_D_TEST VITAMIN_B12_TEST HEMOGRAM COMPLETE_BLOOD_COUNT BLOOD_GROUPING HEPATITIS_B_TEST HEPATITIS_C_TEST HIV_TEST MALARIA_TEST DENGUE_TEST TYPHOID_TEST COVID_19_ANTIBODY_TEST COVID_19_RAPID_ANTIGEN_TEST COVID_19_RT_PCR_TEST PREGNANCY_TEST"`
-		TestPrice     float64 `json:"test_price" validate:"required,min=500.00"`
-	}
 	CreateDiagnosticDTO struct {
-		DiagnosticCentreName string          `json:"diagnostic_centre_name" validate:"required,gte=10,lte=250"`
-		Latitude             float64         `json:"latitude" validate:"required,min=-90.00,max=90.00"`
-		Longitude            float64         `json:"longitude" validate:"required,min=-180.00,max=180.00"`
-		Address              Address         `json:"address" validate:"required"`
-		Contact              Contact         `json:"contact" validate:"required"`
-		Doctors              []db.Doctor     `json:"doctors" validate:"required,min_one,dive,oneof=Male Female"`
-		AvailableTests       []AvailableTest `json:"available_tests" validate:"required,min_one,dive"`
-		CreatedBy            uuid.UUID       `json:"created_by"`
-		AdminId              uuid.UUID       `json:"admin_id" validate:"required,uuid"`
+		DiagnosticCentreName string      `json:"diagnostic_centre_name" validate:"required,gte=10,lte=250"`
+		Latitude             float64     `json:"latitude" validate:"required,min=-90.00,max=90.00"`
+		Longitude            float64     `json:"longitude" validate:"required,min=-180.00,max=180.00"`
+		Address              Address     `json:"address" validate:"required"`
+		Contact              Contact     `json:"contact" validate:"required"`
+		Doctors              []db.Doctor `json:"doctors" validate:"required,min_one,dive,oneof=Male Female"`
+		AvailableTests       []TestPrice `json:"available_tests" validate:"required,min_one,dive"`
+		CreatedBy            uuid.UUID   `json:"created_by"`
+		AdminId              uuid.UUID   `json:"admin_id" validate:"required,uuid"`
 	}
-	TestPrices struct {
-		TestType string  `json:"test_type"`
-		Price    float64 `json:"price"`
+	TestPrice struct {
+		TestType string  `json:"test_type" validate:"required,oneof=BLOOD_TEST URINE_TEST X_RAY MRI CT_SCAN ULTRASOUND ECG EEG BIOPSY SKIN_TEST ALLERGY_TEST GENETIC_TEST IMMUNOLOGY_TEST HORMONE_TEST VIRAL_TEST BACTERIAL_TEST PARASITIC_TEST FUNGAL_TEST MOLECULAR_TEST TOXICOLOGY_TEST ECHO COVID_19_TEST OTHER BLOOD_SUGAR_TEST LIPID_PROFILE HEMOGLOBIN_TEST THYROID_TEST LIVER_FUNCTION_TEST KIDNEY_FUNCTION_TEST URIC_ACID_TEST VITAMIN_D_TEST VITAMIN_B12_TEST HEMOGRAM COMPLETE_BLOOD_COUNT BLOOD_GROUPING HEPATITIS_B_TEST HEPATITIS_C_TEST HIV_TEST MALARIA_TEST DENGUE_TEST TYPHOID_TEST COVID_19_ANTIBODY_TEST COVID_19_RAPID_ANTIGEN_TEST COVID_19_RT_PCR_TEST PREGNANCY_TEST"`
+		Price    float64 `json:"price" validate:"required,min=500.00"`
 	}
 	GetDiagnosticParamDTO struct {
 		DiagnosticCentreID string `param:"diagnostic_centre_id" validate:"required,uuid"`
