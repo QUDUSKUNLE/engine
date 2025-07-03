@@ -564,5 +564,6 @@ func buildDiagnosticCentre(row db.Get_Nearest_Diagnostic_CentresRow) *db.Get_Nea
 		CreatedAt:            row.CreatedAt,
 		UpdatedAt:            row.UpdatedAt,
 		Availability:         row.Availability,
+		TestPrices:           row.TestPrices,
 	}
 }

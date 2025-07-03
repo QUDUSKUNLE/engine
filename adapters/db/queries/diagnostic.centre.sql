@@ -220,6 +220,7 @@ SELECT
     WHERE dca.diagnostic_centre_id IS NOT NULL 
     AND ($5 = '' OR dca.day_of_week = $5)
   ) as availability,
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices,
   CAST(
     6371 * acos(
       cos(radians($1)) * cos(radians(dc.latitude)) *
@@ -230,9 +231,20 @@ SELECT
 FROM filtered_centres fc
 JOIN diagnostic_centres dc ON dc.id = fc.id
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN LATERAL (
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'test_type', dctp.test_type,
+      'price', dctp.price
+    )
+  ) AS test_prices
+  FROM diagnostic_centre_test_prices dctp
+  WHERE dctp.diagnostic_centre_id = dc.id
+) prices ON true
 GROUP BY
   dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address,
-  dc.contact, dc.doctors, dc.available_tests, dc.created_at, dc.updated_at
+  dc.contact, dc.doctors, dc.available_tests, dc.created_at, dc.updated_at,
+  prices.test_prices
 ORDER BY
   distance_km ASC
 LIMIT 50;

@@ -104,7 +104,14 @@ func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_Centres
 		return nil, err
 	}
 
-	return buildDiagnosticCentreResponse(row, address, contact), nil
+	var price []domain.TestPrices
+	if err := utils.UnmarshalJSONField(row.TestPrices, &price, c); err != nil {
+		utils.Error("Failed to unmarshal Test Prices",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: row.ID})
+		return nil, err
+	}
+	return buildDiagnosticCentreResponse(row, address, contact, price), nil
 }
 
 func buildTestPrice(value *domain.CreateDiagnosticDTO, diagnostic_centre_id string) (*db.Create_Test_PriceParams, error) {
@@ -225,7 +232,7 @@ func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domai
 }
 
 // Helper to build diagnostic centre response
-func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRow, address domain.Address, contact domain.Contact) map[string]interface{} {
+func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRow, address domain.Address, contact domain.Contact, price []domain.TestPrices) map[string]interface{} {
 	return map[string]interface{}{
 		"diagnostic_centre_id":   response.ID,
 		"diagnostic_centre_name": response.DiagnosticCentreName,
@@ -234,10 +241,10 @@ func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRo
 		"address":                address,
 		"contact":                contact,
 		"doctors":                response.Doctors,
-		"available_tests":        response.AvailableTests,
-		"created_at":             response.CreatedAt,
-		"updated_at":             response.UpdatedAt,
-		"availability":           response.Availability,
+		"created_at":   response.CreatedAt,
+		"updated_at":   response.UpdatedAt,
+		"availability": response.Availability,
+		"test_prices":  price,
 	}
 }
 
