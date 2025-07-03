@@ -144,6 +144,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 		CreatedAt:            response.CreatedAt,
 		UpdatedAt:            response.UpdatedAt,
 		Availability:         response.Availability,
+		TestPrices:           response.TestPrices,
 	}
 	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 	if err != nil {
@@ -330,6 +331,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 			Contact:              centre.Contact,
 			Doctors:              centre.Doctors,
 			AvailableTests:       centre.AvailableTests,
+			TestPrices:           centre.TestPrices,
 			CreatedAt:            centre.CreatedAt,
 			UpdatedAt:            centre.UpdatedAt,
 		}
@@ -409,6 +411,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByManager(context echo.Conte
 		Contact:              centre.Contact,
 		Doctors:              centre.Doctors,
 		AvailableTests:       centre.AvailableTests,
+		TestPrices:           centre.TestPrices,
 		CreatedAt:            centre.CreatedAt,
 		UpdatedAt:            centre.UpdatedAt,
 	}
