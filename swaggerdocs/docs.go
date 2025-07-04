@@ -728,8 +728,17 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "monday",
+                            "tuesday",
+                            "wednesday",
+                            "thursday",
+                            "friday",
+                            "saturday",
+                            "sunday"
+                        ],
                         "type": "string",
-                        "description": "Day of week (monday, tuesday, etc.)",
+                        "description": "Day of week",
                         "name": "day_of_week",
                         "in": "query"
                     }
@@ -1052,21 +1061,82 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "monday",
+                            "tuesday",
+                            "wednesday",
+                            "thursday",
+                            "friday",
+                            "saturday",
+                            "sunday"
+                        ],
                         "type": "string",
-                        "description": "Filter by doctor specialization (Male,Female)",
+                        "description": "Filter by day",
+                        "name": "day_of_week",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "Male",
+                            "Female"
+                        ],
+                        "type": "string",
+                        "description": "Filter by doctor specialization",
                         "name": "doctor",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "BLOOD_TEST",
+                            "URINE_TEST",
+                            "X_RAY",
+                            "MRI",
+                            "CT_SCAN",
+                            "ULTRASOUND",
+                            "ECG",
+                            "EEG",
+                            "BIOPSY",
+                            "SKIN_TEST",
+                            "ALLERGY_TEST",
+                            "GENETIC_TEST",
+                            "IMMUNOLOGY_TEST",
+                            "HORMONE_TEST",
+                            "VIRAL_TEST",
+                            "BACTERIAL_TEST",
+                            "PARASITIC_TEST",
+                            "FUNGAL_TEST",
+                            "MOLECULAR_TEST",
+                            "TOXICOLOGY_TEST",
+                            "ECHO",
+                            "COVID_19_TEST",
+                            "OTHER",
+                            "BLOOD_SUGAR_TEST",
+                            "LIPID_PROFILE",
+                            "HEMOGLOBIN_TEST",
+                            "THYROID_TEST",
+                            "LIVER_FUNCTION_TEST",
+                            "KIDNEY_FUNCTION_TEST",
+                            "URIC_ACID_TEST",
+                            "VITAMIN_D_TEST",
+                            "VITAMIN_B12_TEST",
+                            "HEMOGRAM",
+                            "COMPLETE_BLOOD_COUNT",
+                            "BLOOD_GROUPING",
+                            "HEPATITIS_B_TEST",
+                            "HEPATITIS_C_TEST",
+                            "HIV_TEST",
+                            "MALARIA_TEST",
+                            "DENGUE_TEST",
+                            "TYPHOID_TEST",
+                            "COVID_19_ANTIBODY_TEST",
+                            "COVID_19_RAPID_ANTIGEN_TEST",
+                            "COVID_19_RT_PCR_TEST",
+                            "PREGNANCY_TEST"
+                        ],
                         "type": "string",
                         "description": "Filter by available test type",
                         "name": "available_tests",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by day monday,tuesday,wednesday,thursday,friday,saturday,sunday",
-                        "name": "day_of_week",
                         "in": "query"
                     },
                     {
@@ -1215,7 +1285,7 @@ const docTemplate = `{
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
-                        "default": 10,
+                        "default": 20,
                         "description": "Items per page",
                         "name": "per_page",
                         "in": "query"

@@ -26,7 +26,7 @@ func (handler *HTTPHandler) CreateAvailability(context echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID"
-// @Param day_of_week query string false "Day of week (monday, tuesday, etc.)"
+// @Param day_of_week query string false "Day of week" Enums(monday,tuesday,wednesday,thursday,friday,saturday,sunday)
 // @Success 200 {array} domain.AvailabilitySlot
 // @Failure 400 {object} handlers.ErrorResponse
 // @Failure 401 {object} handlers.ErrorResponse
