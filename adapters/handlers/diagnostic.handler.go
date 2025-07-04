@@ -32,7 +32,7 @@ type DiagnosticCentreSwagger struct {
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required/invalid token"
 // @Failure 403 {object} handlers.ErrorResponse "User is not a diagnostic centre owner"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres [post]
+// @Router /v1/diagnostic_centres [post]
 func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 	return handler.service.CreateDiagnosticCentre(context)
 }
@@ -47,7 +47,7 @@ func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 // @Failure 400 {object} handlers.ErrorResponse "Invalid diagnostic centre ID format"
 // @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id} [get]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id} [get]
 func (handler *HTTPHandler) GetDiagnosticCentre(context echo.Context) error {
 	return handler.service.GetDiagnosticCentre(context)
 }
@@ -66,7 +66,7 @@ func (handler *HTTPHandler) GetDiagnosticCentre(context echo.Context) error {
 // @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
 // @Failure 400 {object} handlers.ErrorResponse "Invalid query parameters"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres [get]
+// @Router /v1/diagnostic_centres [get]
 func (handler *HTTPHandler) SearchDiagnosticCentre(context echo.Context) error {
 	return handler.service.SearchDiagnosticCentre(context)
 }
@@ -87,7 +87,7 @@ func (handler *HTTPHandler) SearchDiagnosticCentre(context echo.Context) error {
 // @Failure 403 {object} handlers.ErrorResponse "User is not the owner of this diagnostic centre"
 // @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id} [put]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id} [put]
 func (handler *HTTPHandler) UpdateDiagnosticCentre(context echo.Context) error {
 	return handler.service.UpdateDiagnosticCentre(context)
 }
@@ -105,7 +105,7 @@ func (handler *HTTPHandler) UpdateDiagnosticCentre(context echo.Context) error {
 // @Failure 403 {object} handlers.ErrorResponse "User is not the owner"
 // @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id} [delete]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id} [delete]
 func (handler *HTTPHandler) DeleteDiagnosticCentre(context echo.Context) error {
 	return handler.service.DeleteDiagnosticCentre(context)
 }
@@ -122,7 +122,7 @@ func (handler *HTTPHandler) DeleteDiagnosticCentre(context echo.Context) error {
 // @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/owner [get]
+// @Router /v1/diagnostic_centres/owner [get]
 func (handler *HTTPHandler) GetDiagnosticCentresByOwner(context echo.Context) error {
 	return handler.service.GetDiagnosticCentresByOwner(context)
 }
@@ -140,7 +140,7 @@ func (handler *HTTPHandler) GetDiagnosticCentresByOwner(context echo.Context) er
 // @Failure 403 {object} handlers.ErrorResponse "Access denied"
 // @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id}/stats [get]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/stats [get]
 func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreStats(context)
 }
@@ -158,7 +158,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required"
 // @Failure 403 {object} handlers.ErrorResponse "User is not a manager"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/manager [get]
+// @Router /v1/diagnostic_centres/manager [get]
 func (handler *HTTPHandler) GetDiagnosticCentresByManager(context echo.Context) error {
 	return handler.service.GetDiagnosticCentresByManager(context)
 }
@@ -179,7 +179,7 @@ func (handler *HTTPHandler) GetDiagnosticCentresByManager(context echo.Context) 
 // @Failure 403 {object} handlers.ErrorResponse "Not authorized"
 // @Failure 404 {object} handlers.ErrorResponse "Centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id}/manager [put]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/manager [put]
 func (handler *HTTPHandler) UpdateDiagnosticCentreManager(context echo.Context) error {
 	return handler.service.UpdateDiagnosticCentreManager(context)
 }
@@ -202,7 +202,7 @@ func (handler *HTTPHandler) UpdateDiagnosticCentreManager(context echo.Context) 
 // @Failure 403 {object} handlers.ErrorResponse "Access denied"
 // @Failure 404 {object} handlers.ErrorResponse "Centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id}/schedules [get]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/schedules [get]
 func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreSchedules(context)
 }
@@ -225,7 +225,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) e
 // @Failure 403 {object} handlers.ErrorResponse "Access denied"
 // @Failure 404 {object} handlers.ErrorResponse "Centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id}/records [get]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/records [get]
 func (handler *HTTPHandler) GetDiagnosticCentreRecords(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreRecords(context)
 }

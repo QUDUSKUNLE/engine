@@ -33,7 +33,7 @@ type ScheduleSwagger struct {
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required"
 // @Failure 403 {object} handlers.ErrorResponse "Insufficient permissions"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_schedules [post]
+// @Router /v1/diagnostic_schedules [post]
 func (handler *HTTPHandler) CreateSchedule(context echo.Context) error {
 	return handler.service.CreateSchedule(context)
 }
@@ -52,7 +52,7 @@ func (handler *HTTPHandler) CreateSchedule(context echo.Context) error {
 // @Failure 403 {object} handlers.ErrorResponse "Not the schedule owner"
 // @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_schedules/{schedule_id} [get]
+// @Router /v1/diagnostic_schedules/{schedule_id} [get]
 func (handler *HTTPHandler) GetSchedule(context echo.Context) error {
 	return handler.service.GetDiagnosticSchedule(context)
 }
@@ -69,7 +69,7 @@ func (handler *HTTPHandler) GetSchedule(context echo.Context) error {
 // @Success 200 {array} handlers.ScheduleSwagger "List of schedules"
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_schedules [get]
+// @Router /v1/diagnostic_schedules [get]
 func (handler *HTTPHandler) GetSchedules(context echo.Context) error {
 	return handler.service.GetDiagnosticSchedules(context)
 }
@@ -91,7 +91,7 @@ func (handler *HTTPHandler) GetSchedules(context echo.Context) error {
 // @Failure 403 {object} handlers.ErrorResponse "Not the schedule owner"
 // @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_schedules/{schedule_id} [put]
+// @Router /v1/diagnostic_schedules/{schedule_id} [put]
 func (handler *HTTPHandler) UpdateSchedule(context echo.Context) error {
 	return handler.service.UpdateDiagnosticSchedule(context)
 }
@@ -109,7 +109,7 @@ func (handler *HTTPHandler) UpdateSchedule(context echo.Context) error {
 // @Failure 403 {object} handlers.ErrorResponse "Not the schedule owner"
 // @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_schedules/{schedule_id} [delete]
+// @Router /v1/diagnostic_schedules/{schedule_id} [delete]
 func (handler *HTTPHandler) DeleteDiagnosticSchedule(context echo.Context) error {
 	return nil
 }
@@ -129,7 +129,7 @@ func (handler *HTTPHandler) DeleteDiagnosticSchedule(context echo.Context) error
 // @Failure 403 {object} handlers.ErrorResponse "Not authorized"
 // @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules/{schedule_id} [get]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules/{schedule_id} [get]
 func (handler *HTTPHandler) GetDiagnosticScheduleByCentre(context echo.Context) error {
 	return handler.service.GetDiagnosticScheduleByCentre(context)
 }
@@ -150,7 +150,7 @@ func (handler *HTTPHandler) GetDiagnosticScheduleByCentre(context echo.Context) 
 // @Failure 403 {object} handlers.ErrorResponse "Not authorized"
 // @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules [get]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules [get]
 func (handler *HTTPHandler) GetDiagnosticSchedulesByCentre(context echo.Context) error {
 	return handler.service.GetDiagnosticSchedulesByCentre(context)
 }
@@ -172,7 +172,7 @@ func (handler *HTTPHandler) GetDiagnosticSchedulesByCentre(context echo.Context)
 // @Failure 403 {object} handlers.ErrorResponse "Not authorized"
 // @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules/{schedule_id} [put]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules/{schedule_id} [put]
 func (handler *HTTPHandler) UpdateDiagnosticScheduleByCentre(context echo.Context) error {
 	return handler.service.UpdateDiagnosticScheduleByCentre(context)
 }
