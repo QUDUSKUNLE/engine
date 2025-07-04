@@ -143,6 +143,9 @@ func (service *ServicesHandler) Login(context echo.Context) error {
 	if err != nil {
 		utils.Error("Login failed - user not found",
 			utils.LogField{Key: "error", Value: err.Error()})
+		if err.Error() == "no rows in result set" {
+			return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidLoginRequest), context)
+		}
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
 
@@ -150,7 +153,7 @@ func (service *ServicesHandler) Login(context echo.Context) error {
 	if err := domain.ComparePassword(*user, dto.Password); err != nil {
 		utils.Error("Login failed - invalid password",
 			utils.LogField{Key: "user_id", Value: user.ID})
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidRequest), context)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.InvalidLoginRequest), context)
 	}
 
 	// Generate token
@@ -170,7 +173,12 @@ func (service *ServicesHandler) Login(context echo.Context) error {
 		utils.LogField{Key: "user_id", Value: user.ID},
 		utils.LogField{Key: "user_type", Value: user.UserType})
 
-	return utils.ResponseMessage(http.StatusOK, map[string]string{"token": token}, context)
+	return utils.ResponseMessage(
+		http.StatusOK,
+		map[string]string{
+			"token":     token,
+			"user_type": string(user.UserType),
+		}, context)
 }
 
 func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error {
