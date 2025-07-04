@@ -6,6 +6,7 @@ const (
 	ErrBadRequest          = "bad Request"
 	InvalidRequest         = "invalid request"
 	PermissionDenied       = "Permission denied"
+	InvalidLoginRequest    = "invalid login credentials"
 	InvalidRequestBody     = "Invalid request body"
 	AuthenticationRequired = "Authentication required"
 	MissingParameters      = "Missing required parameters"
