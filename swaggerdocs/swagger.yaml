@@ -1689,13 +1689,17 @@ paths:
         name: longitude
         required: true
         type: number
-      - description: Filter by doctor specialization
+      - description: Filter by doctor specialization (Male,Female)
         in: query
         name: doctor
         type: string
       - description: Filter by available test type
         in: query
         name: available_tests
+        type: string
+      - description: Filter by day monday,tuesday,wednesday,thursday,friday,saturday,sunday
+        in: query
+        name: day_of_week
         type: string
       - default: 1
         description: Page number for pagination

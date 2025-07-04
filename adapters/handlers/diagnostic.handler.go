@@ -59,8 +59,9 @@ func (handler *HTTPHandler) GetDiagnosticCentre(context echo.Context) error {
 // @Produce json
 // @Param latitude query number true "Latitude (-90 to 90)" minimum(-90) maximum(90)
 // @Param longitude query number true "Longitude (-180 to 180)" minimum(-180) maximum(180)
-// @Param doctor query string false "Filter by doctor specialization"
+// @Param doctor query string false "Filter by doctor specialization (Male,Female)"
 // @Param available_tests query string false "Filter by available test type"
+// @Param day_of_week query string false "Filter by day monday,tuesday,wednesday,thursday,friday,saturday,sunday"
 // @Param page query integer false "Page number for pagination" default(1) minimum(1)
 // @Param per_page query integer false "Number of results per page" default(10) minimum(1) maximum(100)
 // @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
