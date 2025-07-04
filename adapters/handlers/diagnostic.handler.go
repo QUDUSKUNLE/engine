@@ -7,7 +7,7 @@ import "github.com/labstack/echo/v4"
 // @name DiagnosticCentreSwagger
 type DiagnosticCentreSwagger struct {
 	ID        string  `json:"id" example:"dc-001"`
-	Name      string  `json:"name" example:"Medicue Diagnostics"`
+	Name      string  `json:"name" example:"Medivue Diagnostics"`
 	Latitude  float64 `json:"latitude" example:"6.5244"`
 	Longitude float64 `json:"longitude" example:"3.3792"`
 	Address   string  `json:"address" example:"123 Main St, Lagos"`

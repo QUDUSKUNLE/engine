@@ -7,7 +7,7 @@ var (
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Reset Your Password - Medicue</title>
+	<title>Reset Your Password - Medivue</title>
 	<style>
 		:root {
 			--primary-color: #2563eb;
@@ -187,7 +187,7 @@ var (
 		</div>
 		<div class="content">
 			<p><strong>Hi there,</strong></p>
-			<p>We received a request to reset your password for your Medicue account. Click the button below to set a new password:</p>
+			<p>We received a request to reset your password for your Medivue account. Click the button below to set a new password:</p>
 			<button style="text-align: left;">
 				<a href="%[1]s/v1/reset_password?token=%[2]s&email=%[3]s" class="button">Reset Password</a>
 			</button>
@@ -197,7 +197,7 @@ var (
 			</div>
 		</div>
 		<div class="footer">
-			<p>Best regards,<br><strong>The Medicue Team</strong></p>
+			<p>Best regards,<br><strong>The Medivue Team</strong></p>
 			<div class="small-text">
 				<p style="margin: 0;">If you're having trouble with the button, copy and paste this URL into your web browser:</p>
 				<p class="link-text" style="margin: 8px 0;">%[1]s/v1/reset_password?token=%[2]s&email=%[3]s</p>

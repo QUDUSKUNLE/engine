@@ -4647,7 +4647,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "example": "Medicue Diagnostics"
+                    "example": "Medivue Diagnostics"
                 },
                 "phone": {
                     "type": "string",

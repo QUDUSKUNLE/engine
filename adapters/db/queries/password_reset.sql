@@ -1,7 +1,7 @@
 -- name: CreatePasswordResetToken :exec
 INSERT INTO password_reset_tokens (
-  email, token, expires_at
-) VALUES ($1, $2, $3);
+  id, email, token, expires_at
+) VALUES (uuid_generate_v4(), $1, $2, $3);
 
 -- name: GetPasswordResetToken :one
 SELECT * FROM password_reset_tokens 
