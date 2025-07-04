@@ -52,7 +52,7 @@ type (
 		Limit     int32   `query:"limit" validate:"omitempty,gte=0"`
 		Offset    int32   `query:"offset" validate:"omitempty,gte=0"`
 		// Get Availability
-		DayOfWeek string `query:"day_of_week" validate:"omitempty,oneof=monday tuesday wednesday thursday friday saturday sunday"`
+		DayOfWeek string `query:"day_of_week" validate:"oneof=monday tuesday wednesday thursday friday saturday sunday"`
 	}
 	UpdateDiagnosticParamDTO struct {
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id"`

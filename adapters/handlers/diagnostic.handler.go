@@ -59,9 +59,9 @@ func (handler *HTTPHandler) GetDiagnosticCentre(context echo.Context) error {
 // @Produce json
 // @Param latitude query number true "Latitude (-90 to 90)" minimum(-90) maximum(90)
 // @Param longitude query number true "Longitude (-180 to 180)" minimum(-180) maximum(180)
-// @Param doctor query string false "Filter by doctor specialization (Male,Female)"
-// @Param available_tests query string false "Filter by available test type"
-// @Param day_of_week query string false "Filter by day monday,tuesday,wednesday,thursday,friday,saturday,sunday"
+// @Param day_of_week query string true "Filter by day" Enums(monday,tuesday,wednesday,thursday,friday,saturday,sunday)
+// @Param doctor query string false "Filter by doctor specialization" Enums(Male,Female)
+// @Param available_tests query string false "Filter by available test type" Enums(BLOOD_TEST,URINE_TEST,X_RAY,MRI,CT_SCAN,ULTRASOUND,ECG,EEG,BIOPSY,SKIN_TEST,ALLERGY_TEST,GENETIC_TEST,IMMUNOLOGY_TEST,HORMONE_TEST,VIRAL_TEST,BACTERIAL_TEST,PARASITIC_TEST,FUNGAL_TEST,MOLECULAR_TEST,TOXICOLOGY_TEST,ECHO,COVID_19_TEST,OTHER,BLOOD_SUGAR_TEST,LIPID_PROFILE,HEMOGLOBIN_TEST,THYROID_TEST,LIVER_FUNCTION_TEST,KIDNEY_FUNCTION_TEST,URIC_ACID_TEST,VITAMIN_D_TEST,VITAMIN_B12_TEST,HEMOGRAM,COMPLETE_BLOOD_COUNT,BLOOD_GROUPING,HEPATITIS_B_TEST,HEPATITIS_C_TEST,HIV_TEST,MALARIA_TEST,DENGUE_TEST,TYPHOID_TEST,COVID_19_ANTIBODY_TEST,COVID_19_RAPID_ANTIGEN_TEST,COVID_19_RT_PCR_TEST,PREGNANCY_TEST)
 // @Param page query integer false "Page number for pagination" default(1) minimum(1)
 // @Param per_page query integer false "Number of results per page" default(10) minimum(1) maximum(100)
 // @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
@@ -154,7 +154,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param page query integer false "Page number" minimum(1) default(1)
-// @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(10)
+// @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(20)
 // @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required"
 // @Failure 403 {object} handlers.ErrorResponse "User is not a manager"
