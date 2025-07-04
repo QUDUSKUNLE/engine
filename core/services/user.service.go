@@ -213,7 +213,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	}
 
 	// Send password reset email
-	subject := "Reset Your Password - Medicue"
+	subject := "Reset Your Password - Medivue"
 	appURL := os.Getenv("APP_URL")
 	escapedEmail := url.QueryEscape(user.Email.String)
 	body := fmt.Sprintf(templates.PasswordResetTemplate,
@@ -395,7 +395,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	}
 
 	// Send verification email
-	subject := "Sign up for Medicue - Email Verification"
+	subject := "Sign up for Medivue - Email Verification"
 	appURL := os.Getenv("APP_URL")
 	escapedEmail := url.QueryEscape(user.Email.String)
 	body := fmt.Sprintf(templates.EmailVerificationTemplate,

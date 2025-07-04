@@ -883,7 +883,7 @@ definitions:
         example: 3.3792
         type: number
       name:
-        example: Medicue Diagnostics
+        example: Medivue Diagnostics
         type: string
       phone:
         example: "+2348000000000"
