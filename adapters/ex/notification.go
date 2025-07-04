@@ -3,8 +3,9 @@ package ex
 import (
 	"os"
 
-	"github.com/sendgrid/sendgrid-go"
 	"fmt"
+
+	"github.com/sendgrid/sendgrid-go"
 
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
@@ -22,7 +23,6 @@ type GmailConfig struct {
 	Password string // Gmail App Password
 	From     string
 }
-
 
 // NewSendGridEmailService creates a new SendGrid email service
 func NewSendGridEmailService() *SendGridEmailService {
@@ -44,7 +44,7 @@ func NewGmailConfig(c GmailConfig) *GmailConfig {
 
 // SendEmail sends an email using SendGrid
 func (s *SendGridEmailService) SendEmail(to string, subject string, body string) error {
-	from := mail.NewEmail("Medicue", s.from)
+	from := mail.NewEmail("Medivue", s.from)
 	recipient := mail.NewEmail("", to)
 	message := mail.NewSingleEmail(from, subject, recipient, "", body)
 
