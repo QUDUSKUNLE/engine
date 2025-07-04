@@ -1053,7 +1053,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Filter by doctor specialization",
+                        "description": "Filter by doctor specialization (Male,Female)",
                         "name": "doctor",
                         "in": "query"
                     },
@@ -1061,6 +1061,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by available test type",
                         "name": "available_tests",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by day monday,tuesday,wednesday,thursday,friday,saturday,sunday",
+                        "name": "day_of_week",
                         "in": "query"
                     },
                     {
