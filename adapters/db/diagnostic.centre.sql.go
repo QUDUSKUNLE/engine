@@ -441,19 +441,28 @@ func (q *Queries) Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Dia
 
 const get_Nearest_Diagnostic_Centres = `-- name: Get_Nearest_Diagnostic_Centres :many
 WITH filtered_centres AS (
-  SELECT DISTINCT dc.id
+  SELECT dc.id
   FROM diagnostic_centres dc
   WHERE
     dc.latitude IS NOT NULL
     AND dc.longitude IS NOT NULL
     AND (dc.doctors @> $3 OR $3 IS NULL)
-    AND (dc.available_tests @> $4 OR $4 IS NULL)
-    AND ($5 = '' OR EXISTS (
-      SELECT 1
-      FROM diagnostic_centre_availability dca2 
-      WHERE dca2.diagnostic_centre_id = dc.id
-      AND dca2.day_of_week = $5
-    ))
+    AND (
+      $4 = '' OR EXISTS (
+        SELECT 1
+        FROM diagnostic_centre_availability dca2
+        WHERE dca2.diagnostic_centre_id = dc.id
+        AND dca2.day_of_week = $4
+      )
+    )
+    AND (
+      $5 = '' OR EXISTS (
+        SELECT 1
+        FROM diagnostic_centre_test_prices dctp
+        WHERE dctp.diagnostic_centre_id = dc.id
+        AND dctp.test_type = $5
+      )
+    )
 )
 SELECT
   dc.id,
@@ -466,8 +475,10 @@ SELECT
   dc.available_tests,
   dc.created_at,
   dc.updated_at,
+
+  -- Availability per day (if filtered or not)
   ARRAY_AGG(
-    DISTINCT jsonb_build_object(
+    jsonb_build_object(
       'day_of_week', dca.day_of_week,
       'start_time', dca.start_time,
       'end_time', dca.end_time,
@@ -476,10 +487,24 @@ SELECT
       'break_time', dca.break_time
     )
   ) FILTER (
-    WHERE dca.diagnostic_centre_id IS NOT NULL 
-    AND ($5 = '' OR dca.day_of_week = $5)
-  ) as availability,
-  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices,
+    WHERE dca.day_of_week IS NOT NULL
+    AND ($4 = '' OR dca.day_of_week = $4)
+  ) AS availability,
+
+  -- Strictly filtered test prices
+  (
+    SELECT jsonb_agg(
+      jsonb_build_object(
+        'test_type', dctp.test_type,
+        'price', dctp.price
+      )
+    )
+    FROM diagnostic_centre_test_prices dctp
+    WHERE dctp.diagnostic_centre_id = dc.id
+      AND ($5 = '' OR dctp.test_type = $5)
+  ) AS test_prices,
+
+  -- Distance calculation
   CAST(
     6371 * acos(
       cos(radians($1)) * cos(radians(dc.latitude)) *
@@ -487,34 +512,26 @@ SELECT
       sin(radians($1)) * sin(radians(dc.latitude))
     ) AS DOUBLE PRECISION
   ) AS distance_km
+
 FROM filtered_centres fc
 JOIN diagnostic_centres dc ON dc.id = fc.id
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
-LEFT JOIN LATERAL (
-  SELECT jsonb_agg(
-    jsonb_build_object(
-      'test_type', dctp.test_type,
-      'price', dctp.price
-    )
-  ) AS test_prices
-  FROM diagnostic_centre_test_prices dctp
-  WHERE dctp.diagnostic_centre_id = dc.id
-) prices ON true
+
 GROUP BY
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address,
-  dc.contact, dc.doctors, dc.available_tests, dc.created_at, dc.updated_at,
-  prices.test_prices
-ORDER BY
-  distance_km ASC
-LIMIT 50
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude,
+  dc.address, dc.contact, dc.doctors, dc.available_tests,
+  dc.created_at, dc.updated_at
+
+ORDER BY distance_km ASC
+LIMIT 10
 `
 
 type Get_Nearest_Diagnostic_CentresParams struct {
-	Radians        float64     `db:"radians" json:"radians"`
-	Radians_2      float64     `db:"radians_2" json:"radians_2"`
-	Doctors        []string    `db:"doctors" json:"doctors"`
-	AvailableTests []string    `db:"available_tests" json:"available_tests"`
-	Column5        interface{} `db:"column_5" json:"column_5"`
+	Radians   float64     `db:"radians" json:"radians"`
+	Radians_2 float64     `db:"radians_2" json:"radians_2"`
+	Doctors   []string    `db:"doctors" json:"doctors"`
+	Column4   interface{} `db:"column_4" json:"column_4"`
+	Column5   interface{} `db:"column_5" json:"column_5"`
 }
 
 type Get_Nearest_Diagnostic_CentresRow struct {
@@ -539,7 +556,7 @@ func (q *Queries) Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Ne
 		arg.Radians,
 		arg.Radians_2,
 		arg.Doctors,
-		arg.AvailableTests,
+		arg.Column4,
 		arg.Column5,
 	)
 	if err != nil {
