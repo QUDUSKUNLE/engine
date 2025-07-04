@@ -14,7 +14,7 @@ import (
 // @Failure 400 {object} handlers.ErrorResponse
 // @Failure 401 {object} handlers.ErrorResponse
 // @Failure 404 {object} handlers.ErrorResponse
-// @Router /api/v1/availability [post]
+// @Router /v1/availability [post]
 func (handler *HTTPHandler) CreateAvailability(context echo.Context) error {
 	return handler.service.CreateAvailability(context)
 }
@@ -31,7 +31,7 @@ func (handler *HTTPHandler) CreateAvailability(context echo.Context) error {
 // @Failure 400 {object} handlers.ErrorResponse
 // @Failure 401 {object} handlers.ErrorResponse
 // @Failure 404 {object} handlers.ErrorResponse
-// @Router /api/v1/availability/{diagnostic_centre_id} [get]
+// @Router /v1/availability/{diagnostic_centre_id} [get]
 func (handler *HTTPHandler) GetAvailability(context echo.Context) error {
 	return handler.service.GetAvailability(context)
 }
@@ -48,7 +48,7 @@ func (handler *HTTPHandler) GetAvailability(context echo.Context) error {
 // @Failure 400 {object} handlers.ErrorResponse
 // @Failure 401 {object} handlers.ErrorResponse
 // @Failure 404 {object} handlers.ErrorResponse
-// @Router /api/v1/availability/{diagnostic_centre_id}/{day_of_week} [put]
+// @Router /v1/availability/{diagnostic_centre_id}/{day_of_week} [put]
 func (h *HTTPHandler) UpdateAvailability(c echo.Context) error {
 	return h.service.UpdateAvailability(c)
 }
@@ -64,7 +64,7 @@ func (h *HTTPHandler) UpdateAvailability(c echo.Context) error {
 // @Failure 400 {object} handlers.ErrorResponse
 // @Failure 401 {object} handlers.ErrorResponse
 // @Failure 404 {object} handlers.ErrorResponse
-// @Router /api/v1/availability/{diagnostic_centre_id} [put]
+// @Router /v1/availability/{diagnostic_centre_id} [put]
 func (handler *HTTPHandler) UpdateManyAvailability(context echo.Context) error {
 	return handler.service.UpdateManyAvailability(context)
 }
@@ -79,7 +79,7 @@ func (handler *HTTPHandler) UpdateManyAvailability(context echo.Context) error {
 // @Success 204 "No Content"
 // @Failure 401 {object} handlers.ErrorResponse
 // @Failure 404 {object} handlers.ErrorResponse
-// @Router /api/v1/availability/{diagnostic_centre_id}/{day_of_week} [delete]
+// @Router /v1/availability/{diagnostic_centre_id}/{day_of_week} [delete]
 func (h *HTTPHandler) DeleteAvailability(c echo.Context) error {
 
 	return nil

@@ -27,7 +27,7 @@ import (
 // @Failure 403 {object} handlers.ErrorResponse "Insufficient permissions"
 // @Failure 413 {object} handlers.ErrorResponse "File too large"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /medical_records [post]
+// @Router /v1/medical_records [post]
 func (handler *HTTPHandler) CreateMedicalRecord(context echo.Context) error {
 	return handler.service.CreateMedicalRecord(context)
 }
@@ -46,7 +46,7 @@ func (handler *HTTPHandler) CreateMedicalRecord(context echo.Context) error {
 // @Failure 403 {object} handlers.ErrorResponse "Access denied"
 // @Failure 404 {object} handlers.ErrorResponse "Record not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /medical_records/{record_id} [get]
+// @Router /v1/medical_records/{record_id} [get]
 func (handler *HTTPHandler) GetMedicalRecord(context echo.Context) error {
 	return handler.service.GetMedicalRecord(context)
 }
@@ -66,7 +66,7 @@ func (handler *HTTPHandler) GetMedicalRecord(context echo.Context) error {
 // @Success 200 {array} handlers.MedicalRecordSwagger "List of medical records"
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /medical_records [get]
+// @Router /v1/medical_records [get]
 func (handler *HTTPHandler) GetMedicalRecords(context echo.Context) error {
 	return handler.service.GetMedicalRecords(context)
 }
@@ -86,7 +86,7 @@ func (handler *HTTPHandler) GetMedicalRecords(context echo.Context) error {
 // @Failure 403 {object} handlers.ErrorResponse "Not authorized to access this record"
 // @Failure 404 {object} handlers.ErrorResponse "Record not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /medical_records/{record_id}/diagnostic_centre/{diagnostic_centre_id} [get]
+// @Router /v1/medical_records/{record_id}/diagnostic_centre/{diagnostic_centre_id} [get]
 func (handler *HTTPHandler) GetUploaderMedicalRecord(context echo.Context) error {
 	return handler.service.GetUploaderMedicalRecord(context)
 }
@@ -107,7 +107,7 @@ func (handler *HTTPHandler) GetUploaderMedicalRecord(context echo.Context) error
 // @Failure 403 {object} handlers.ErrorResponse "Not authorized to access these records"
 // @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /medical_records/diagnostic_centre/{diagnostic_centre_id} [get]
+// @Router /v1/medical_records/diagnostic_centre/{diagnostic_centre_id} [get]
 func (handler *HTTPHandler) GetUploaderMedicalRecords(context echo.Context) error {
 	return handler.service.GetUploaderMedicalRecords(context)
 }
@@ -128,7 +128,7 @@ func (handler *HTTPHandler) GetUploaderMedicalRecords(context echo.Context) erro
 // @Failure 403 {object} handlers.ErrorResponse "Not authorized to update this record"
 // @Failure 404 {object} handlers.ErrorResponse "Record not found"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /medical_records/{record_id} [put]
+// @Router /v1/medical_records/{record_id} [put]
 func (handler *HTTPHandler) UpdateMedicalRecord(context echo.Context) error {
 	return handler.service.UpdateMedicalRecord(context)
 }
