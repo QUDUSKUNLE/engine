@@ -146,7 +146,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	payment, err := service.PaymentRepo.CreatePayment(context.Request().Context(), db.Create_PaymentParams{
+	payment, err := tx.CreatePayment(context.Request().Context(), db.Create_PaymentParams{
 		AppointmentID:      appointment.ID,
 		PatientID:          currentUser.UserID.String(),
 		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
@@ -175,7 +175,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	_, err = service.AppointmentRepo.UpdateAppointment(context.Request().Context(), db.UpdateAppointmentPaymentParams{
+	_, err = tx.UpdateAppointment(context.Request().Context(), db.UpdateAppointmentPaymentParams{
 		ID:            appointment.ID,
 		PaymentID:     pgtype.UUID{Bytes: paymentUUID, Valid: true},
 		PaymentStatus: db.NullPaymentStatus{PaymentStatus: db.PaymentStatusPending, Valid: true},
@@ -293,7 +293,7 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	}
 
 	// Update appointment status
-	confirmedAppointment, err := service.AppointmentRepo.UpdateAppointment(context.Request().Context(), db.UpdateAppointmentPaymentParams{
+	confirmedAppointment, err := tx.UpdateAppointment(context.Request().Context(), db.UpdateAppointmentPaymentParams{
 		ID:            appointment.ID,
 		PaymentID:     pgtype.UUID{Bytes: paymentUUID, Valid: true},
 		PaymentStatus: db.NullPaymentStatus{PaymentStatus: db.PaymentStatusSuccess, Valid: true},
@@ -652,6 +652,10 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 		utils.Error("Failed to send confirmation email",
 			utils.LogField{Key: "error", Value: err.Error()})
 	}
+
+	utils.Info("Appointment email sent successfully",
+		utils.LogField{Key: "appointment_id", Value: appointment.ID},
+	)
 }
 
 func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db.Appointment) {
