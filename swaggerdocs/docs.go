@@ -3949,6 +3949,14 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "first_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "last_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
                 "user_type": {
                     "enum": [
                         "DIAGNOSTIC_CENTRE_MANAGER"
@@ -4543,6 +4551,14 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "last_name": {
+                    "type": "string",
+                    "minLength": 3
                 },
                 "password": {
                     "type": "string",

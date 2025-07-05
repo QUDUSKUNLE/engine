@@ -18,9 +18,10 @@ INSERT INTO users (
   password,
   user_type,
   phone_number,
-  email_verified
+  email_verified,
+  fullname
 ) VALUES  (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5, $6, $7
 ) RETURNING id, email, nin, user_type, fullname, phone_number, email_verified, email_verified_at, created_at, updated_at
 `
 
@@ -31,6 +32,7 @@ type CreateUserParams struct {
 	UserType      UserEnum    `db:"user_type" json:"user_type"`
 	PhoneNumber   pgtype.Text `db:"phone_number" json:"phone_number"`
 	EmailVerified pgtype.Bool `db:"email_verified" json:"email_verified"`
+	Fullname      pgtype.Text `db:"fullname" json:"fullname"`
 }
 
 type CreateUserRow struct {
@@ -54,6 +56,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*Create
 		arg.UserType,
 		arg.PhoneNumber,
 		arg.EmailVerified,
+		arg.Fullname,
 	)
 	var i CreateUserRow
 	err := row.Scan(

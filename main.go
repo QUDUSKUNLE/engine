@@ -59,10 +59,31 @@ func main() {
 	// Create a new echo instance
 	e := echo.New()
 
+	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
+		LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
+			requestID := c.Response().Header().Get(echo.HeaderXRequestID)
+			utils.Error("Panic recovered",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "stack", Value: string(stack)},
+				utils.LogField{Key: "request_id", Value: requestID},
+				utils.LogField{Key: "path", Value: c.Request().URL.Path},
+			)
+			return nil
+		},
+	}))
+
 	// Setup Prometheus metrics endpoint first, before any other middleware
 	e.GET("/metrics", echoprometheus.NewHandler())
 	e.Use(middlewares.PrometheusMiddleware)
-	e.Use(echoprometheus.NewMiddleware("Medicue"))
+	e.Use(echoprometheus.NewMiddleware("Medivue"))
+
+	// Add basic observability middleware
+	e.Use(middleware.RequestID())
+	e.Use(middleware.Recover())
+	// Add request timing middleware
+	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Timeout: 30 * time.Second,
+	}))
 
 	// Initialize all repositories
 	repos := repository.InitializeRepositories(store, conn)
@@ -148,14 +169,26 @@ func main() {
 	// Configure rate limiter with metrics endpoint excluded
 	e.Use(middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
 		Skipper: func(c echo.Context) bool {
-			return c.Path() == "/metrics" // Skip rate limiting for metrics endpoint
+			return c.Path() == "/metrics" || c.Path() == "/health"
 		},
-		Store: middleware.NewRateLimiterMemoryStore(rate.Limit(10)),
+		Store: middleware.NewRateLimiterMemoryStore(
+			rate.Limit(10),
+		),
+		DenyHandler: func(c echo.Context, identifier string, err error) error {
+			return c.JSON(http.StatusTooManyRequests, map[string]string{
+				"error": "rate limit exceeded",
+			})
+		},
 	}))
 
-	// Health check route
+	// Update health check endpoint
 	e.GET("/health", func(c echo.Context) error {
-		return c.String(http.StatusOK, "OK")
+		health := map[string]string{
+			"status":    "OK",
+			"timestamp": time.Now().Format(time.RFC3339),
+		}
+		health["database"] = "connected"
+		return c.JSON(http.StatusOK, health)
 	})
 
 	e.GET("", func(c echo.Context) error {

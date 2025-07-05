@@ -373,6 +373,12 @@ definitions:
     properties:
       email:
         type: string
+      first_name:
+        minLength: 3
+        type: string
+      last_name:
+        minLength: 3
+        type: string
       user_type:
         allOf:
         - $ref: '#/definitions/db.UserEnum'
@@ -803,6 +809,12 @@ definitions:
         minLength: 6
         type: string
       email:
+        type: string
+      first_name:
+        minLength: 3
+        type: string
+      last_name:
+        minLength: 3
         type: string
       password:
         maxLength: 20

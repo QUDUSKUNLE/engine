@@ -20,6 +20,7 @@ type ServicesHandler struct {
 	TestPriceRepo       ports.TestPriceRepository
 	FileRepo            ports.FileService
 	notificationService ports.NotificationService
+	Config              config.Config
 	// Payment Gateway
 	paymentService ports.PaymentProviderService
 }
@@ -55,5 +56,6 @@ func ServicesAdapter(
 			SecretKey: conn.PAYSTACK_SECRET_KEY,
 			BaseURL:   conn.PAYSTACK_BASE_URL,
 		}),
+		Config: conn,
 	}
 }

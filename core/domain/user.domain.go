@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -27,14 +28,18 @@ type (
 	}
 
 	UserRegisterDTO struct {
+		FirstName       string      `json:"first_name" validate:"gte=3"`
+		LastName        string      `json:"last_name" validate:"gte=3"`
 		Email           string      `json:"email" validate:"email,required"`
 		Password        string      `json:"password" validate:"gte=6,lte=20,required"`
 		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required"`
 		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=USER DIAGNOSTIC_CENTRE_OWNER"`
 	}
 	DiagnosticCentreManagerRegisterDTO struct {
-		Email    string      `json:"email" validate:"email,required"`
-		UserType db.UserEnum `json:"user_type" validate:"required,oneof=DIAGNOSTIC_CENTRE_MANAGER"`
+		FirstName string      `json:"first_name" validate:"gte=3"`
+		LastName  string      `json:"last_name" validate:"gte=3"`
+		Email     string      `json:"email" validate:"email,required"`
+		UserType  db.UserEnum `json:"user_type" validate:"required,oneof=DIAGNOSTIC_CENTRE_MANAGER"`
 	}
 	UserSignInDTO struct {
 		Email    string `json:"email" validate:"email,required"`
@@ -125,9 +130,13 @@ func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {
 		return db.CreateUserParams{}, err
 	}
 	params := db.CreateUserParams{
-		Email:       pgtype.Text{String: user.Email, Valid: true},
-		Password:    password,
-		UserType:    user.UserType,
+		Email:    pgtype.Text{String: user.Email, Valid: true},
+		Password: password,
+		UserType: user.UserType,
+		Fullname: pgtype.Text{
+			String: strings.Trim(user.FirstName, "") + " " + strings.Trim(user.LastName, ""),
+			Valid:  true,
+		},
 		PhoneNumber: pgtype.Text{String: "", Valid: true},
 	}
 
