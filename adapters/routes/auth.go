@@ -16,28 +16,28 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			path:        "/register",
 			handler:     handler.Register,
 			factory:     func() interface{} { return &domain.UserRegisterDTO{} },
-			description: "User Registration",
+			description: "User registration",
 		},
 		{
 			method:      http.MethodPost,
 			path:        "/login",
 			handler:     handler.SignIn,
 			factory:     func() interface{} { return &domain.UserSignInDTO{} },
-			description: "User Login",
+			description: "User login",
 		},
 		{
 			method:      http.MethodPost,
 			path:        "/request_password_reset",
 			handler:     handler.RequestPasswordReset,
 			factory:     func() interface{} { return &domain.RequestPasswordResetDTO{} },
-			description: "Request Password Reset",
+			description: "Request password reset",
 		},
 		{
 			method:      http.MethodPost,
 			path:        "/reset_password",
 			handler:     handler.ResetPassword,
 			factory:     func() interface{} { return &domain.ResetPasswordDTO{} },
-			description: "Reset Password",
+			description: "Reset password",
 		},
 		{
 			method:  http.MethodGet,
@@ -46,7 +46,7 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory: func() interface{} {
 				return &domain.EmailVerificationDTO{}
 			},
-			description: "Verify Email",
+			description: "Verify email",
 		},
 		{
 			method:  http.MethodPut,
@@ -55,7 +55,7 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory: func() interface{} {
 				return &domain.UpdateUserProfileDTO{}
 			},
-			description: "Update User Profile",
+			description: "Update user profile",
 		},
 		{
 			method:  http.MethodGet,
@@ -64,7 +64,7 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory: func() interface{} {
 				return &domain.GetProfileDTO{}
 			},
-			description: "Get A User Profile",
+			description: "Get a user profile",
 		},
 		{
 			method:  http.MethodPost,
@@ -73,7 +73,7 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory: func() interface{} {
 				return &domain.DiagnosticCentreManagerRegisterDTO{}
 			},
-			description: "Create A Diagnostic Centre Manager",
+			description: "Create a diagnostic centre manager",
 		},
 	}
 
