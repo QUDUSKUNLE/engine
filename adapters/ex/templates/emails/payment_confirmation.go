@@ -1,10 +1,5 @@
 package emails
 
-import (
-	"bytes"
-	"html/template"
-)
-
 const paymentConfirmationTemplate = `
 {{define "payment_confirmation"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
@@ -33,22 +28,3 @@ const paymentConfirmationTemplate = `
 <p>This email serves as your receipt. Please keep it for your records.</p>
 {{end}}
 `
-
-// GetPaymentConfirmationTemplate returns the rendered payment confirmation email
-func GetPaymentConfirmationTemplate(data PaymentData) (string, error) {
-	baseTemplate := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
-	contentTemplate := template.Must(baseTemplate.New("content").Parse(paymentConfirmationTemplate))
-
-	var buf bytes.Buffer
-	err := contentTemplate.ExecuteTemplate(&buf, "base", map[string]interface{}{
-		"Title":         data.Title,
-		"Icon":          data.Icon,
-		"Content":       data.Content,
-		"FooterContent": data.FooterContent,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
-}
