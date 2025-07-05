@@ -2,6 +2,7 @@ package emails
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 )
 
@@ -13,26 +14,46 @@ type EmailTemplateHandler struct {
 
 // NewEmailTemplateHandler creates a new email template handler
 func NewEmailTemplateHandler() *EmailTemplateHandler {
-	base := template.New("base").Funcs(TemplateFuncs)
-	base = template.Must(base.Parse(BaseLayout))
+	base := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
 
 	handler := &EmailTemplateHandler{
 		baseTemplate: base,
 		cache:        NewTemplateCache(),
 	}
-
 	// Pre-compile all templates
 	handler.cache.Compile()
-
 	return handler
 }
 
+func (h *EmailTemplateHandler) ExecuteTemplate(templateName string, data interface{}) (string, error) {
+	switch templateName {
+	case TemplateAppointmentConfirmed:
+		return h.renderAppointmentConfirmation(data.(*AppointmentData))
+	case TemplateAppointmentCancelled:
+		return h.renderAppointmentCancellation(data.(*AppointmentData))
+	case TemplateAppointmentReminder:
+		return h.renderAppointmentReminder(data.(*AppointmentData))
+	case TemplatePaymentConfirmation:
+		return h.renderPaymentConfirmation(data.(*PaymentData))
+	case TemplateEmailVerification:
+		return h.renderEmailVerification(data.(*EmailVerificationData))
+	case TemplateStaffNotification:
+		return h.renderStaffNotification(data.(*StaffNotificationData))
+	case TemplateTestResults:
+		return h.renderTestResults(data.(*TestResultsData))
+	case TemplatePolicyUpdate:
+		return h.renderPolicyUpdate(data.(*PolicyUpdateData))
+	default:
+		return "", fmt.Errorf("unknown template: %s", templateName)
+	}
+}
+
 // RenderAppointmentConfirmation renders the appointment confirmation email
-func (h *EmailTemplateHandler) RenderAppointmentConfirmation(data *AppointmentData) (string, error) {
+func (h *EmailTemplateHandler) renderAppointmentConfirmation(data *AppointmentData) (string, error) {
 	if err := ValidateTemplateData(data); err != nil {
 		return "", err
 	}
-	return h.renderTemplate("appointment_confirmation", appointmentConfirmationTemplate, data, EmailData{
+	return h.renderTemplate(TemplateAppointmentConfirmed, appointmentConfirmationTemplate, data, EmailData{
 		Title:         TitleAppointmentConfirmed,
 		Icon:          IconConfirmed,
 		FooterContent: FooterChanges,
@@ -40,23 +61,27 @@ func (h *EmailTemplateHandler) RenderAppointmentConfirmation(data *AppointmentDa
 }
 
 // RenderAppointmentCancellation renders the appointment cancellation email
-func (h *EmailTemplateHandler) RenderAppointmentCancellation(data *AppointmentData) (string, error) {
+func (h *EmailTemplateHandler) renderAppointmentCancellation(data *AppointmentData) (string, error) {
 	if err := ValidateTemplateData(data); err != nil {
 		return "", err
 	}
-	return h.renderTemplate("appointment_cancellation", appointmentCancellationTemplate, data, EmailData{
-		Title:         TitleAppointmentCancelled,
-		Icon:          IconCancelled,
-		FooterContent: FooterSupport,
-	})
+	return h.renderTemplate(
+		TemplateAppointmentCancelled,
+		appointmentCancellationTemplate,
+		data,
+		EmailData{
+			Title:         TitleAppointmentCancelled,
+			Icon:          IconCancelled,
+			FooterContent: FooterSupport,
+		})
 }
 
 // RenderAppointmentReminder renders the appointment reminder email
-func (h *EmailTemplateHandler) RenderAppointmentReminder(data *AppointmentData) (string, error) {
+func (h *EmailTemplateHandler) renderAppointmentReminder(data *AppointmentData) (string, error) {
 	if err := ValidateTemplateData(data); err != nil {
 		return "", err
 	}
-	return h.renderTemplate("appointment_reminder", appointmentReminderTemplate, data, EmailData{
+	return h.renderTemplate(TemplateAppointmentReminder, appointmentReminderTemplate, data, EmailData{
 		Title:         TitleAppointmentReminder,
 		Icon:          IconReminder,
 		FooterContent: FooterSupport,
@@ -64,11 +89,11 @@ func (h *EmailTemplateHandler) RenderAppointmentReminder(data *AppointmentData) 
 }
 
 // RenderPaymentConfirmation renders the payment confirmation email
-func (h *EmailTemplateHandler) RenderPaymentConfirmation(data *PaymentData) (string, error) {
+func (h *EmailTemplateHandler) renderPaymentConfirmation(data *PaymentData) (string, error) {
 	if err := ValidateTemplateData(data); err != nil {
 		return "", err
 	}
-	return h.renderTemplate("payment_confirmation", paymentConfirmationTemplate, data, EmailData{
+	return h.renderTemplate(TemplatePaymentConfirmation, paymentConfirmationTemplate, data, EmailData{
 		Title:         TitlePaymentConfirmed,
 		Icon:          IconPayment,
 		FooterContent: FooterPayment,
@@ -76,11 +101,11 @@ func (h *EmailTemplateHandler) RenderPaymentConfirmation(data *PaymentData) (str
 }
 
 // RenderTestResults renders the test results available email
-func (h *EmailTemplateHandler) RenderTestResults(data *TestResultsData) (string, error) {
+func (h *EmailTemplateHandler) renderTestResults(data *TestResultsData) (string, error) {
 	if err := ValidateTemplateData(data); err != nil {
 		return "", err
 	}
-	return h.renderTemplate("test_results_available", testResultsTemplate, data, EmailData{
+	return h.renderTemplate(TemplateTestResults, testResultsTemplate, data, EmailData{
 		Title:         TitleTestResults,
 		Icon:          IconTestResults,
 		FooterContent: FooterResults,
@@ -88,11 +113,11 @@ func (h *EmailTemplateHandler) RenderTestResults(data *TestResultsData) (string,
 }
 
 // RenderStaffNotification renders the staff notification email
-func (h *EmailTemplateHandler) RenderStaffNotification(data *StaffNotificationData) (string, error) {
+func (h *EmailTemplateHandler) renderStaffNotification(data *StaffNotificationData) (string, error) {
 	if err := ValidateTemplateData(data); err != nil {
 		return "", err
 	}
-	return h.renderTemplate("staff_notification", staffNotificationTemplate, data, EmailData{
+	return h.renderTemplate(TemplateStaffNotification, staffNotificationTemplate, data, EmailData{
 		Title:         TitleStaffNotification,
 		Icon:          IconStaff,
 		FooterContent: FooterStaff,
@@ -100,41 +125,61 @@ func (h *EmailTemplateHandler) RenderStaffNotification(data *StaffNotificationDa
 }
 
 // RenderPolicyUpdate renders the policy update email
-func (h *EmailTemplateHandler) RenderPolicyUpdate(data *PolicyUpdateData) (string, error) {
+func (h *EmailTemplateHandler) renderPolicyUpdate(data *PolicyUpdateData) (string, error) {
 	if err := ValidateTemplateData(data); err != nil {
 		return "", err
 	}
-	return h.renderTemplate("policy_update", policyUpdateTemplate, data, EmailData{
+	return h.renderTemplate(TemplatePolicyUpdate, policyUpdateTemplate, data, EmailData{
 		Title:         TitlePolicyUpdate,
 		Icon:          IconPolicy,
 		FooterContent: FooterPolicy,
 	})
 }
 
-// renderTemplate is a helper function to render email templates with common data
-func (h *EmailTemplateHandler) renderTemplate(name, content string, data interface{}, emailData EmailData) (string, error) {
-	// Try to get template from cache
-	tmpl, ok := h.cache.Get(name)
-	if !ok {
-		// If not in cache, create and cache it
-		tmpl = h.cache.GetOrSet(name, func() *template.Template {
-			clone := template.Must(h.baseTemplate.Clone())
-			tmpl := template.Must(clone.New(name).Parse(content))
-			AddTemplateFuncs(tmpl)
-			return tmpl
-		})
+// RenderEmailVerification renders the email verification email
+func (h *EmailTemplateHandler) renderEmailVerification(data *EmailVerificationData) (string, error) {
+	if err := ValidateTemplateData(data); err != nil {
+		return "", err
 	}
+	return h.renderTemplate(
+		TemplateEmailVerification,
+		emailVerificationTemplate,
+		data,
+		EmailData{
+			Title:         TitleEmailVerification,
+			Icon:          IconEmailVerification,
+			FooterContent: FooterEmailVerification,
+		})
+}
 
-	var buf bytes.Buffer
-	err := tmpl.ExecuteTemplate(&buf, "base", map[string]interface{}{
-		"Title":         emailData.Title,
-		"Icon":          emailData.Icon,
-		"Content":       data,
-		"FooterContent": emailData.FooterContent,
-	})
+func (h *EmailTemplateHandler) renderTemplate(
+	name string,
+	contentTemp string,
+	data interface{},
+	emailData EmailData,
+) (string, error) {
+	contentTemplate := template.Must(h.baseTemplate.Clone())
+	_, err := contentTemplate.New(name).Parse(contentTemp)
 	if err != nil {
 		return "", NewTemplateError(name, err)
 	}
 
-	return buf.String(), nil
+	var contentBuf bytes.Buffer
+	err = contentTemplate.ExecuteTemplate(&contentBuf, name, data)
+	if err != nil {
+		return "", NewTemplateError(name+ " (content rendering)", err)
+	}
+
+	var fullBuf bytes.Buffer
+	err = contentTemplate.ExecuteTemplate(&fullBuf, "base", map[string]interface{}{
+		"Title":         emailData.Title,
+		"Icon":          emailData.Icon,
+		"Content":       template.HTML(contentBuf.String()),
+		"FooterContent": emailData.FooterContent,
+	})
+
+	if err != nil {
+		return "", NewTemplateError(name+ "(base rendering)", err)
+	}
+	return fullBuf.String(), nil
 }

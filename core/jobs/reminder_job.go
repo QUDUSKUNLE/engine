@@ -91,10 +91,5 @@ func (j *ReminderJob) SendReminderEmail(appointment *db.Appointment) error {
 		// Status:          appointment.Status,
 	}
 
-	body, err := emails.GetAppointmentReminderTemplate(data)
-	if err != nil {
-		return err
-	}
-
-	return j.notificationSvc.SendEmail(patient.Email.String, "Appointment Reminder", body)
+	return j.notificationSvc.SendEmail(patient.Email.String, "Appointment Reminder", emails.TemplateAppointmentReminder, data)
 }

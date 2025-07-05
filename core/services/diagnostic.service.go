@@ -2,14 +2,13 @@ package services
 
 import (
 	"errors"
-	"fmt"
+	// "fmt"
 	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates/emails"
 	"github.com/medivue/adapters/metrics"
 	"github.com/medivue/core/domain"
 	"github.com/medivue/core/utils"
@@ -34,7 +33,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
 	}
 
-	admin, err := service.UserRepo.GetUser(context.Request().Context(), dto.AdminId.String())
+	_, err = service.UserRepo.GetUser(context.Request().Context(), dto.AdminId.String())
 	if err != nil {
 		utils.Error("Failed to get admin",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -101,19 +100,19 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 	// Send Notification email
-	subject := "Diagnsotic Centre Manager - Diagnostic Centre Management Notification"
-	address := fmt.Sprintf("%s %s %s %s", dto.Address.Street, dto.Address.City, dto.Address.State, dto.Address.Country)
-	body := fmt.Sprintf(
-		emails.DiagnosticCentreManagerNotificationTemplate,
-		admin.Fullname,
-		diagnostic_centre.DiagnosticCentreName,
-		address,
-	)
-	err = service.notificationService.SendEmail(admin.Email.String, subject, body)
-	if err != nil {
-		utils.Error("Failed to send diagnostic centre management notification",
-			utils.LogField{Key: "error", Value: err.Error()})
-	}
+	// subject := "Diagnsotic Centre Manager - Diagnostic Centre Management Notification"
+	// address := fmt.Sprintf("%s %s %s %s", dto.Address.Street, dto.Address.City, dto.Address.State, dto.Address.Country)
+	// body := fmt.Sprintf(
+	// 	emails.DiagnosticCentreManagerNotificationTemplate,
+	// 	admin.Fullname,
+	// 	diagnostic_centre.DiagnosticCentreName,
+	// 	address,
+	// )
+	// err = service.notificationService.SendEmail(admin.Email.String, subject, body)
+	// if err != nil {
+	// 	utils.Error("Failed to send diagnostic centre management notification",
+	// 		utils.LogField{Key: "error", Value: err.Error()})
+	// }
 	return utils.ResponseMessage(http.StatusCreated, res, context)
 }
 

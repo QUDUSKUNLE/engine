@@ -1,13 +1,8 @@
 package emails
 
-import (
-	"bytes"
-	"html/template"
-)
-
 const staffNotificationTemplate = `
 {{define "staff_notification"}}
-<p><strong>Hello {{.StaffName}},</strong></p>
+<p><strong>Dear {{.StaffName}},</strong></p>
 <p>A new appointment has been scheduled that requires your attention:</p>
 
 <div class="details">
@@ -35,22 +30,3 @@ const staffNotificationTemplate = `
 <p>Please log in to the staff portal to view complete appointment details.</p>
 {{end}}
 `
-
-// GetStaffNotificationTemplate returns the rendered staff notification email
-func GetStaffNotificationTemplate(data StaffNotificationData) (string, error) {
-	baseTemplate := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
-	contentTemplate := template.Must(baseTemplate.New("content").Parse(staffNotificationTemplate))
-
-	var buf bytes.Buffer
-	err := contentTemplate.ExecuteTemplate(&buf, "base", map[string]interface{}{
-		"Title":         data.Title,
-		"Icon":          data.Icon,
-		"Content":       data.Content,
-		"FooterContent": data.FooterContent,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
-}

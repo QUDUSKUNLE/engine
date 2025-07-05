@@ -134,7 +134,7 @@ const BaseLayout = `
 <body>
     <div class="container">
         <div class="header">
-            <h1>{{.Icon}} {{.Title}}</h1>
+            <h2>{{.Icon}} {{.Title}}</h2>
         </div>
         <div class="content">
             {{.Content}}

@@ -6,9 +6,18 @@ import "time"
 type EmailData struct {
 	AppName       string
 	Title         string
+	Header        string
 	Icon          string
 	Content       interface{}
 	FooterContent string
+}
+
+// EmailVerificationData contains fields for email verification emails
+type EmailVerificationData struct {
+	// EmailData
+	Name             string
+	VerificationLink string
+	ExpiryDuration   string
 }
 
 // AppointmentData contains common fields for appointment-related emails

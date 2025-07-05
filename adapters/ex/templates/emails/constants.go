@@ -13,29 +13,47 @@ const (
 	TitleResetPassword              = "Reset Your Password"
 	TitleDiagnosticCentreManager    = "Diagnostic Centre Manager Notification"
 	TitleDiagnosticCentreManagement = "Diagnostic Centre Management Notification"
-	TitleEmailVerification          = "Email Verification"
+	TitleEmailVerification          = "Verify Your Email"
+)
+
+const (
+	TemplateTestResults          = "test_results_available"
+	TemplatePolicyUpdate         = "policy_update"
+	TemplateStaffNotification    = "staff_notification"
+	TemplateEmailVerification    = "email_verification"
+	TemplatePaymentConfirmation  = "payment_confirmation"
+
+	TemplateAppointmentConfirmed = "appointment_confirmation"
+	TemplateAppointmentCancelled = "appointment_cancellation"
+	TemplateAppointmentReminder  = "appointment_reminder"
+)
+
+const (
+	SubjectEmailVerification = "Sign up for Medivue - Email Verification"
 )
 
 // Email template icons (emojis)
 const (
-	IconConfirmed   = "✅"
-	IconCancelled   = "❌"
-	IconReminder    = "🔔"
-	IconReschedule  = "🔄"
-	IconPayment     = "💳"
-	IconTestResults = "🔬"
-	IconStaff       = "👥"
-	IconPolicy      = "📋"
+	IconConfirmed         = "✅"
+	IconCancelled         = "❌"
+	IconReminder          = "🔔"
+	IconReschedule        = "🔄"
+	IconPayment           = "💳"
+	IconTestResults       = "🔬"
+	IconStaff             = "👥"
+	IconPolicy            = "📋"
+	IconEmailVerification = "✉️"
 )
 
 // Footer messages
 const (
-	FooterChanges = "If you need to make any changes to your appointment, please contact us as soon as possible."
-	FooterSupport = "For any questions or concerns, please contact our support team."
-	FooterPayment = "If you have any questions about your payment, please contact our billing department."
-	FooterResults = "For any technical issues accessing your results, please contact our support team."
-	FooterStaff   = "If you have any conflicts or concerns, please notify the scheduling department immediately."
-	FooterPolicy  = "If you have any questions about these updates, please don't hesitate to contact us."
+	FooterChanges           = "If you need to make any changes to your appointment, please contact us as soon as possible."
+	FooterSupport           = "For any questions or concerns, please contact our support team."
+	FooterPayment           = "If you have any questions about your payment, please contact our billing department."
+	FooterResults           = "For any technical issues accessing your results, please contact our support team."
+	FooterStaff             = "If you have any conflicts or concerns, please notify the scheduling department immediately."
+	FooterPolicy            = "If you have any questions about these updates, please don't hesitate to contact us."
+	FooterEmailVerification = "If you need any assistance, please contact our support team."
 )
 
 // Common template messages
@@ -45,9 +63,7 @@ const (
 	MsgBringID      = "Don't forget to bring a valid ID"
 	MsgCancelPolicy = "If you need to cancel, please do so at least 24 hours in advance"
 	MsgViewPortal   = "You can view or manage your appointment by logging into your account"
-	MsgKeepReceipt  = "This email serves as your receipt. Please keep it for your records"
-	MsgConfidential = "This email contains confidential medical information"
-	MsgDoNotReply   = "This is an automated message. Please do not reply to this email"
+	MsgKeepReceipt  = ""
 )
 
 // Template partial content

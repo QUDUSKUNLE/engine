@@ -27,6 +27,8 @@ type Config struct {
 	GoogleClientSecret string
 	GoogleRedirectURL  string
 
+	// Generated token
+	TokenExpired string
 	// Email Host and Port
 	EMAIL_HOST string
 	EMAIL_PORT string

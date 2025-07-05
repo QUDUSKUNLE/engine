@@ -1,10 +1,5 @@
 package emails
 
-import (
-	"bytes"
-	"html/template"
-)
-
 const appointmentRescheduleTemplate = `
 {{define "appointment_reschedule"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
@@ -25,22 +20,3 @@ const appointmentRescheduleTemplate = `
 </div>
 {{end}}
 `
-
-// GetAppointmentRescheduleTemplate returns the rendered appointment reschedule email
-func GetAppointmentRescheduleTemplate(data AppointmentEmailData) (string, error) {
-	baseTemplate := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
-	contentTemplate := template.Must(baseTemplate.New("content").Parse(appointmentRescheduleTemplate))
-
-	var buf bytes.Buffer
-	err := contentTemplate.ExecuteTemplate(&buf, "base", map[string]interface{}{
-		"Title":         data.Title,
-		"Icon":          data.Icon,
-		"Content":       data.Content,
-		"FooterContent": data.FooterContent,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
-}

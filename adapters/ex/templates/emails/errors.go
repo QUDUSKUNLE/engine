@@ -43,6 +43,19 @@ func NewValidationError(field, message string) error {
 // ValidateTemplateData validates the required fields in template data
 func ValidateTemplateData(data interface{}) error {
 	switch v := data.(type) {
+	case *EmailVerificationData:
+		if v == nil {
+			return NewValidationError("EmailVerificationData", "data cannot be nil")
+		}
+		if v.Name == "" {
+			return NewValidationError("Name", "cannot be empty")
+		}
+		if v.VerificationLink == "" {
+			return NewValidationError("VerificationLink", "cannot be empty")
+		}
+		if v.ExpiryDuration == "" {
+			return NewValidationError("ExpiryDuration", "cannot be empty")
+		}
 	case *AppointmentData:
 		if v == nil {
 			return NewValidationError("AppointmentData", "data cannot be nil")
@@ -64,24 +77,7 @@ func ValidateTemplateData(data interface{}) error {
 			return NewValidationError("TransactionID", "cannot be empty")
 		}
 		if v.PaymentAmount <= 0 {
-			return NewValidationError("PaymentAmount", "must be greater than zero")
-		}
-	case *TestResultsData:
-		if v == nil {
-			return NewValidationError("TestResultsData", "data cannot be nil")
-		}
-		if v.PatientName == "" {
-			return NewValidationError("PatientName", "cannot be empty")
-		}
-		if v.ResultsPortalURL == "" {
-			return NewValidationError("ResultsPortalURL", "cannot be empty")
-		}
-	case *StaffNotificationData:
-		if v == nil {
 			return NewValidationError("StaffNotificationData", "data cannot be nil")
-		}
-		if v.StaffName == "" {
-			return NewValidationError("StaffName", "cannot be empty")
 		}
 		if v.PatientName == "" {
 			return NewValidationError("PatientName", "cannot be empty")
