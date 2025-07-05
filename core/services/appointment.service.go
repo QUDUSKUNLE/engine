@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates"
+	"github.com/medivue/adapters/ex/templates/emails"
 	"github.com/medivue/core/domain"
 	"github.com/medivue/core/utils"
 )
@@ -626,8 +626,8 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 		return
 	}
 
-	data := templates.AppointmentEmailData{
-		EmailData: templates.EmailData{
+	data := emails.AppointmentEmailData{
+		EmailData: emails.EmailData{
 			AppName: "Medivue",
 		},
 		PatientName:     patient.Fullname.String,
@@ -640,7 +640,7 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	}
 
 	// Get email template
-	emailBody, err := templates.GetAppointmentConfirmationTemplate(data)
+	emailBody, err := emails.GetAppointmentConfirmationTemplate(data)
 	if err != nil {
 		utils.Error("Failed to generate confirmation email template",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -678,8 +678,8 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 		return
 	}
 
-	data := templates.AppointmentEmailData{
-		EmailData: templates.EmailData{
+	data := emails.AppointmentEmailData{
+		EmailData: emails.EmailData{
 			AppName: "Medivue",
 		},
 		PatientName:     patient.Fullname.String,
@@ -690,7 +690,7 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 		// Status:          appointment.Status,
 	}
 
-	body, err := templates.GetAppointmentCancellationTemplate(data)
+	body, err := emails.GetAppointmentCancellationTemplate(data)
 	if err != nil {
 		utils.Error("Failed to generate cancellation email template",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -723,8 +723,8 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 		return
 	}
 
-	data := templates.AppointmentEmailData{
-		EmailData: templates.EmailData{
+	data := emails.AppointmentEmailData{
+		EmailData: emails.EmailData{
 			AppName: "Medivue",
 		},
 		PatientName:     patient.Fullname.String,
@@ -735,7 +735,7 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 		// Status:          appointment.Status,
 	}
 
-	body, err := templates.GetAppointmentRescheduleTemplate(data)
+	body, err := emails.GetAppointmentRescheduleTemplate(data)
 	if err != nil {
 		utils.Error("Failed to generate reschedule email template",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -749,7 +749,7 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 }
 
 // notifyDiagnosticCentreOfNewAppointment notifies the diagnostic centre about a new appointment
-func (service *ServicesHandler) notifyDiagnosticCentreOfNewAppointment(appointment *db.Appointment, centre *db.DiagnosticCentre) {
+func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointment *db.Appointment, centre *db.DiagnosticCentre) {
 	// Get schedule details to get test type and doctor preference
 	schedule, err := service.ScheduleRepo.GetDiagnosticScheduleByCentre(context.Background(), db.Get_Diagnsotic_Schedule_By_CentreParams{
 		ID:                 appointment.ScheduleID,
@@ -780,8 +780,8 @@ func (service *ServicesHandler) notifyDiagnosticCentreOfNewAppointment(appointme
 		return
 	}
 
-	data := templates.AppointmentEmailData{
-		EmailData: templates.EmailData{
+	data := emails.StaffNotificationData{
+		EmailData: emails.EmailData{
 			AppName: "Medivue",
 		},
 		StaffName:       contact.Email, // Use contact email as staff name
@@ -795,7 +795,7 @@ func (service *ServicesHandler) notifyDiagnosticCentreOfNewAppointment(appointme
 		RequiredAction:  "New appointment confirmation received",
 	}
 
-	body, err := templates.GetStaffNotificationTemplate(data)
+	body, err := emails.GetStaffNotificationTemplate(data)
 	if err != nil {
 		utils.Error("Failed to generate staff notification template",
 			utils.LogField{Key: "error", Value: err.Error()})

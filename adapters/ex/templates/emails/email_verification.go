@@ -1,13 +1,13 @@
-package templates
+package emails
 
 var (
-	DiagnosticCentreManagerNotificationTemplate = `
+	EmailVerificationTemplate = `
 <!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Diagnostic Centre Management Notification - Medivue</title>
+	<title>Email Verification - Medivue</title>
 	<style>
 		:root {
 			--primary-color: #2563eb;
@@ -140,19 +140,25 @@ var (
 <body>
 	<div class="container">
 		<div class="header">
-			<h1>🎉 Management Notification!</h1>
+			<h1>🎉 Welcome to Medivue!</h1>
 		</div>
 		<div class="content">
-			<p><strong>Hi there,</strong></p>
-			<p>You have been assigned a Manager Role in the diagnostic centre below:</p>
-		<p><strong>Diagnostic Centre Name:</strong> %[1]s</p>
-		<p><strong>Address:</strong> %[2]s</p>
-		<div>
-			Wish your the very best
-		</div>
+			<p><strong>Dear %[1]s,</strong></p>
+			<p>Thank you for registering with Medivue. We're excited to have you join us! To ensure the security of your account, please verify your email address by clicking the button below:</p>
+			<button style="text-align: left;">
+				<a href="%[2]s/v1/verify_email?token=%[3]s&email=%[4]s" class="button">✉️ Verify Email Address</a>
+			</button>
+			<div class="note">
+				<p><strong>Note:</strong> This verification link will expire in 24 hours. If you don't verify your email within this time, you'll need to request a new verification link.</p>
+				<p style="font-style: italic; margin-bottom: 0;">If you didn't create an account with Medivue, please ignore this email.</p>
+			</div>
 		</div>
 		<div class="footer">
 			<p>Best regards,<br><strong>The Medivue Team</strong></p>
+			<div class="small-text">
+				<p style="margin: 0;">If you're having trouble with the button, copy and paste this URL into your web browser:</p>
+				<p class="link-text" style="margin: 8px 0;">%[2]s/v1/verify_email?token=%[3]s&email=%[4]s</p>
+			</div>
 		</div>
 	</div>
 </body>

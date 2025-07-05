@@ -1,8 +1,10 @@
-package templates
+package emails
 
 import (
 	"html/template"
 )
+
+var baseTemplate *template.Template
 
 const baseTemplateLayout = `
 <!DOCTYPE html>

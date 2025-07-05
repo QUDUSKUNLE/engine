@@ -1,4 +1,4 @@
-package templates
+package emails
 
 var (
 	PasswordResetTemplate = `
@@ -186,10 +186,10 @@ var (
 			<h1>Reset Your Password</h1>
 		</div>
 		<div class="content">
-			<p><strong>Hi there,</strong></p>
+			<p><strong>Dear %[1]s,</strong></p>
 			<p>We received a request to reset your password for your Medivue account. Click the button below to set a new password:</p>
 			<button style="text-align: left;">
-				<a href="%[1]s/v1/reset_password?token=%[2]s&email=%[3]s" class="button">Reset Password</a>
+				<a href="%[2]s/v1/reset_password?token=%[3]s&email=%[4]s" class="button">Reset Password</a>
 			</button>
 			<div class="note">
 				<p><strong>Important:</strong> This password reset link will expire in 15 minutes for security reasons.</p>

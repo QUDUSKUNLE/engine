@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates"
+	"github.com/medivue/adapters/ex/templates/emails"
 	"github.com/medivue/adapters/metrics"
 	"github.com/medivue/core/domain"
 	"github.com/medivue/core/utils"
@@ -103,8 +103,12 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	// Send Notification email
 	subject := "Diagnsotic Centre Manager - Diagnostic Centre Management Notification"
 	address := fmt.Sprintf("%s %s %s %s", dto.Address.Street, dto.Address.City, dto.Address.State, dto.Address.Country)
-	body := fmt.Sprintf(templates.DiagnosticCentreManagerNotificationTemplate,
-		diagnostic_centre.DiagnosticCentreName, address)
+	body := fmt.Sprintf(
+		emails.DiagnosticCentreManagerNotificationTemplate,
+		admin.Fullname,
+		diagnostic_centre.DiagnosticCentreName,
+		address,
+	)
 	err = service.notificationService.SendEmail(admin.Email.String, subject, body)
 	if err != nil {
 		utils.Error("Failed to send diagnostic centre management notification",
@@ -166,7 +170,6 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	params := db.Get_Nearest_Diagnostic_CentresParams{
 		Radians:   query.Latitude,
 		Radians_2: query.Longitude,
-		// Column3: query.Doctor,
 		Column4: query.DayOfWeek,
 		Column5: query.Test, // Empty string will match all days in SQL query
 	}
@@ -177,10 +180,6 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 		params.Doctors = []string{query.Doctor}
 		hasFilters = true
 	}
-	// if query.Test != "" {
-	// 	params.AvailableTests = []string{query.Test}
-	// 	hasFilters = true
-	// }
 
 	response, err := service.DiagnosticRepo.GetNearestDiagnosticCentres(context.Request().Context(), params)
 	if err != nil {

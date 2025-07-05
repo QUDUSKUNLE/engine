@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/medivue/adapters/ex/templates"
+	"github.com/medivue/adapters/ex/templates/emails"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -64,7 +64,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	subject := "Sign up for Medivue - Email Verification"
 	appURL := os.Getenv("APP_URL")
 	escapedEmail := url.QueryEscape(createdUser.Email.String)
-	body := fmt.Sprintf(templates.EmailVerificationTemplate,
+	body := fmt.Sprintf(emails.EmailVerificationTemplate,
 		appURL, verificationToken.Token, escapedEmail,
 		appURL, verificationToken.Token, escapedEmail)
 
@@ -104,9 +104,11 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 	userDto := domain.UserRegisterDTO{
-		Email:    dto.Email,
-		Password: password,
-		UserType: dto.UserType,
+		Email:     dto.Email,
+		LastName:  dto.LastName,
+		FirstName: dto.FirstName,
+		Password:  password,
+		UserType:  dto.UserType,
 	}
 
 	newUser, err := domain.BuildNewUser(userDto)
@@ -123,8 +125,12 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 
 	// Send registration email
 	subject := "Sign up for Medivue - Registration Notification"
-	body := fmt.Sprintf(templates.DiagnosticCentreManagerEmailVerificationTemplate,
-		createdUser.Email.String, password)
+	body := fmt.Sprintf(
+		emails.DiagnosticCentreManagerEmailVerificationTemplate,
+		createdUser.Fullname,
+		createdUser.Email.String,
+		password,
+	)
 
 	err = service.notificationService.SendEmail(createdUser.Email.String, subject, body)
 	if err != nil {
@@ -216,7 +222,9 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	subject := "Reset Your Password - Medivue"
 	appURL := os.Getenv("APP_URL")
 	escapedEmail := url.QueryEscape(user.Email.String)
-	body := fmt.Sprintf(templates.PasswordResetTemplate,
+	body := fmt.Sprintf(
+		emails.PasswordResetTemplate,
+		user.Fullname,
 		appURL, token, escapedEmail)
 
 	err = service.notificationService.SendEmail(user.Email.String, subject, body)
@@ -398,8 +406,9 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	subject := "Sign up for Medivue - Email Verification"
 	appURL := os.Getenv("APP_URL")
 	escapedEmail := url.QueryEscape(user.Email.String)
-	body := fmt.Sprintf(templates.EmailVerificationTemplate,
-		appURL, verificationToken.Token, user.ID,
+	body := fmt.Sprintf(
+		emails.EmailVerificationTemplate,
+		user.Fullname,
 		appURL, verificationToken.Token, escapedEmail)
 
 	err = service.notificationService.SendEmail(user.Email.String, subject, body)
@@ -472,6 +481,7 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 	if user == nil {
 		// Create new user
 		newUser := db.CreateUserParams{
+			Fullname: pgtype.Text{String: tokenInfo.Email, Valid: true},
 			// ID:            uuid.New().String(),
 			Email:    pgtype.Text{String: tokenInfo.Email, Valid: true},
 			Password: "", // No password for Google users
@@ -504,8 +514,8 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 		utils.LogField{Key: "user_id", Value: user.ID})
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{
-		"token": token,
-		"name":  tokenInfo.UserId,
+		"token":     token,
+		"user_type": string(user.UserType),
 	}, context)
 }
 

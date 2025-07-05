@@ -1,4 +1,4 @@
-package templates
+package emails
 
 var (
 	DiagnosticCentreManagerEmailVerificationTemplate = `
@@ -143,10 +143,10 @@ var (
 			<h1>🎉 Welcome to Medivue!</h1>
 		</div>
 		<div class="content">
-			<p><strong>Hi there,</strong></p>
+			<p><strong>Dear %[1]s,</strong></p>
 			<p>Thank you for registering with Medivue. We're excited to have you join us! To ensure the security of your account, please find below your login details:</p>
-		<p><strong>Email:</strong> %[1]s</p>
-		<p><strong>Password:</strong> %[2]s</p>
+		<p><strong>Email:</strong> %[2]s</p>
+		<p><strong>Password:</strong> %[3]s</p>
 		<div>
 			It's advisable you change your password.
 		</div>
