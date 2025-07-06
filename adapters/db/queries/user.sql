@@ -8,9 +8,10 @@ INSERT INTO users (
   password,
   user_type,
   phone_number,
-  email_verified
+  email_verified,
+  fullname
 ) VALUES  (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5, $6, $7
 ) RETURNING id, email, nin, user_type, fullname, phone_number, email_verified, email_verified_at, created_at, updated_at;
 
 -- name: GetUserByEmail :one

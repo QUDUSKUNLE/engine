@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates"
+	"github.com/medivue/adapters/ex/templates/emails"
 	// "github.com/medivue/core/utils"
 )
 
@@ -79,8 +79,8 @@ func (j *ReminderJob) SendReminderEmail(appointment *db.Appointment) error {
 		return err
 	}
 
-	data := templates.AppointmentEmailData{
-		EmailData: templates.EmailData{
+	data := emails.AppointmentEmailData{
+		EmailData: emails.EmailData{
 			AppName: "Medivue",
 		},
 		PatientName:     patient.Fullname.String,
@@ -91,10 +91,5 @@ func (j *ReminderJob) SendReminderEmail(appointment *db.Appointment) error {
 		// Status:          appointment.Status,
 	}
 
-	body, err := templates.GetAppointmentReminderTemplate(data)
-	if err != nil {
-		return err
-	}
-
-	return j.notificationSvc.SendEmail(patient.Email.String, "Appointment Reminder", body)
+	return j.notificationSvc.SendEmail(patient.Email.String, "Appointment Reminder", emails.TemplateAppointmentReminder, data)
 }

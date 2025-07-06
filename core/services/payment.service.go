@@ -199,7 +199,7 @@ func (s *ServicesHandler) validatePaymentStatus(current, new db.PaymentStatus) e
 }
 
 // validateAmount validates payment amount constraints
-func (s *ServicesHandler) validateAmount(amount float64, currency string) error {
+func (s *ServicesHandler) ValidateAmount(amount float64, currency string) error {
 	// Define currency-specific constraints
 	minAmounts := map[string]float64{
 		"NGN": 100.00, // Minimum amount for NGN
@@ -335,7 +335,7 @@ func (s *ServicesHandler) validateAndParseMetadata(rawMetadata interface{}) ([]b
 }
 
 // isPaymentVerificationError determines if an error is a verification error that should trigger a retry
-func (s *ServicesHandler) isPaymentVerificationError(err error) bool {
+func (s *ServicesHandler) IsPaymentVerificationError(err error) bool {
 	var pErr *PaymentError
 	if errors.As(err, &pErr) {
 		return pErr.Code == ErrCodePaymentVerification

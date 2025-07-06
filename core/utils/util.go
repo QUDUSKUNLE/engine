@@ -54,14 +54,6 @@ func InitValidator() error {
 		return fmt.Errorf("failed to register min_one validator: %w", err)
 	}
 
-	// if err := validate.RegisterValidation("time_slot", ValidateTimeSlot); err != nil {
-	// 	return fmt.Errorf("failed to register time_slot validator: %w", err)
-	// }
-
-	// if err := validate.RegisterValidation("time", ValidateTime); err != nil {
-	// 	return fmt.Errorf("failed to register time validator: %w", err)
-	// }
-
 	// Register validation for comparing times
 	validate.RegisterStructValidation(validateTimeComparison, domain.Slots{})
 

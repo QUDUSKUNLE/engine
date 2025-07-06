@@ -10,12 +10,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/medivue/adapters/ex/templates"
-
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/medivue/adapters/db"
+	"github.com/medivue/adapters/ex/templates/emails"
 	"github.com/medivue/core/domain"
 	"github.com/medivue/core/utils"
 	"golang.org/x/oauth2"
@@ -61,18 +60,23 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	}
 
 	// Send verification email
-	subject := "Sign up for Medivue - Email Verification"
-	appURL := os.Getenv("APP_URL")
 	escapedEmail := url.QueryEscape(createdUser.Email.String)
-	body := fmt.Sprintf(templates.EmailVerificationTemplate,
-		appURL, verificationToken.Token, escapedEmail,
-		appURL, verificationToken.Token, escapedEmail)
 
-	err = service.notificationService.SendEmail(createdUser.Email.String, subject, body)
+	emaildata := &emails.EmailVerificationData{
+		Name:             newUser.Fullname.String,
+		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.AppUrl, verificationToken.Token, escapedEmail),
+		ExpiryDuration:   "24 hours",
+	}
+
+	err = service.notificationService.SendEmail(
+		createdUser.Email.String,
+		emails.SubjectEmailVerification,
+		emails.TemplateEmailVerification,
+		emaildata,
+	)
 	if err != nil {
 		utils.Error("Failed to send verification email",
 			utils.LogField{Key: "error", Value: err.Error()})
-		// Don't return error here, user is still created
 	}
 
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)
@@ -104,9 +108,11 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 	userDto := domain.UserRegisterDTO{
-		Email:    dto.Email,
-		Password: password,
-		UserType: dto.UserType,
+		Email:     dto.Email,
+		LastName:  dto.LastName,
+		FirstName: dto.FirstName,
+		Password:  password,
+		UserType:  dto.UserType,
 	}
 
 	newUser, err := domain.BuildNewUser(userDto)
@@ -123,10 +129,19 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 
 	// Send registration email
 	subject := "Sign up for Medivue - Registration Notification"
-	body := fmt.Sprintf(templates.DiagnosticCentreManagerEmailVerificationTemplate,
-		createdUser.Email.String, password)
+	// body := fmt.Sprintf(
+	// 	emails.DiagnosticCentreManagerEmailVerificationTemplate,
+	// 	createdUser.Fullname.String,
+	// 	createdUser.Email.String,
+	// 	password,
+	// )
+	emaildata := emails.EmailVerificationData{
+		Name:             createdUser.Fullname.String,
+		VerificationLink: "",
+		ExpiryDuration:   "15 mins",
+	}
 
-	err = service.notificationService.SendEmail(createdUser.Email.String, subject, body)
+	err = service.notificationService.SendEmail(createdUser.Email.String, subject, emails.TemplateEmailVerification, emaildata)
 	if err != nil {
 		utils.Error("Failed to registration email",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -197,7 +212,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 
 	// Generate reset token
 	token := generateResetToken()
-	expiresAt := time.Now().Add(15 * time.Minute)
+	expiresAt := time.Now().Add(10 * time.Minute)
 
 	// Save token to database
 	resetToken := db.CreatePasswordResetTokenParams{
@@ -213,20 +228,23 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	}
 
 	// Send password reset email
-	subject := "Reset Your Password - Medivue"
-	appURL := os.Getenv("APP_URL")
-	escapedEmail := url.QueryEscape(user.Email.String)
-	body := fmt.Sprintf(templates.PasswordResetTemplate,
-		appURL, token, escapedEmail)
 
-	err = service.notificationService.SendEmail(user.Email.String, subject, body)
+	emailData := &emails.PasswordResetData{
+		Name:      user.Fullname.String,
+		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.AppUrl, token, url.QueryEscape(user.Email.String)),
+		ExpiresIn: "15 minutes",
+	}
+	err = service.notificationService.SendEmail(
+		user.Email.String,
+		emails.SubjectResetPassword,
+		emails.TemplateResetPassword,
+		emailData)
 	if err != nil {
 		utils.Error("Failed to send password reset email",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: user.ID})
 		// Don't return error here to prevent email enumeration
 	}
-
 	utils.Info("Password reset token generated and email sent",
 		utils.LogField{Key: "user_id", Value: user.ID},
 		utils.LogField{Key: "expires_at", Value: expiresAt})
@@ -383,7 +401,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	}
 
 	// Save token to database
-	verificationToken, err := service.UserRepo.CreateEmailVerificationToken(
+	_, err = service.UserRepo.CreateEmailVerificationToken(
 		context.Request().Context(),
 		verificationParams,
 	)
@@ -395,19 +413,20 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	}
 
 	// Send verification email
-	subject := "Sign up for Medivue - Email Verification"
-	appURL := os.Getenv("APP_URL")
-	escapedEmail := url.QueryEscape(user.Email.String)
-	body := fmt.Sprintf(templates.EmailVerificationTemplate,
-		appURL, verificationToken.Token, user.ID,
-		appURL, verificationToken.Token, escapedEmail)
+	// subject := "Sign up for Medivue - Email Verification"
+	// appURL := os.Getenv("APP_URL")
+	// escapedEmail := url.QueryEscape(user.Email.String)
+	// body := fmt.Sprintf(
+	// 	emails.EmailVerificationTemplate,
+	// 	user.Fullname,
+	// 	appURL, verificationToken.Token, escapedEmail)
 
-	err = service.notificationService.SendEmail(user.Email.String, subject, body)
-	if err != nil {
-		utils.Error("Failed to send verification email",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
-	}
+	// err = service.notificationService.SendEmail(user.Email.String, subject, body)
+	// if err != nil {
+	// 	utils.Error("Failed to send verification email",
+	// 		utils.LogField{Key: "error", Value: err.Error()})
+	// 	return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	// }
 
 	utils.Info("Verification email resent successfully",
 		utils.LogField{Key: "email", Value: user.Email.String})
@@ -472,6 +491,7 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 	if user == nil {
 		// Create new user
 		newUser := db.CreateUserParams{
+			Fullname: pgtype.Text{String: tokenInfo.Email, Valid: true},
 			// ID:            uuid.New().String(),
 			Email:    pgtype.Text{String: tokenInfo.Email, Valid: true},
 			Password: "", // No password for Google users
@@ -504,8 +524,8 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 		utils.LogField{Key: "user_id", Value: user.ID})
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{
-		"token": token,
-		"name":  tokenInfo.UserId,
+		"token":     token,
+		"user_type": string(user.UserType),
 	}, context)
 }
 
