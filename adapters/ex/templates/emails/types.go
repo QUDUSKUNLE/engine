@@ -14,7 +14,6 @@ type EmailData struct {
 
 // EmailVerificationData contains fields for email verification emails
 type EmailVerificationData struct {
-	// EmailData
 	Name             string
 	VerificationLink string
 	ExpiryDuration   string
@@ -86,10 +85,11 @@ type PolicyUpdateData struct {
 
 // PasswordResetData contains data for password reset emails
 type PasswordResetData struct {
-	EmailData
+	Name      string
 	ResetLink string
 	Token     string
 	ExpiresIn string
+	Email     string
 }
 
 type AppointmentEmailData struct {

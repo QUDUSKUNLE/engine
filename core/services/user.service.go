@@ -212,7 +212,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 
 	// Generate reset token
 	token := generateResetToken()
-	expiresAt := time.Now().Add(15 * time.Minute)
+	expiresAt := time.Now().Add(10 * time.Minute)
 
 	// Save token to database
 	resetToken := db.CreatePasswordResetTokenParams{
@@ -228,22 +228,23 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	}
 
 	// Send password reset email
-	// subject := "Reset Your Password - Medivue"
-	// appURL := os.Getenv("APP_URL")
-	// escapedEmail := url.QueryEscape(user.Email.String)
-	// body := fmt.Sprintf(
-	// 	emails.PasswordResetTemplate,
-	// 	user.Fullname,
-	// 	appURL, token, escapedEmail)
 
-	// err = service.notificationService.SendEmail(user.Email.String, subject, body)
-	// if err != nil {
-	// 	utils.Error("Failed to send password reset email",
-	// 		utils.LogField{Key: "error", Value: err.Error()},
-	// 		utils.LogField{Key: "user_id", Value: user.ID})
-	// 	// Don't return error here to prevent email enumeration
-	// }
-
+	emailData := &emails.PasswordResetData{
+		Name:      user.Fullname.String,
+		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.AppUrl, token, url.QueryEscape(user.Email.String)),
+		ExpiresIn: "15 minutes",
+	}
+	err = service.notificationService.SendEmail(
+		user.Email.String,
+		emails.SubjectResetPassword,
+		emails.TemplateResetPassword,
+		emailData)
+	if err != nil {
+		utils.Error("Failed to send password reset email",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: user.ID})
+		// Don't return error here to prevent email enumeration
+	}
 	utils.Info("Password reset token generated and email sent",
 		utils.LogField{Key: "user_id", Value: user.ID},
 		utils.LogField{Key: "expires_at", Value: expiresAt})
