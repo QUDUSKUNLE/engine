@@ -17,11 +17,12 @@ const (
 )
 
 const (
-	TemplateTestResults          = "test_results_available"
-	TemplatePolicyUpdate         = "policy_update"
-	TemplateStaffNotification    = "staff_notification"
-	TemplateEmailVerification    = "email_verification"
-	TemplatePaymentConfirmation  = "payment_confirmation"
+	TemplateTestResults         = "test_results_available"
+	TemplatePolicyUpdate        = "policy_update"
+	TemplateStaffNotification   = "staff_notification"
+	TemplateResetPassword       = "password_reset"
+	TemplateEmailVerification   = "email_verification"
+	TemplatePaymentConfirmation = "payment_confirmation"
 
 	TemplateAppointmentConfirmed = "appointment_confirmation"
 	TemplateAppointmentCancelled = "appointment_cancellation"
@@ -30,6 +31,7 @@ const (
 
 const (
 	SubjectEmailVerification = "Sign up for Medivue - Email Verification"
+	SubjectResetPassword     = "Reset Your Password - Medivue"
 )
 
 // Email template icons (emojis)
@@ -43,6 +45,7 @@ const (
 	IconStaff             = "👥"
 	IconPolicy            = "📋"
 	IconEmailVerification = "✉️"
+	IconResetPassword     = "🔄"
 )
 
 // Footer messages
@@ -54,6 +57,7 @@ const (
 	FooterStaff             = "If you have any conflicts or concerns, please notify the scheduling department immediately."
 	FooterPolicy            = "If you have any questions about these updates, please don't hesitate to contact us."
 	FooterEmailVerification = "If you need any assistance, please contact our support team."
+	FooterResetPassord = "If you need any assistance, please contact our support team."
 )
 
 // Common template messages

@@ -55,10 +55,13 @@ func (c *TemplateCache) Compile() error {
 		"appointment_confirmation": appointmentConfirmationTemplate,
 		"appointment_cancellation": appointmentCancellationTemplate,
 		"appointment_reminder":     appointmentReminderTemplate,
+		"appointment_reschedule":   appointmentRescheduleTemplate,
 		"payment_confirmation":     paymentConfirmationTemplate,
 		"test_results":             testResultsTemplate,
 		"staff_notification":       staffNotificationTemplate,
 		"policy_update":            policyUpdateTemplate,
+		"email_verification":       emailVerificationTemplate,
+		"password_reset":           passwordResetTemplate,
 	}
 
 	base := template.New("base").Funcs(TemplateFuncs)
