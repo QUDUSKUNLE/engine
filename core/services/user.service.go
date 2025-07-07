@@ -420,6 +420,11 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 		emaildata,
 	)
 
+	if err != nil {
+		utils.Error("Failed to resend verification email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
+
 	utils.Info("Verification email resent successfully",
 		utils.LogField{Key: "email", Value: user.Email.String})
 
