@@ -8,7 +8,7 @@ const paymentConfirmationTemplate = `
 <div class="details">
     <ul>
         <li><strong>Transaction ID:</strong> {{.TransactionID}}</li>
-        <li><strong>Amount Paid:</strong> {{.PaymentAmount | formatCurrency}}</li>
+        <li><strong>Amount Paid:</strong> {{.PaymentAmount}}</li>
         <li><strong>Payment Method:</strong> {{.PaymentMethod}} {{if .LastFourDigits}}ending in {{.LastFourDigits}}{{end}}</li>
         <li><strong>Date:</strong> {{.PaymentDate | formatDate}}</li>
     </ul>

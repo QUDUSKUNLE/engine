@@ -101,7 +101,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 	}
 
 	// Generate password and create user
-	password, err := GenerateRandomPassword(12)
+	password, err := GenerateRandomPassword(15)
 	if err != nil {
 		utils.Error("Failed to generate random password",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -128,20 +128,13 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 	}
 
 	// Send registration email
-	subject := "Sign up for Medivue - Registration Notification"
-	// body := fmt.Sprintf(
-	// 	emails.DiagnosticCentreManagerEmailVerificationTemplate,
-	// 	createdUser.Fullname.String,
-	// 	createdUser.Email.String,
-	// 	password,
-	// )
-	emaildata := emails.EmailVerificationData{
-		Name:             createdUser.Fullname.String,
-		VerificationLink: "",
-		ExpiryDuration:   "15 mins",
+	emaildata := emails.DiagnosticCentreManager{
+		ManagerName: createdUser.Fullname.String,
+		Email:       newUser.Email.String,
+		Password:    password,
 	}
 
-	err = service.notificationService.SendEmail(createdUser.Email.String, subject, emails.TemplateEmailVerification, emaildata)
+	err = service.notificationService.SendEmail(createdUser.Email.String, emails.SubjectDiagnosticCentreManager, emails.TemplateDiagnosticCentreManager, emaildata)
 	if err != nil {
 		utils.Error("Failed to registration email",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -413,20 +406,19 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	}
 
 	// Send verification email
-	// subject := "Sign up for Medivue - Email Verification"
-	// appURL := os.Getenv("APP_URL")
-	// escapedEmail := url.QueryEscape(user.Email.String)
-	// body := fmt.Sprintf(
-	// 	emails.EmailVerificationTemplate,
-	// 	user.Fullname,
-	// 	appURL, verificationToken.Token, escapedEmail)
+	escapedEmail := url.QueryEscape(user.Email.String)
+	emaildata := &emails.EmailVerificationData{
+		Name:             user.Fullname.String,
+		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.AppUrl, token, escapedEmail),
+		ExpiryDuration:   "24 hours",
+	}
 
-	// err = service.notificationService.SendEmail(user.Email.String, subject, body)
-	// if err != nil {
-	// 	utils.Error("Failed to send verification email",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// 	return utils.ErrorResponse(http.StatusInternalServerError, err, context)
-	// }
+	err = service.notificationService.SendEmail(
+		user.Email.String,
+		emails.SubjectEmailVerification,
+		emails.TemplateEmailVerification,
+		emaildata,
+	)
 
 	utils.Info("Verification email resent successfully",
 		utils.LogField{Key: "email", Value: user.Email.String})

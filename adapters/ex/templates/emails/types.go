@@ -75,7 +75,6 @@ type StaffNotificationData struct {
 
 // PolicyUpdateData contains fields for policy update emails
 type PolicyUpdateData struct {
-	EmailData
 	PatientName    string
 	PolicyTitle    string
 	PolicyDetails  string
@@ -123,7 +122,6 @@ type AppointmentEmailData struct {
 
 // Additional fields for notification emails
 type NotificationData struct {
-	EmailData
 	// AppointmentEmailData
 	// Fields for test results
 	ResultsAvailable bool
@@ -140,4 +138,16 @@ type NotificationData struct {
 	StaffName      string
 	RequiredAction string
 	SpecialNotes   string
+}
+
+type DiagnosticCentreManager struct {
+	ManagerName string
+	Email       string
+	Password    string
+}
+
+type DiagnosticCentreManagement struct {
+	Name          string
+	CentreName    string
+	CentreAddress string
 }

@@ -52,16 +52,18 @@ func (c *TemplateCache) GetOrSet(name string, creator func() *template.Template)
 // Compile pre-compiles and caches all templates
 func (c *TemplateCache) Compile() error {
 	templates := map[string]string{
-		"appointment_confirmation": appointmentConfirmationTemplate,
-		"appointment_cancellation": appointmentCancellationTemplate,
-		"appointment_reminder":     appointmentReminderTemplate,
-		"appointment_reschedule":   appointmentRescheduleTemplate,
-		"payment_confirmation":     paymentConfirmationTemplate,
-		"test_results":             testResultsTemplate,
-		"staff_notification":       staffNotificationTemplate,
-		"policy_update":            policyUpdateTemplate,
-		"email_verification":       emailVerificationTemplate,
-		"password_reset":           passwordResetTemplate,
+		TemplateAppointmentConfirmed:       appointmentConfirmationTemplate,
+		TemplateAppointmentCancelled:       appointmentCancellationTemplate,
+		TemplateAppointmentReminder:        appointmentReminderTemplate,
+		TemplateAppointmentReschedule:      appointmentRescheduleTemplate,
+		TemplatePaymentConfirmation:        paymentConfirmationTemplate,
+		TemplateTestResults:                testResultsTemplate,
+		TemplateStaffNotification:          staffNotificationTemplate,
+		TemplatePolicyUpdate:               policyUpdateTemplate,
+		TemplateEmailVerification:          emailVerificationTemplate,
+		TemplateResetPassword:              passwordResetTemplate,
+		TemplateDiagnosticCentreManager:    diagnosticCentreManagerEmailVerificationTemplate,
+		TemplateDiagnosticCentreManagement: diagnosticCentreManagerNotificationTemplate,
 	}
 
 	base := template.New("base").Funcs(TemplateFuncs)

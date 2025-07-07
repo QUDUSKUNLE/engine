@@ -2,13 +2,14 @@ package services
 
 import (
 	"errors"
-	// "fmt"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/medivue/adapters/db"
+	"github.com/medivue/adapters/ex/templates/emails"
 	"github.com/medivue/adapters/metrics"
 	"github.com/medivue/core/domain"
 	"github.com/medivue/core/utils"
@@ -33,7 +34,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
 	}
 
-	_, err = service.UserRepo.GetUser(context.Request().Context(), dto.AdminId.String())
+	admin, err := service.UserRepo.GetUser(context.Request().Context(), dto.AdminId.String())
 	if err != nil {
 		utils.Error("Failed to get admin",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -100,19 +101,17 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 	// Send Notification email
-	// subject := "Diagnsotic Centre Manager - Diagnostic Centre Management Notification"
-	// address := fmt.Sprintf("%s %s %s %s", dto.Address.Street, dto.Address.City, dto.Address.State, dto.Address.Country)
-	// body := fmt.Sprintf(
-	// 	emails.DiagnosticCentreManagerNotificationTemplate,
-	// 	admin.Fullname,
-	// 	diagnostic_centre.DiagnosticCentreName,
-	// 	address,
-	// )
-	// err = service.notificationService.SendEmail(admin.Email.String, subject, body)
-	// if err != nil {
-	// 	utils.Error("Failed to send diagnostic centre management notification",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// }
+	address := fmt.Sprintf("%s %s %s %s", dto.Address.Street, dto.Address.City, dto.Address.State, dto.Address.Country)
+	emailData := &emails.DiagnosticCentreManagement{
+		Name:          admin.Fullname.String,
+		CentreName:    diagnostic_centre.DiagnosticCentreName,
+		CentreAddress: address,
+	}
+	err = service.notificationService.SendEmail(admin.Email.String, emails.SubjectDiagnosticCentreManagement, emails.TemplateDiagnosticCentreManagement, emailData)
+	if err != nil {
+		utils.Error("Failed to send diagnostic centre management notification",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
 	return utils.ResponseMessage(http.StatusCreated, res, context)
 }
 
@@ -169,8 +168,8 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	params := db.Get_Nearest_Diagnostic_CentresParams{
 		Radians:   query.Latitude,
 		Radians_2: query.Longitude,
-		Column4: query.DayOfWeek,
-		Column5: query.Test, // Empty string will match all days in SQL query
+		Column4:   query.DayOfWeek,
+		Column5:   query.Test, // Empty string will match all days in SQL query
 	}
 
 	hasFilters := false
