@@ -45,6 +45,10 @@ func (h *EmailTemplateHandler) ExecuteTemplate(templateName string, data interfa
 		return h.renderPolicyUpdate(data.(*PolicyUpdateData))
 	case TemplateResetPassword:
 		return h.renderResetPassword(data.(*PasswordResetData))
+	case TemplateDiagnosticCentreManager:
+		return h.renderDiagnosticCentreManager(data.(*DiagnosticCentreManager))
+	case TemplateDiagnosticCentreManagement:
+		return h.renderDiagnosticCentreManagement(data.(*DiagnosticCentreManagement))
 	default:
 		return "", fmt.Errorf("unknown template: %s", templateName)
 	}
@@ -181,6 +185,36 @@ func (h *EmailTemplateHandler) renderResetPassword(data *PasswordResetData) (str
 			Title:         TitleResetPassword,
 			Icon:          IconResetPassword,
 			FooterContent: FooterResetPassord,
+		})
+}
+
+// renderDiagnosticCentreManager renders the diagnostic centre manager email
+func (h *EmailTemplateHandler) renderDiagnosticCentreManager(data *DiagnosticCentreManager) (string, error) {
+	if err := ValidateTemplateData(data); err != nil {
+		return "", err
+	}
+	return h.renderTemplate(
+		TemplateDiagnosticCentreManager,
+		data,
+		EmailData{
+			Title:         TitleDiagnosticCentreManagement,
+			Icon:          IconEmailVerification,
+			FooterContent: FooterSupport,
+		})
+}
+
+// renderDiagnosticCentreManager renders the diagnostic centre manager email
+func (h *EmailTemplateHandler) renderDiagnosticCentreManagement(data *DiagnosticCentreManagement) (string, error) {
+	if err := ValidateTemplateData(data); err != nil {
+		return "", err
+	}
+	return h.renderTemplate(
+		TemplateDiagnosticCentreManagement,
+		data,
+		EmailData{
+			Title:         TitleDiagnosticCentreManager,
+			Icon:          IconEmailVerification,
+			FooterContent: FooterSupport,
 		})
 }
 
