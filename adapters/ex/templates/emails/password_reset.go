@@ -16,14 +16,5 @@ const passwordResetTemplate = `
 			<p><strong>Important:</strong> This password reset link will expire in {{.ExpiresIn}} for security reasons.</p>
 			<p>If you didn't request a password reset, please ignore this email and make sure you can still log into your account.</p>
 </div>
-<div style="margin-top: 40px; font-size: 14px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-	<p>Best regards,<br>
-		<strong>The Medivue Team</strong>
-	</p>
-	<p style="margin-top: 16px;">If you're having trouble with the button, copy and paste this URL into your web browser:
-	</p>
-	<p style="word-break: break-word; color: #2563eb;">{{.ResetLink}}</p>
-</div>
 {{end}}
 `
-
