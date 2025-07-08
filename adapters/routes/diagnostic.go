@@ -20,7 +20,7 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 		},
 		{
 			method:  http.MethodPost,
-			path:    "/diagnostic_centre_manager",
+			path:    "/diagnostic_centres/manager",
 			handler: handler.CreateDiagnosticCentreManager,
 			factory: func() interface{} {
 				return &domain.DiagnosticCentreManagerRegisterDTO{}

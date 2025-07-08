@@ -946,91 +946,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/diagnostic_centre_manager": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new diagnostic centre manager account. Only accessible by diagnostic centre owners.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "DiagnosticCentre"
-                ],
-                "summary": "Create a diagnostic centre manager",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Manager details",
-                        "name": "manager",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/domain.DiagnosticCentreManagerRegisterDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Manager account created successfully",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ManagerSwagger"
-                        }
-                    },
-                    "202": {
-                        "description": "Manager invite sent successfully",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input data/Email already exists",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not a diagnostic centre owner",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Invalid manager type",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/diagnostic_centres": {
             "get": {
                 "description": "Search for diagnostic centres based on location, available doctors, and test types",
@@ -1309,6 +1224,89 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "User is not a manager",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new diagnostic centre manager account. Only accessible by diagnostic centre owners.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Create a diagnostic centre manager",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Manager details",
+                        "name": "manager",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.DiagnosticCentreManagerRegisterDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Manager account created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ManagerSwagger"
+                        }
+                    },
+                    "202": {
+                        "description": "Manager invite sent successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data/Email already exists",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Not a diagnostic centre owner",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid manager type",
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }

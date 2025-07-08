@@ -63,7 +63,7 @@ func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 // @Failure 403 {object} handlers.ErrorResponse "Not a diagnostic centre owner"
 // @Failure 422 {object} handlers.ErrorResponse "Invalid manager type"
 // @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /v1/diagnostic_centre_manager [post]
+// @Router /v1/diagnostic_centres/manager [post]
 func (handler *HTTPHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	return handler.service.CreateDiagnosticCentreManager(context)
 }
