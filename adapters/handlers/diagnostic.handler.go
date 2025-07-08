@@ -18,6 +18,16 @@ type DiagnosticCentreSwagger struct {
 	// ...add other fields as needed for docs
 }
 
+type ManagerSwagger struct {
+	ID        string `json:"id" example:"user-001"`
+	Email     string `json:"email" example:"user@example.com"`
+	FullName  string `json:"full_name" example:"John Doe"`
+	Role      string `json:"role" example:"DIAGNOSTIC_CENTRE_MANAGER"`
+	CreatedAt string `json:"created_at" example:"2025-06-27T12:00:00Z"` // format: date-time
+	UpdatedAt string `json:"updated_at" example:"2025-06-27T12:00:00Z"` // format: date-time
+	// ...add other fields as needed for docs
+}
+
 // CreateDiagnostic godoc
 // @Summary Create a new diagnostic centre
 // @Description Create a new diagnostic centre with location, contact details, and available services
@@ -35,6 +45,27 @@ type DiagnosticCentreSwagger struct {
 // @Router /v1/diagnostic_centres [post]
 func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 	return handler.service.CreateDiagnosticCentre(context)
+}
+
+// CreateDiagnosticCentreManager godoc
+// @Summary Create a diagnostic centre manager
+// @Description Create a new diagnostic centre manager account. Only accessible by diagnostic centre owners.
+// @Tags DiagnosticCentre
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param manager body domain.DiagnosticCentreManagerRegisterDTO true "Manager details"
+// @Success 201 {object} handlers.ManagerSwagger "Manager account created successfully"
+// @Success 202 {object} map[string]string "Manager invite sent successfully"
+// @Failure 400 {object} handlers.ErrorResponse "Invalid input data/Email already exists"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 403 {object} handlers.ErrorResponse "Not a diagnostic centre owner"
+// @Failure 422 {object} handlers.ErrorResponse "Invalid manager type"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Router /v1/diagnostic_centre_manager [post]
+func (handler *HTTPHandler) CreateDiagnosticCentreManager(context echo.Context) error {
+	return handler.service.CreateDiagnosticCentreManager(context)
 }
 
 // GetDiagnosticCentre godoc

@@ -961,7 +961,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "DiagnosticCentre"
                 ],
                 "summary": "Create a diagnostic centre manager",
                 "parameters": [

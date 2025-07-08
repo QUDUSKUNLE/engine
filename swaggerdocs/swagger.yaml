@@ -1712,7 +1712,7 @@ paths:
       - BearerAuth: []
       summary: Create a diagnostic centre manager
       tags:
-      - User
+      - DiagnosticCentre
   /v1/diagnostic_centres:
     get:
       description: Search for diagnostic centres based on location, available doctors,
