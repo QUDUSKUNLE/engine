@@ -129,6 +129,16 @@ const BaseLayout = `
             font-size: 13px;
             line-height: 1.5;
         }
+        .button {
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -137,7 +147,17 @@ const BaseLayout = `
             <h2>{{.Icon}} {{.Title}}</h2>
         </div>
         <div class="content">
-            {{.Content}}
+            {{if eq .Type "email_verification" }}
+                {{template "email_verification" .Data}}
+            {{else if eq .Type "dc_management_notification" }}
+                {{template "dc_management_notification" .Data}}
+            {{else if eq .Type "appointment_cancellation"}}
+                {{template "appointment_cancellation" .Data}}
+            {{else if eq .Type "dc_manager_notification"}} 
+                {{template "dc_manager_notification" .Data}}
+            {{else if eq .Type "password_reset"}}
+                {{template "password_reset" .Data}}
+            {{end}}
         </div>
         <div class="footer">
             <p>Best regards,<br><strong>The Medivue Team</strong></p>

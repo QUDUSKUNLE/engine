@@ -107,11 +107,13 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		CentreName:    diagnostic_centre.DiagnosticCentreName,
 		CentreAddress: address,
 	}
-	err = service.notificationService.SendEmail(admin.Email.String, emails.SubjectDiagnosticCentreManagement, emails.TemplateDiagnosticCentreManagement, emailData)
-	if err != nil {
-		utils.Error("Failed to send diagnostic centre management notification",
-			utils.LogField{Key: "error", Value: err.Error()})
-	}
+	go service.emailGoroutine(
+		emailData,
+		admin.Email.String,
+		emails.SubjectDiagnosticCentreManagement,
+		emails.TemplateDiagnosticCentreManagement,
+	)
+
 	return utils.ResponseMessage(http.StatusCreated, res, context)
 }
 

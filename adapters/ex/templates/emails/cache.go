@@ -49,32 +49,39 @@ func (c *TemplateCache) GetOrSet(name string, creator func() *template.Template)
 	return tmpl
 }
 
-// Compile pre-compiles and caches all templates
 func (c *TemplateCache) Compile() error {
-	templates := map[string]string{
-		TemplateAppointmentConfirmed:       appointmentConfirmationTemplate,
-		TemplateAppointmentCancelled:       appointmentCancellationTemplate,
-		TemplateAppointmentReminder:        appointmentReminderTemplate,
-		TemplateAppointmentReschedule:      appointmentRescheduleTemplate,
-		TemplatePaymentConfirmation:        paymentConfirmationTemplate,
-		TemplateTestResults:                testResultsTemplate,
-		TemplateStaffNotification:          staffNotificationTemplate,
-		TemplatePolicyUpdate:               policyUpdateTemplate,
-		TemplateEmailVerification:          emailVerificationTemplate,
-		TemplateResetPassword:              passwordResetTemplate,
-		TemplateDiagnosticCentreManager:    diagnosticCentreManagerEmailVerificationTemplate,
-		TemplateDiagnosticCentreManagement: diagnosticCentreManagerNotificationTemplate,
-	}
+	// Combine all templates in one go
+	allTemplates := BaseLayout +
+		appointmentConfirmationTemplate +
+		appointmentCancellationTemplate +
+		appointmentReminderTemplate +
+		appointmentRescheduleTemplate +
+		paymentConfirmationTemplate +
+		testResultsTemplate +
+		staffNotificationTemplate +
+		policyUpdateTemplate +
+		emailVerificationTemplate +
+		passwordResetTemplate +
+		diagnosticCentreManagerEmailVerificationTemplate +
+		diagnosticCentreManagerNotificationTemplate
 
-	base := template.New("base").Funcs(TemplateFuncs)
-	base = template.Must(base.Parse(BaseLayout))
+	base := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(allTemplates))
+	AddTemplateFuncs(base)
 
-	for name, content := range templates {
-		tmpl := template.Must(base.Clone())
-		tmpl = template.Must(tmpl.New(name).Parse(content))
-		AddTemplateFuncs(tmpl)
-		c.Set(name, tmpl)
-	}
+	// Store each by its name
+	c.Set(TemplateEmailVerification, base.Lookup(TemplateEmailVerification))
+	c.Set(TemplateResetPassword, base.Lookup(TemplateResetPassword))
+	c.Set(TemplateAppointmentConfirmed, base.Lookup(TemplateAppointmentConfirmed))
+	c.Set(TemplateAppointmentCancelled, base.Lookup(TemplateAppointmentCancelled))
+	c.Set(TemplateAppointmentReminder, base.Lookup(TemplateAppointmentReminder))
+	c.Set(TemplateAppointmentReschedule, base.Lookup(TemplateAppointmentReschedule))
+	c.Set(TemplatePaymentConfirmation, base.Lookup(TemplatePaymentConfirmation))
+	c.Set(TemplateTestResults, base.Lookup(TemplateTestResults))
+	c.Set(TemplatePolicyUpdate, base.Lookup(TemplatePolicyUpdate))
+	c.Set(TemplateStaffNotification, base.Lookup(TemplateStaffNotification))
+	c.Set(TemplateDiagnosticCentreManager, base.Lookup(TemplateDiagnosticCentreManager))
+	c.Set(TemplateDiagnosticCentreManagement, base.Lookup(TemplateDiagnosticCentreManagement))
 
 	return nil
 }
+

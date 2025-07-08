@@ -8,17 +8,13 @@ import (
 
 // EmailTemplateHandler provides methods to render all email templates
 type EmailTemplateHandler struct {
-	baseTemplate *template.Template
-	cache        *TemplateCache
+	cache *TemplateCache
 }
 
 // NewEmailTemplateHandler creates a new email template handler
 func NewEmailTemplateHandler() *EmailTemplateHandler {
-	base := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
-
 	handler := &EmailTemplateHandler{
-		baseTemplate: base,
-		cache:        NewTemplateCache(),
+		cache: NewTemplateCache(),
 	}
 	// Pre-compile all templates
 	handler.cache.Compile()
@@ -66,6 +62,7 @@ func (h *EmailTemplateHandler) renderAppointmentConfirmation(data *AppointmentDa
 			Title:         TitleAppointmentConfirmed,
 			Icon:          IconConfirmed,
 			FooterContent: FooterChanges,
+			Type:          TemplateAppointmentConfirmed,
 		})
 }
 
@@ -81,6 +78,7 @@ func (h *EmailTemplateHandler) renderAppointmentCancellation(data *AppointmentDa
 			Title:         TitleAppointmentCancelled,
 			Icon:          IconCancelled,
 			FooterContent: FooterSupport,
+			Type:          TemplateAppointmentCancelled,
 		})
 }
 
@@ -96,6 +94,7 @@ func (h *EmailTemplateHandler) renderAppointmentReminder(data *AppointmentData) 
 			Title:         TitleAppointmentReminder,
 			Icon:          IconReminder,
 			FooterContent: FooterSupport,
+			Type:          TemplateAppointmentReminder,
 		})
 }
 
@@ -111,6 +110,7 @@ func (h *EmailTemplateHandler) renderPaymentConfirmation(data *PaymentData) (str
 			Title:         TitlePaymentConfirmed,
 			Icon:          IconPayment,
 			FooterContent: FooterPayment,
+			Type:          TemplatePaymentConfirmation,
 		})
 }
 
@@ -126,6 +126,7 @@ func (h *EmailTemplateHandler) renderTestResults(data *TestResultsData) (string,
 			Title:         TitleTestResults,
 			Icon:          IconTestResults,
 			FooterContent: FooterResults,
+			Type:          TemplateTestResults,
 		})
 }
 
@@ -140,6 +141,7 @@ func (h *EmailTemplateHandler) renderStaffNotification(data *StaffNotificationDa
 			Title:         TitleStaffNotification,
 			Icon:          IconStaff,
 			FooterContent: FooterStaff,
+			Type:          TemplateStaffNotification,
 		})
 }
 
@@ -155,6 +157,7 @@ func (h *EmailTemplateHandler) renderPolicyUpdate(data *PolicyUpdateData) (strin
 			Title:         TitlePolicyUpdate,
 			Icon:          IconPolicy,
 			FooterContent: FooterPolicy,
+			Type:          TemplatePolicyUpdate,
 		})
 }
 
@@ -170,6 +173,7 @@ func (h *EmailTemplateHandler) renderEmailVerification(data *EmailVerificationDa
 			Title:         TitleEmailVerification,
 			Icon:          IconEmailVerification,
 			FooterContent: FooterEmailVerification,
+			Type:          TemplateEmailVerification,
 		})
 }
 
@@ -185,6 +189,7 @@ func (h *EmailTemplateHandler) renderResetPassword(data *PasswordResetData) (str
 			Title:         TitleResetPassword,
 			Icon:          IconResetPassword,
 			FooterContent: FooterResetPassord,
+			Type:          TemplateResetPassword,
 		})
 }
 
@@ -200,6 +205,7 @@ func (h *EmailTemplateHandler) renderDiagnosticCentreManager(data *DiagnosticCen
 			Title:         TitleDiagnosticCentreManagement,
 			Icon:          IconEmailVerification,
 			FooterContent: FooterSupport,
+			Type:          TemplateDiagnosticCentreManager,
 		})
 }
 
@@ -215,19 +221,23 @@ func (h *EmailTemplateHandler) renderDiagnosticCentreManagement(data *Diagnostic
 			Title:         TitleDiagnosticCentreManager,
 			Icon:          IconEmailVerification,
 			FooterContent: FooterSupport,
+			Type:          TemplateDiagnosticCentreManagement,
 		})
 }
 
 func (h *EmailTemplateHandler) renderTemplate(
-	name string,
+	templateName string,
 	data interface{},
 	emailData EmailData,
 ) (string, error) {
-	temp, _ := h.cache.Get(name)
+	temp, ok := h.cache.Get(templateName)
+	if !ok {
+		return "", fmt.Errorf("template %s not found", templateName)
+	}
 	var contentBuf bytes.Buffer
-	err := temp.ExecuteTemplate(&contentBuf, name, data)
+	err := temp.ExecuteTemplate(&contentBuf, templateName, data)
 	if err != nil {
-		return "", NewTemplateError(name+" (content rendering)", err)
+		return "", NewTemplateError(templateName+" (content rendering)", err)
 	}
 
 	var fullBuf bytes.Buffer
@@ -236,10 +246,12 @@ func (h *EmailTemplateHandler) renderTemplate(
 		"Icon":          emailData.Icon,
 		"Content":       template.HTML(contentBuf.String()),
 		"FooterContent": emailData.FooterContent,
+		"Type":          emailData.Type,
+		"Data":          data,
 	})
 
 	if err != nil {
-		return "", NewTemplateError(name+"(base rendering)", err)
+		return "", NewTemplateError(templateName+"(base rendering)", err)
 	}
 	return fullBuf.String(), nil
 }

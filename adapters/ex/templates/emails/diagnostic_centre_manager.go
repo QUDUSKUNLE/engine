@@ -2,20 +2,19 @@ package emails
 
 const diagnosticCentreManagerEmailVerificationTemplate = `
 {{define "dc_manager_notification"}}
-<div style="background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 100%); border-radius: 20px; padding: 48px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.03); max-width: 85%; margin: 20px auto; border: 1px solid rgba(37, 99, 235, 0.1); backdrop-filter: blur(10px);">
+<p><strong>Dear {{.ManagerName}},</strong></p>
 
-  <div style="text-align: left; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #60a5fa; position: relative;">
-    <h1 style="margin: 0; font-size: 36px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(135deg, #2563eb, #1e40af); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
-        🎉 Welcome to Medivue!
-    </h1>
-  </div>
-  <div style="margin: 32px 0; background: rgba(96, 165, 250, 0.04); padding: 35px; border-radius: 16px; border-left: 4px solid #2563eb;">
-      <p><strong>Dear {{.ManagerName}},</strong></p>
-      <p>Thank you for registering with Medivue. We're excited to have you join us! Below are your login credentials:</p>
-      <p><strong>Email:</strong> {{.Email}}</p>
-      <p><strong>Password:</strong> {{.Password}}</p>
-      <p style="margin-top: 16px;">It's advisable you change your password after first login.</p>
-  </div>
+<p>Thank you for registering with Medivue. We’re excited to have you onboard as a Diagnostic Centre Manager!</p>
+
+<p>Below are your login credentials:</p>
+
+<div class="details">
+    <ul>
+        <li><strong>Email:</strong> {{.Email}}</li>
+        <li><strong>Password:</strong> {{.Password}}</li>
+    </ul>
 </div>
+
+<p>🔒 <strong>Security Tip:</strong> Please change your password after your first login for added security.</p>
 {{end}}
 `

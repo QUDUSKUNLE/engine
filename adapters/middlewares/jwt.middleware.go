@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -18,7 +19,7 @@ const (
 )
 
 // JWTConfig returns an enhanced JWT configuration for Echo middleware
-func JWTConfig(secret string) echojwt.Config {
+func jWTConfig(secret string) echojwt.Config {
 	return echojwt.Config{
 		NewClaimsFunc: func(context echo.Context) jwt.Claims {
 			return new(domain.JwtCustomClaimsDTO)
@@ -98,6 +99,39 @@ func JWTConfig(secret string) echojwt.Config {
 				utils.LogField{Key: "user_type", Value: claims.UserType},
 				utils.LogField{Key: "path", Value: c.Request().URL.Path})
 		},
+	}
+}
+
+// ConditionalJWTMiddleware skips JWT for unauthenticated routes
+func ConditionalJWTMiddleware(jwtSecret string) echo.MiddlewareFunc {
+	noAuthRoutes := map[string]bool{
+		"POST /v1/login":                                   true,
+		"POST /v1/register":                                true,
+		"GET /v1/verify_email":                             true,
+		"POST /v1/reset_password":                          true,
+		"POST /v1/resend_verification":                     true,
+		"POST /v1/request_password_reset":                  true,
+		"GET /v1/diagnostic_centres":                       true,
+		"GET /v1/diagnostic_centres/:diagnostic_centre_id": true,
+		"POST /v1/auth/google":                             true,
+		"GET /v1/health":                                   true,
+	}
+
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			key := fmt.Sprintf("%s %s", c.Request().Method, c.Path())
+
+			if noAuthRoutes[key] {
+				return next(c)
+			}
+
+			cfg := jWTConfig(jwtSecret)
+			cfg.ErrorHandler = func(c echo.Context, err error) error {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "missing or malformed jwt"})
+			}
+
+			return echojwt.WithConfig(cfg)(next)(c)
+		}
 	}
 }
 

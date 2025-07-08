@@ -3,7 +3,8 @@ package emails
 const appointmentConfirmationTemplate = `
 {{define "appointment_confirmation"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
-<p>Your appointment has been successfully confirmed. Here are your appointment details:</p>
+
+<p>Your appointment has been successfully confirmed. Here are the appointment details:</p>
 
 <div class="details">
     <ul>
@@ -22,6 +23,7 @@ const appointmentConfirmationTemplate = `
 </div>
 {{end}}
 
-<p>You can view or manage your appointment by logging into your account at any time.</p>
+<p>You can view or manage your appointment by logging into your Medivue account at any time.</p>
+<p>Thank you for choosing Medivue!</p>
 {{end}}
 `
