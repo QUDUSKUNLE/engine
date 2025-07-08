@@ -1657,62 +1657,6 @@ paths:
       summary: Update availability for a diagnostic centre
       tags:
       - Availability
-  /v1/diagnostic_centre_manager:
-    post:
-      consumes:
-      - application/json
-      description: Create a new diagnostic centre manager account. Only accessible
-        by diagnostic centre owners.
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: Manager details
-        in: body
-        name: manager
-        required: true
-        schema:
-          $ref: '#/definitions/domain.DiagnosticCentreManagerRegisterDTO'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Manager account created successfully
-          schema:
-            $ref: '#/definitions/handlers.ManagerSwagger'
-        "202":
-          description: Manager invite sent successfully
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Invalid input data/Email already exists
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "401":
-          description: Authentication required
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not a diagnostic centre owner
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "422":
-          description: Invalid manager type
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create a diagnostic centre manager
-      tags:
-      - DiagnosticCentre
   /v1/diagnostic_centres:
     get:
       description: Search for diagnostic centres based on location, available doctors,
@@ -2485,6 +2429,61 @@ paths:
       security:
       - BearerAuth: []
       summary: List manager's diagnostic centres
+      tags:
+      - DiagnosticCentre
+    post:
+      consumes:
+      - application/json
+      description: Create a new diagnostic centre manager account. Only accessible
+        by diagnostic centre owners.
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Manager details
+        in: body
+        name: manager
+        required: true
+        schema:
+          $ref: '#/definitions/domain.DiagnosticCentreManagerRegisterDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Manager account created successfully
+          schema:
+            $ref: '#/definitions/handlers.ManagerSwagger'
+        "202":
+          description: Manager invite sent successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input data/Email already exists
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Authentication required
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Not a diagnostic centre owner
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "422":
+          description: Invalid manager type
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a diagnostic centre manager
       tags:
       - DiagnosticCentre
   /v1/diagnostic_centres/owner:
