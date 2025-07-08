@@ -17,6 +17,16 @@ type UserSwagger struct {
 	// ...add other fields as needed for docs
 }
 
+type ManagerSwagger struct {
+	ID        string `json:"id" example:"user-001"`
+	Email     string `json:"email" example:"user@example.com"`
+	FullName  string `json:"full_name" example:"John Doe"`
+	Role      string `json:"role" example:"DIAGNOSTIC_CENTRE_MANAGER"`
+	CreatedAt string `json:"created_at" example:"2025-06-27T12:00:00Z"` // format: date-time
+	UpdatedAt string `json:"updated_at" example:"2025-06-27T12:00:00Z"` // format: date-time
+	// ...add other fields as needed for docs
+}
+
 // Register godoc
 // @Summary Register a new user
 // @Description Register a new user (patient) or diagnostic centre owner in the system
@@ -59,7 +69,7 @@ func (handler *HTTPHandler) SignIn(context echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param manager body domain.DiagnosticCentreManagerRegisterDTO true "Manager details"
-// @Success 201 {object} handlers.UserSwagger "Manager account created successfully"
+// @Success 201 {object} handlers.ManagerSwagger "Manager account created successfully"
 // @Success 202 {object} map[string]string "Manager invite sent successfully"
 // @Failure 400 {object} handlers.ErrorResponse "Invalid input data/Email already exists"
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required"
