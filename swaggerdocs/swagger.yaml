@@ -928,6 +928,29 @@ definitions:
       version:
         type: string
     type: object
+  handlers.ManagerSwagger:
+    properties:
+      created_at:
+        description: 'format: date-time'
+        example: "2025-06-27T12:00:00Z"
+        type: string
+      email:
+        example: user@example.com
+        type: string
+      full_name:
+        example: John Doe
+        type: string
+      id:
+        example: user-001
+        type: string
+      role:
+        example: DIAGNOSTIC_CENTRE_MANAGER
+        type: string
+      updated_at:
+        description: 'format: date-time'
+        example: "2025-06-27T12:00:00Z"
+        type: string
+    type: object
   handlers.MedicalRecordSwagger:
     description: Medical record response for Swagger
     properties:
@@ -1658,7 +1681,7 @@ paths:
         "201":
           description: Manager account created successfully
           schema:
-            $ref: '#/definitions/handlers.UserSwagger'
+            $ref: '#/definitions/handlers.ManagerSwagger'
         "202":
           description: Manager invite sent successfully
           schema:

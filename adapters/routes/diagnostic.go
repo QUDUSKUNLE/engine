@@ -19,6 +19,15 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			description: "Create a diagnostic centre",
 		},
 		{
+			method:  http.MethodPost,
+			path:    "/diagnostic_centre_manager",
+			handler: handler.CreateDiagnosticCentreManager,
+			factory: func() interface{} {
+				return &domain.DiagnosticCentreManagerRegisterDTO{}
+			},
+			description: "Create a diagnostic centre manager",
+		},
+		{
 			method:  http.MethodGet,
 			path:    "/diagnostic_centres",
 			handler: handler.SearchDiagnosticCentre,

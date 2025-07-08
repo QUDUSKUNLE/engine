@@ -980,7 +980,7 @@
                     "201": {
                         "description": "Manager account created successfully",
                         "schema": {
-                            "$ref": "#/definitions/handlers.UserSwagger"
+                            "$ref": "#/definitions/handlers.ManagerSwagger"
                         }
                     },
                     "202": {
@@ -4701,6 +4701,37 @@
                 },
                 "version": {
                     "type": "string"
+                }
+            }
+        },
+        "handlers.ManagerSwagger": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-27T12:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "full_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "user-001"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "DIAGNOSTIC_CENTRE_MANAGER"
+                },
+                "updated_at": {
+                    "description": "format: date-time",
+                    "type": "string",
+                    "example": "2025-06-27T12:00:00Z"
                 }
             }
         },
