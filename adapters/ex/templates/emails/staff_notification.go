@@ -3,7 +3,8 @@ package emails
 const staffNotificationTemplate = `
 {{define "staff_notification"}}
 <p><strong>Dear {{.StaffName}},</strong></p>
-<p>A new appointment has been scheduled that requires your attention:</p>
+
+<p>A new appointment has been scheduled that requires your attention. Below are the appointment details:</p>
 
 <div class="details">
     <ul>
@@ -19,7 +20,7 @@ const staffNotificationTemplate = `
     <p><strong>Actions Required:</strong></p>
     <ul>
         <li>Review patient history if available</li>
-        <li>Prepare necessary equipment/materials</li>
+        <li>Prepare necessary equipment and materials</li>
         <li>Update your schedule accordingly</li>
         {{if .SpecialInstructions}}
         <li>{{.SpecialInstructions}}</li>
@@ -28,5 +29,6 @@ const staffNotificationTemplate = `
 </div>
 
 <p>Please log in to the staff portal to view complete appointment details.</p>
+<p>Thank you for your continued service.</p>
 {{end}}
 `

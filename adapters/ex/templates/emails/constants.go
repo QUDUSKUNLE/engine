@@ -17,15 +17,15 @@ const (
 )
 
 const (
-	TemplateTestResults         = "test_results_available"
+	TemplateTestResults         = "test_results"
 	TemplatePolicyUpdate        = "policy_update"
 	TemplateStaffNotification   = "staff_notification"
 	TemplateResetPassword       = "password_reset"
 	TemplateEmailVerification   = "email_verification"
 	TemplatePaymentConfirmation = "payment_confirmation"
 
-	TemplateDiagnosticCentreManagement = "diagnostic_centre_management"
-	TemplateDiagnosticCentreManager    = "diagnostic_centre_manager"
+	TemplateDiagnosticCentreManagement = "dc_management_notification"
+	TemplateDiagnosticCentreManager    = "dc_manager_notification"
 
 	TemplateAppointmentConfirmed  = "appointment_confirmation"
 	TemplateAppointmentCancelled  = "appointment_cancellation"

@@ -456,3 +456,9 @@ func ParseTime(dateStr string) time.Time {
 	// Return zero time if parsing fails
 	return time.Time{}
 }
+
+func generateResetToken() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}

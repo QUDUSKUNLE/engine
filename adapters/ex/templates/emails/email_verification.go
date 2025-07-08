@@ -13,7 +13,15 @@ const emailVerificationTemplate = `
 <p>
 	Click the button below to verify your email address:
 </p>
-<a href="{{.VerificationLink}}" class="button" style="background: var(--primary-color); color: blue; text-decoration: none; padding: 12px 24px; border-radius: 4px; display: inline-block; margin: 20px 0;">
+<a href="{{.VerificationLink}}" style="
+background: var(--primary-color);
+	color:  #2563eb;
+	text-decoration: none;
+	padding: 14px 28px;
+	border-radius: 6px;
+	display: inline-block;
+	font-weight: 600;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
 		Verify Email Address
 </a>
 <p>

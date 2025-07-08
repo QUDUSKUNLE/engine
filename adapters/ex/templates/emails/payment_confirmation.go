@@ -3,7 +3,8 @@ package emails
 const paymentConfirmationTemplate = `
 {{define "payment_confirmation"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
-<p>Thank you for your payment. Here are your transaction details:</p>
+
+<p>Thank you for your payment. Below are your transaction details:</p>
 
 <div class="details">
     <ul>
@@ -26,5 +27,6 @@ const paymentConfirmationTemplate = `
 </div>
 
 <p>This email serves as your receipt. Please keep it for your records.</p>
+<p>If you have any questions or concerns, feel free to contact us.</p>
 {{end}}
 `

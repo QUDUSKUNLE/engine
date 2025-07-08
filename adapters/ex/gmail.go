@@ -40,6 +40,9 @@ func (n *NotificationAdapter) SendEmail(
 		"Subject: %s\r\n"+
 		"MIME-Version: 1.0\r\n"+
 		"Content-Type: text/html; charset=utf-8\r\n"+
+		"X-Priority: 1 (Highest)\r\n"+
+		"X-MSMail-Priority: High\r\n"+
+		"Importance: High\r\n"+
 		"\r\n"+
 		"%s\r\n", to, subject, htmlContent))
 

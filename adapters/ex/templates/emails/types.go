@@ -1,6 +1,9 @@
 package emails
 
-import "time"
+import (
+	"html/template"
+	"time"
+)
 
 // EmailData represents the base email template data
 type EmailData struct {
@@ -8,8 +11,9 @@ type EmailData struct {
 	Title         string
 	Header        string
 	Icon          string
-	Content       interface{}
+	Content       template.HTML
 	FooterContent string
+	Type          string
 }
 
 // EmailVerificationData contains fields for email verification emails

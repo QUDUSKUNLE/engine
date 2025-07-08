@@ -1,7 +1,6 @@
 package services
 
 import (
-	"crypto/rand"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -59,7 +58,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	// Send verification email
+	// // Send verification email
 	escapedEmail := url.QueryEscape(createdUser.Email.String)
 
 	emaildata := &emails.EmailVerificationData{
@@ -68,19 +67,11 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 		ExpiryDuration:   "24 hours",
 	}
 
-	err = service.notificationService.SendEmail(
-		createdUser.Email.String,
-		emails.SubjectEmailVerification,
-		emails.TemplateEmailVerification,
-		emaildata,
-	)
-	if err != nil {
-		utils.Error("Failed to send verification email",
-			utils.LogField{Key: "error", Value: err.Error()})
-	}
+	go service.emailGoroutine(emaildata, createdUser.Email.String, emails.SubjectEmailVerification, emails.TemplateEmailVerification)
 
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)
 }
+
 
 func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	// Check for permission to add a diagnostic manager
@@ -134,11 +125,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		Password:    password,
 	}
 
-	err = service.notificationService.SendEmail(createdUser.Email.String, emails.SubjectDiagnosticCentreManager, emails.TemplateDiagnosticCentreManager, emaildata)
-	if err != nil {
-		utils.Error("Failed to registration email",
-			utils.LogField{Key: "error", Value: err.Error()})
-	}
+	go service.emailGoroutine(emaildata, createdUser.Email.String, emails.SubjectDiagnosticCentreManager, emails.TemplateDiagnosticCentreManager)
 
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)
 }
@@ -227,20 +214,13 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.AppUrl, token, url.QueryEscape(user.Email.String)),
 		ExpiresIn: "15 minutes",
 	}
-	err = service.notificationService.SendEmail(
+
+	go service.emailGoroutine(
+		emailData,
 		user.Email.String,
 		emails.SubjectResetPassword,
 		emails.TemplateResetPassword,
-		emailData)
-	if err != nil {
-		utils.Error("Failed to send password reset email",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "user_id", Value: user.ID})
-		// Don't return error here to prevent email enumeration
-	}
-	utils.Info("Password reset token generated and email sent",
-		utils.LogField{Key: "user_id", Value: user.ID},
-		utils.LogField{Key: "expires_at", Value: expiresAt})
+	)
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{
 		"message": "If your email exists in our system, you will receive password reset instructions",
@@ -413,20 +393,12 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 		ExpiryDuration:   "24 hours",
 	}
 
-	err = service.notificationService.SendEmail(
+	go service.emailGoroutine(
+		emaildata,
 		user.Email.String,
 		emails.SubjectEmailVerification,
 		emails.TemplateEmailVerification,
-		emaildata,
 	)
-
-	if err != nil {
-		utils.Error("Failed to resend verification email",
-			utils.LogField{Key: "error", Value: err.Error()})
-	}
-
-	utils.Info("Verification email resent successfully",
-		utils.LogField{Key: "email", Value: user.Email.String})
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{
 		"message": "Verification email sent",
@@ -597,12 +569,6 @@ func (service *ServicesHandler) GetProfile(context echo.Context) error {
 		utils.LogField{Key: "user_id", Value: db_user.ID})
 
 	return utils.ResponseMessage(http.StatusOK, db_user, context)
-}
-
-func generateResetToken() string {
-	b := make([]byte, 32)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
 }
 
 func (service *ServicesHandler) createUserHelper(
