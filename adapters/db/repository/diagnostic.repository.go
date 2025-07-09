@@ -2,13 +2,20 @@ package repository
 
 import (
 	"context"
-
+	"fmt"
+	"github.com/jackc/pgx/v5"
 	"github.com/medivue/adapters/db"
 	"github.com/medivue/core/ports"
 )
 
 // Ensure Repository implements DiagnosticCentreRepository
 var _ ports.DiagnosticRepository = (*Repository)(nil)
+
+// AppointmentTxRepository represents a transaction-aware repository
+type DiagnosticTxRepository struct {
+	*Repository
+	tx pgx.Tx
+}
 
 func (repo *Repository) CreateDiagnosticCentre(ctx context.Context, params db.Create_Diagnostic_CentreParams) (*db.DiagnosticCentre, error) {
 	return repo.database.Create_Diagnostic_Centre(ctx, params)
@@ -52,4 +59,38 @@ func (repo *Repository) SearchDiagnosticCentresByDoctor(ctx context.Context, par
 
 func (repo *Repository) DeleteDiagnosticCentreByOwner(ctx context.Context, params db.Delete_Diagnostic_Centre_ByOwnerParams) (*db.DiagnosticCentre, error) {
 	return repo.database.Delete_Diagnostic_Centre_ByOwner(ctx, params)
+}
+
+// BeginTx starts a new transaction
+func (r *Repository) BeginDiagnostic(ctx context.Context) (ports.DiagnosticTx, error) {
+	if r.conn == nil {
+		return nil, fmt.Errorf("database connection is not initialized")
+	}
+
+	tx, err := r.conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	qtx := r.database.WithTx(tx)
+	return &DiagnosticTxRepository{
+		Repository: &Repository{database: qtx},
+		tx:         tx,
+	}, nil
+}
+
+// Commit commits the transaction
+func (t *DiagnosticTxRepository) Commit(ctx context.Context) error {
+	if t.tx == nil {
+		return fmt.Errorf("transaction is nil")
+	}
+	return t.tx.Commit(ctx)
+}
+
+// Rollback rolls back the transaction
+func (t *DiagnosticTxRepository) Rollback(ctx context.Context) error {
+	if t.tx == nil {
+		return fmt.Errorf("transaction is nil")
+	}
+	return t.tx.Rollback(ctx)
 }

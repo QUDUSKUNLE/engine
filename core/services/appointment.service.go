@@ -192,9 +192,9 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 
 	// Commit transaction
 	if err := tx.Commit(context.Request().Context()); err != nil {
-		utils.Error("Failed to commit transaction",
+		utils.Error("Failed to commit appointment transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
-		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit transaction"), context)
+		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit appointment transaction"), context)
 	}
 
 	return utils.ResponseMessage(http.StatusCreated, map[string]interface{}{

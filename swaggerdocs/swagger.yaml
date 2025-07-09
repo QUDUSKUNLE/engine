@@ -250,7 +250,7 @@ definitions:
         type: string
       available_tests:
         items:
-          $ref: '#/definitions/domain.TestPrice'
+          $ref: '#/definitions/domain.TestPrices'
         type: array
       contact:
         $ref: '#/definitions/domain.Contact'
@@ -486,7 +486,7 @@ definitions:
     - slot_duration
     - start_time
     type: object
-  domain.TestPrice:
+  domain.TestPrices:
     properties:
       price:
         minimum: 500
