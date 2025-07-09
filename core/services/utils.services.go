@@ -104,13 +104,14 @@ func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_Centres
 		return nil, err
 	}
 
-	var price []domain.TestPrice
+	var price []domain.TestPrices
 	if err := utils.UnmarshalJSONField(row.TestPrices, &price, c); err != nil {
 		utils.Error("Failed to unmarshal Test Prices",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "diagnostic_centre_id", Value: row.ID})
 		return nil, err
 	}
+
 	return buildDiagnosticCentreResponse(row, address, contact, price), nil
 }
 
@@ -232,7 +233,7 @@ func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domai
 }
 
 // Helper to build diagnostic centre response
-func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRow, address domain.Address, contact domain.Contact, price []domain.TestPrice) map[string]interface{} {
+func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRow, address domain.Address, contact domain.Contact, price []domain.TestPrices) map[string]interface{} {
 	return map[string]interface{}{
 		"diagnostic_centre_id":   response.ID,
 		"diagnostic_centre_name": response.DiagnosticCentreName,

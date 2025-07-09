@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -139,6 +140,12 @@ func MarshalJSONField(field interface{}, c echo.Context) ([]byte, error) {
 
 // UnmarshalJSONField unmarshals JSON data with validation
 func UnmarshalJSONField(data []byte, v interface{}, c echo.Context) error {
+	// Sanity check: handle empty or null values
+	s := strings.TrimSpace(string(data))
+	if len(s) == 0 || s == "null" {
+		return nil // no error, just don't populate the target
+	}
+
 	if err := json.Unmarshal(data, v); err != nil {
 		logger.Error("json unmarshal failed", zap.Error(err))
 		return fmt.Errorf("failed to unmarshal JSON: %w", err)
