@@ -76,13 +76,15 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	_, err = service.TestPriceRepo.CreateTestPrice(context.Request().Context(), *buildPrice)
+	test_price, err := service.TestPriceRepo.CreateTestPrice(context.Request().Context(), *buildPrice)
 	if err != nil {
 		utils.Error("Failed to submit test price",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "admin_id", Value: dto.AdminId.String()})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
+
+	response, _ := utils.MarshalJSONField(test_price, context)
 
 	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
 		ID:                   diagnostic_centre.ID,
@@ -95,6 +97,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		AvailableTests:       diagnostic_centre.AvailableTests,
 		CreatedAt:            diagnostic_centre.CreatedAt,
 		UpdatedAt:            diagnostic_centre.UpdatedAt,
+		TestPrices:           response,
 	}
 	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 	if err != nil {

@@ -17,7 +17,7 @@ type Querier interface {
 	// Create a Medical Record
 	CreateMedicalRecord(ctx context.Context, arg CreateMedicalRecordParams) (*MedicalRecord, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) error
-	CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
 	Create_Availability(ctx context.Context, arg Create_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
 	// Inserts a new diagnostic record into the diagnostic_centres table.
 	Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagnostic_CentreParams) (*DiagnosticCentre, error)
