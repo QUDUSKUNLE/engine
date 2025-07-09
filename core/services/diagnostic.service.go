@@ -44,8 +44,18 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 
 	params.CreatedBy = currentUser.UserID.String()
 
+	// Start transaction
+	tx, err := service.DiagnosticRepo.BeginDiagnostic(context.Request().Context())
+	if err != nil {
+		utils.Error("Failed to start diagnostic transaction",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+	defer tx.Rollback(context.Request().Context())
+
+	// Make this a transaction
 	// Create diagnostic centre
-	diagnostic_centre, err := service.DiagnosticRepo.CreateDiagnosticCentre(
+	diagnostic_centre, err := tx.CreateDiagnosticCentre(
 		context.Request().Context(), *params)
 	if err != nil {
 		utils.Error("Failed to create diagnostic centre",
@@ -76,7 +86,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	test_price, err := service.TestPriceRepo.CreateTestPrice(context.Request().Context(), *buildPrice)
+	test_price, err := tx.CreateTestPrice(context.Request().Context(), *buildPrice)
 	if err != nil {
 		utils.Error("Failed to submit test price",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -102,6 +112,13 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	// Commit transaction
+	if err := tx.Commit(context.Request().Context()); err != nil {
+		utils.Error("Failed to commit diagnostic transaction",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit transaction"), context)
 	}
 	// Send Notification email
 	address := fmt.Sprintf("%s %s %s %s", dto.Address.Street, dto.Address.City, dto.Address.State, dto.Address.Country)

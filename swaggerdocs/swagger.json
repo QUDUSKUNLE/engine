@@ -3788,7 +3788,7 @@
                 "available_tests": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.TestPrice"
+                        "$ref": "#/definitions/domain.TestPrices"
                     }
                 },
                 "contact": {
@@ -4098,7 +4098,7 @@
                 }
             }
         },
-        "domain.TestPrice": {
+        "domain.TestPrices": {
             "type": "object",
             "required": [
                 "price",
