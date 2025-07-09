@@ -72,7 +72,6 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)
 }
 
-
 func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	// Check for permission to add a diagnostic manager
 	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
@@ -117,15 +116,19 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 	if err != nil {
 		return utils.ErrorResponse(http.StatusConflict, err, context)
 	}
-
 	// Send registration email
-	emaildata := emails.DiagnosticCentreManager{
-		ManagerName: createdUser.Fullname.String,
+	emaildata := &emails.DiagnosticCentreManager{
+		ManagerName: newUser.Fullname.String,
 		Email:       newUser.Email.String,
 		Password:    password,
 	}
 
-	go service.emailGoroutine(emaildata, createdUser.Email.String, emails.SubjectDiagnosticCentreManager, emails.TemplateDiagnosticCentreManager)
+	go service.emailGoroutine(
+		emaildata,
+		createdUser.Email.String,
+		emails.SubjectDiagnosticCentreManager,
+		emails.TemplateDiagnosticCentreManager,
+	)
 
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)
 }

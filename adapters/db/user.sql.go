@@ -22,7 +22,7 @@ INSERT INTO users (
   fullname
 ) VALUES  (
   $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, email, nin, user_type, fullname, phone_number, email_verified, email_verified_at, created_at, updated_at
+) RETURNING id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number
 `
 
 type CreateUserParams struct {
@@ -35,20 +35,7 @@ type CreateUserParams struct {
 	Fullname      pgtype.Text `db:"fullname" json:"fullname"`
 }
 
-type CreateUserRow struct {
-	ID              string             `db:"id" json:"id"`
-	Email           pgtype.Text        `db:"email" json:"email"`
-	Nin             pgtype.Text        `db:"nin" json:"nin"`
-	UserType        UserEnum           `db:"user_type" json:"user_type"`
-	Fullname        pgtype.Text        `db:"fullname" json:"fullname"`
-	PhoneNumber     pgtype.Text        `db:"phone_number" json:"phone_number"`
-	EmailVerified   pgtype.Bool        `db:"email_verified" json:"email_verified"`
-	EmailVerifiedAt pgtype.Timestamptz `db:"email_verified_at" json:"email_verified_at"`
-	CreatedAt       pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt       pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*CreateUserRow, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Email,
 		arg.Nin,
@@ -58,18 +45,19 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*Create
 		arg.EmailVerified,
 		arg.Fullname,
 	)
-	var i CreateUserRow
+	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.Nin,
+		&i.Password,
 		&i.UserType,
-		&i.Fullname,
-		&i.PhoneNumber,
-		&i.EmailVerified,
-		&i.EmailVerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Fullname,
+		&i.EmailVerified,
+		&i.EmailVerifiedAt,
+		&i.PhoneNumber,
 	)
 	return &i, err
 }
