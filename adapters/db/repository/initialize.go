@@ -21,12 +21,12 @@ type Repositories struct {
 func InitializeRepositories(store *db.Queries, conn *pgxpool.Pool) *Repositories {
 	return &Repositories{
 		User:         NewUserRepository(store),
-		Schedule:     NewScheduleRepository(store),
-		Diagnostic:   NewDiagnosticCentreRepository(store),
-		Availability: NewAvailabilityRepository(store),
 		Record:       NewRecordRepository(store),
+		Schedule:     NewScheduleRepository(store),
+		TestPrice:    NewTestPriceRepository(store),
+		Availability: NewAvailabilityRepository(store),
 		Payment:      NewPaymentRepository(store, conn),
 		Appointment:  NewAppointmentRepository(store, conn),
-		TestPrice:    NewTestPriceRepository(store),
+		Diagnostic:   NewDiagnosticCentreRepository(store, conn),
 	}
 }

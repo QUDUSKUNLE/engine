@@ -8,6 +8,7 @@ import (
 
 // DiagnosticRepository defines the interface for diagnostic centre data access
 type DiagnosticRepository interface {
+	BeginDiagnostic(ctx context.Context) (DiagnosticTx, error)
 	// Existing methods
 	CreateDiagnosticCentre(ctx context.Context, arg db.Create_Diagnostic_CentreParams) (*db.DiagnosticCentre, error)
 	GetDiagnosticCentre(ctx context.Context, id string) (*db.Get_Diagnostic_CentreRow, error)
@@ -27,4 +28,11 @@ type DiagnosticRepository interface {
 
 type TestPriceRepository interface {
 	CreateTestPrice(ctx context.Context, test_price db.Create_Test_PriceParams) ([]*db.DiagnosticCentreTestPrice, error)
+}
+
+type DiagnosticTx interface {
+	CreateDiagnosticCentre(ctx context.Context, arg db.Create_Diagnostic_CentreParams) (*db.DiagnosticCentre, error)
+	CreateTestPrice(ctx context.Context, test_price db.Create_Test_PriceParams) ([]*db.DiagnosticCentreTestPrice, error)
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
 }

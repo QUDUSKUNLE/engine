@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"context"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/medivue/adapters/db"
 	"github.com/medivue/core/ports"
@@ -25,12 +23,6 @@ func NewScheduleRepository(
 	return &Repository{database: store}
 }
 
-func NewDiagnosticCentreRepository(
-	store *db.Queries,
-) ports.DiagnosticRepository {
-	return &Repository{database: store}
-}
-
 func NewRecordRepository(
 	store *db.Queries,
 ) ports.RecordRepository {
@@ -40,6 +32,12 @@ func NewRecordRepository(
 func NewAvailabilityRepository(
 	store *db.Queries,
 ) ports.AvailabilityRepository {
+	return &Repository{database: store}
+}
+
+func NewTestPriceRepository(
+	store *db.Queries,
+) ports.TestPriceRepository {
 	return &Repository{database: store}
 }
 
@@ -57,35 +55,9 @@ func NewAppointmentRepository(
 	return &Repository{database: store, conn: conn}
 }
 
-func NewTestPriceRepository(
+func NewDiagnosticCentreRepository(
 	store *db.Queries,
-) ports.TestPriceRepository {
-	return &Repository{database: store}
-}
-
-func (r *Repository) GetTestTypes(ctx context.Context) ([]string, error) {
-	rows, err := r.conn.Query(ctx, `
-		SELECT enumlabel 
-		FROM pg_enum 
-		WHERE enumtypid = (
-			SELECT oid 
-			FROM pg_type 
-			WHERE typname = 'test_type'
-		)
-		ORDER BY enumsortorder
-	`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var testTypes []string
-	for rows.Next() {
-		var testType string
-		if err := rows.Scan(&testType); err != nil {
-			return nil, err
-		}
-		testTypes = append(testTypes, testType)
-	}
-	return testTypes, nil
+	conn *pgxpool.Pool,
+) ports.DiagnosticRepository {
+	return &Repository{database: store, conn: conn}
 }

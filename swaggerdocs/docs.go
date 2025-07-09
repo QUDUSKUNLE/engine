@@ -3794,7 +3794,7 @@ const docTemplate = `{
                 "available_tests": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.TestPrice"
+                        "$ref": "#/definitions/domain.TestPrices"
                     }
                 },
                 "contact": {
@@ -4104,7 +4104,7 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.TestPrice": {
+        "domain.TestPrices": {
             "type": "object",
             "required": [
                 "price",
