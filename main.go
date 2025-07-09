@@ -40,6 +40,11 @@ func main() {
 	if err := utils.InitLogger(logConfig); err != nil {
 		panic(err)
 	}
+	defer func() {
+		if err := utils.Logger.Sync(); err != nil {
+			log.Printf("Failed to sync logger: %v", err)
+		}
+	}()
 
 	// Load configuration
 	cfg, err := config.LoadConfig("MEDIVUE")
@@ -49,7 +54,7 @@ func main() {
 	// Initialize DB connection
 	store, conn, err := db.DatabaseConnection(context.Background(), cfg.DB_URL)
 	if err != nil {
-		log.Fatalf("Error connecting to the database")
+		log.Fatalf("Error connecting to the database: %v", err)
 	}
 
 	// Create a new echo instance
@@ -122,7 +127,7 @@ func main() {
 	go func() {
 		if err := e.Start(":" + port); err != nil &&
 			!errors.Is(err, http.ErrServerClosed) {
-			log.Fatal("Server error:", err)
+			log.Fatalf("Server error: %v", err)
 		} else {
 			log.Printf("Server gracefully shutting down...")
 		}
@@ -137,8 +142,4 @@ func main() {
 	if err := e.Shutdown(ctx); err != nil {
 		log.Fatal(err)
 	}
-
-	defer func() {
-		_ = utils.Logger.Sync()
-	}()
 }
