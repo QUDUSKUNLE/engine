@@ -13,7 +13,7 @@ import (
 )
 
 func (service *ServicesHandler) CreateSchedule(context echo.Context) error {
-	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -53,7 +53,7 @@ func (service *ServicesHandler) CreateSchedule(context echo.Context) error {
 }
 
 func (service *ServicesHandler) GetDiagnosticSchedule(context echo.Context) error {
-	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -71,7 +71,7 @@ func (service *ServicesHandler) GetDiagnosticSchedule(context echo.Context) erro
 }
 
 func (service *ServicesHandler) GetDiagnosticSchedules(context echo.Context) error {
-	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
@@ -95,7 +95,7 @@ func (service *ServicesHandler) GetDiagnosticSchedules(context echo.Context) err
 }
 
 func (service *ServicesHandler) UpdateDiagnosticSchedule(context echo.Context) error {
-	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}

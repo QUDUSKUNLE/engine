@@ -5,6 +5,7 @@ import (
 
 	"github.com/medivue/adapters/config"
 	"github.com/medivue/adapters/ex"
+	"github.com/medivue/adapters/ex/ai"
 	"github.com/medivue/adapters/ex/paystack"
 	"github.com/medivue/core/ports"
 )
@@ -23,6 +24,7 @@ type ServicesHandler struct {
 	Config              config.Config
 	// Payment Gateway
 	paymentService ports.PaymentProviderService
+	aiService      ports.AIService
 }
 
 func ServicesAdapter(
@@ -56,6 +58,7 @@ func ServicesAdapter(
 			SecretKey: conn.PAYSTACK_SECRET_KEY,
 			BaseURL:   conn.PAYSTACK_BASE_URL,
 		}),
-		Config: conn,
+		Config:    conn,
+		aiService: ai.NewAIAdaptor(conn.OPEN_API_KEY),
 	}
 }

@@ -7,66 +7,59 @@ import (
 	"net/http"
 )
 
-type PaystackConfig struct {
-	SecretKey string
-	BaseURL   string
-}
-
-type PaystackTransactionResponse struct {
-	Status  bool   `json:"status"`
-	Message string `json:"message"`
-	Data    struct {
-		AuthorizationURL string `json:"authorization_url"`
-		AccessCode       string `json:"access_code"`
-		Reference        string `json:"reference"`
-	} `json:"data"`
-}
-
-type PaystackVerificationResponse struct {
-	Status  bool   `json:"status"`
-	Message string `json:"message"`
-	Data    struct {
-		Status    string  `json:"status"`
-		Reference string  `json:"reference"`
-		Amount    float64 `json:"amount"`
-		Channel   string  `json:"channel"`
-		Currency  string  `json:"currency"`
-		PaidAt    string  `json:"paid_at"`
-		CreatedAt string  `json:"created_at"`
-		Customer  struct {
-			ID           int    `json:"id"`
-			FirstName    string `json:"first_name"`
-			LastName     string `json:"last_name"`
-			Email        string `json:"email"`
-			CustomerCode string `json:"customer_code"`
-			Phone        string `json:"phone"`
-		} `json:"customer"`
-		Authorization struct {
-			AuthorizationCode string `json:"authorization_code"`
-			CardType          string `json:"card_type"`
-			Last4             string `json:"last4"`
-			ExpMonth          string `json:"exp_month"`
-			ExpYear           string `json:"exp_year"`
-			Bank              string `json:"bank"`
-			Brand             string `json:"brand"`
-		} `json:"authorization"`
-		Fees     float64                `json:"fees"`
-		Metadata map[string]interface{} `json:"metadata"`
-	} `json:"data"`
-}
-
-type Customer struct {
-	ID           int    `json:"id"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	Email        string `json:"email"`
-	CustomerCode string `json:"customer_code"`
-	Phone        string `json:"phone"`
-}
-
-type PaystackAdapter struct {
-	config *PaystackConfig
-}
+type (
+	PaystackConfig struct {
+		SecretKey string
+		BaseURL   string
+	}
+	PaystackTransactionResponse struct {
+		Status  bool   `json:"status"`
+		Message string `json:"message"`
+		Data    struct {
+			AuthorizationURL string `json:"authorization_url"`
+			AccessCode       string `json:"access_code"`
+			Reference        string `json:"reference"`
+		} `json:"data"`
+	}
+	Authorization struct {
+		AuthorizationCode string `json:"authorization_code"`
+		CardType          string `json:"card_type"`
+		Last4             string `json:"last4"`
+		ExpMonth          string `json:"exp_month"`
+		ExpYear           string `json:"exp_year"`
+		Bank              string `json:"bank"`
+		Brand             string `json:"brand"`
+	}
+	Data struct {
+		Status        string                 `json:"status"`
+		Reference     string                 `json:"reference"`
+		Amount        float64                `json:"amount"`
+		Channel       string                 `json:"channel"`
+		Currency      string                 `json:"currency"`
+		PaidAt        string                 `json:"paid_at"`
+		CreatedAt     string                 `json:"created_at"`
+		Customer      Customer               `json:"customer"`
+		Authorization Authorization          `json:"authorization"`
+		Fees          float64                `json:"fees"`
+		Metadata      map[string]interface{} `json:"metadata"`
+	}
+	PaystackVerificationResponse struct {
+		Status  bool   `json:"status"`
+		Message string `json:"message"`
+		Data    Data   `json:"data"`
+	}
+	Customer struct {
+		ID           int    `json:"id"`
+		FirstName    string `json:"first_name"`
+		LastName     string `json:"last_name"`
+		Email        string `json:"email"`
+		CustomerCode string `json:"customer_code"`
+		Phone        string `json:"phone"`
+	}
+	PaystackAdapter struct {
+		config *PaystackConfig
+	}
+)
 
 func NewPaystackAdapter(con *PaystackConfig) *PaystackAdapter {
 	return &PaystackAdapter{

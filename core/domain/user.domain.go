@@ -33,7 +33,7 @@ type (
 		Email           string      `json:"email" validate:"email,required"`
 		Password        string      `json:"password" validate:"gte=6,lte=20,required"`
 		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required"`
-		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=USER DIAGNOSTIC_CENTRE_OWNER"`
+		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER"`
 	}
 	DiagnosticCentreManagerRegisterDTO struct {
 		FirstName string      `json:"first_name" validate:"gte=3"`

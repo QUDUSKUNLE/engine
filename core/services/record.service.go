@@ -105,7 +105,7 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 // GetMedicalRecord retrieves a single medical record.
 func (service *ServicesHandler) GetMedicalRecord(context echo.Context) error {
 	// Authentication check
-	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
 	}
@@ -142,7 +142,7 @@ func (service *ServicesHandler) GetMedicalRecord(context echo.Context) error {
 
 // GetMedicalRecords retrieves multiple medical records for a user.
 func (service *ServicesHandler) GetMedicalRecords(context echo.Context) error {
-	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER})
+	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
