@@ -732,6 +732,7 @@ const (
 	UserEnumDIAGNOSTICMANAGER       UserEnum = "DIAGNOSTIC_MANAGER"
 	UserEnumDIAGNOSTICCENTREOWNER   UserEnum = "DIAGNOSTIC_CENTRE_OWNER"
 	UserEnumDIAGNOSTICCENTREMANAGER UserEnum = "DIAGNOSTIC_CENTRE_MANAGER"
+	UserEnumPATIENT                 UserEnum = "PATIENT"
 )
 
 func (e *UserEnum) Scan(src interface{}) error {
@@ -777,7 +778,8 @@ func (e UserEnum) Valid() bool {
 		UserEnumADMIN,
 		UserEnumDIAGNOSTICMANAGER,
 		UserEnumDIAGNOSTICCENTREOWNER,
-		UserEnumDIAGNOSTICCENTREMANAGER:
+		UserEnumDIAGNOSTICCENTREMANAGER,
+		UserEnumPATIENT:
 		return true
 	}
 	return false
@@ -792,6 +794,7 @@ func AllUserEnumValues() []UserEnum {
 		UserEnumDIAGNOSTICMANAGER,
 		UserEnumDIAGNOSTICCENTREOWNER,
 		UserEnumDIAGNOSTICCENTREMANAGER,
+		UserEnumPATIENT,
 	}
 }
 
