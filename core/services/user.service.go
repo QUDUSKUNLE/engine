@@ -31,7 +31,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	}
 	newUser.EmailVerified = pgtype.Bool{Bool: false, Valid: true}
 	createdUser, err := service.createUserHelper(
-		context, newUser, db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumUSER)
+		context, newUser, db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumPATIENT)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusConflict, err, context)
 	}
@@ -467,7 +467,7 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 			// ID:            uuid.New().String(),
 			Email:    pgtype.Text{String: tokenInfo.Email, Valid: true},
 			Password: "", // No password for Google users
-			UserType: db.UserEnumUSER,
+			UserType: db.UserEnumPATIENT,
 		}
 
 		user, err = service.UserRepo.CreateUser(context.Request().Context(), newUser)
@@ -506,7 +506,7 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateUserProfileDTO)
 
 	// Get current user from context
-	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER, db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT, db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		utils.Error("Failed to get current user",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -539,7 +539,7 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 
 func (service *ServicesHandler) GetProfile(context echo.Context) error {
 	// Get current user from context
-	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumUSER, db.UserEnumDIAGNOSTICCENTREMANAGER, db.UserEnumDIAGNOSTICCENTREOWNER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT, db.UserEnumDIAGNOSTICCENTREMANAGER, db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		utils.Error("Failed to get current user",
 			utils.LogField{Key: "error", Value: err.Error()})

@@ -46,6 +46,9 @@ type Config struct {
 	PAYSTACK_BASE_URL   string
 	PAYSTACK_SECRET_KEY string
 	PAYSTACK_PUBLIC_KEY string
+
+	// OPEN API
+	OPEN_API_KEY string
 }
 
 func LoadConfig(serviceName string) (*Config, error) {
@@ -72,6 +75,7 @@ func LoadConfig(serviceName string) (*Config, error) {
 		config.GMAIL_USERNAME = os.Getenv("GMAIL_USERNAME")
 		config.EMAIL_HOST = os.Getenv("EMAIL_HOST")
 		config.EMAIL_PORT = os.Getenv("EMAIL_PORT")
+		config.OPEN_API_KEY = os.Getenv("OPEN_API_KEY")
 		// PAYSTACK
 		config.PAYSTACK_BASE_URL = os.Getenv("PAYSTACK_BASE_URL")
 		config.PAYSTACK_PUBLIC_KEY = os.Getenv("PAYSTACK_PUBLIC_KEY")

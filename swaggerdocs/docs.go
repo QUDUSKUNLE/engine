@@ -3534,7 +3534,8 @@ const docTemplate = `{
                 "ADMIN",
                 "DIAGNOSTIC_MANAGER",
                 "DIAGNOSTIC_CENTRE_OWNER",
-                "DIAGNOSTIC_CENTRE_MANAGER"
+                "DIAGNOSTIC_CENTRE_MANAGER",
+                "PATIENT"
             ],
             "x-enum-varnames": [
                 "UserEnumUSER",
@@ -3543,7 +3544,8 @@ const docTemplate = `{
                 "UserEnumADMIN",
                 "UserEnumDIAGNOSTICMANAGER",
                 "UserEnumDIAGNOSTICCENTREOWNER",
-                "UserEnumDIAGNOSTICCENTREMANAGER"
+                "UserEnumDIAGNOSTICCENTREMANAGER",
+                "UserEnumPATIENT"
             ]
         },
         "domain.Address": {
@@ -4565,7 +4567,7 @@ const docTemplate = `{
                 },
                 "user_type": {
                     "enum": [
-                        "USER",
+                        "PATIENT",
                         "DIAGNOSTIC_CENTRE_OWNER"
                     ],
                     "allOf": [

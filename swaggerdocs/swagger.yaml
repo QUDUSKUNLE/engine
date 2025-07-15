@@ -59,6 +59,7 @@ definitions:
     - DIAGNOSTIC_MANAGER
     - DIAGNOSTIC_CENTRE_OWNER
     - DIAGNOSTIC_CENTRE_MANAGER
+    - PATIENT
     type: string
     x-enum-varnames:
     - UserEnumUSER
@@ -68,6 +69,7 @@ definitions:
     - UserEnumDIAGNOSTICMANAGER
     - UserEnumDIAGNOSTICCENTREOWNER
     - UserEnumDIAGNOSTICCENTREMANAGER
+    - UserEnumPATIENT
   domain.Address:
     properties:
       city:
@@ -824,7 +826,7 @@ definitions:
         allOf:
         - $ref: '#/definitions/db.UserEnum'
         enum:
-        - USER
+        - PATIENT
         - DIAGNOSTIC_CENTRE_OWNER
     required:
     - confirm_password
