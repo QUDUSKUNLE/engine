@@ -37,11 +37,11 @@ func GetConfig(
 		if err != nil {
 			log.Fatal("Invalid EMAIL_PORT:", err)
 		}
-		emailConfig := ex.NewGmailConfig(ex.GmailConfig{
+		emailConfig := ex.NewEmailConfig(ex.EmailConfig{
 			Host:     con.EMAIL_HOST,
 			Port:     port,
-			Username: con.GMAIL_USERNAME,
-			Password: con.GMAIL_APP_PASSWORD,
+			Username: con.EMAIL_USERNAME,
+			Password: con.EMAIL_APP_PASSWORD,
 			From:     con.EMAIL_FROM_ADDRESS,
 		})
 		notificationSvc := ex.NewNotificationAdapter(emailConfig)

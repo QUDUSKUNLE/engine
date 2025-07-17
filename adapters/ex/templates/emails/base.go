@@ -12,25 +12,16 @@ const BaseLayout = `
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.Title}} - Medivue</title>
+    <title>{{.Title}} - Diagnoxix</title>
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --accent-color: #60a5fa;
-            --text-primary: #1f2937;
-            --text-secondary: #4b5563;
-            --background: #f3f4f6;
-            --success-color: #10b981;
-        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            color: var(--text-primary);
+            color: #1f2937;
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            background-color: var(--background);
+            background-color: #f3f4f6;
         }
         .container {
             background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 100%);
@@ -44,13 +35,12 @@ const BaseLayout = `
             margin: 20px auto;
             position: relative;
             border: 1px solid rgba(37, 99, 235, 0.1);
-            backdrop-filter: blur(10px);
         }
         .header {
             text-align: left;
             margin-bottom: 40px;
             padding-bottom: 30px;
-            border-bottom: 2px solid var(--accent-color);
+            border-bottom: 2px solid #60a5fa;
             position: relative;
         }
         .header::after {
@@ -60,15 +50,15 @@ const BaseLayout = `
             left: 0;
             width: 50%;
             height: 2px;
-            background: linear-gradient(90deg, var(--accent-color) 0%, transparent 100%);
+            background: linear-gradient(90deg, #60a5fa 0%, transparent 100%);
         }
-        .header h1 {
-            color: var(--primary-color);
+        .header h1, .header h2, .header h3 {
+            color: #ffffff;
             margin: 0;
             font-size: 36px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, #2563eb, #1e40af);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -78,7 +68,7 @@ const BaseLayout = `
             background: rgba(96, 165, 250, 0.04);
             padding: 35px;
             border-radius: 16px;
-            border-left: 4px solid var(--primary-color);
+            border-left: 4px solid #2563eb;
             position: relative;
             overflow: hidden;
         }
@@ -89,7 +79,7 @@ const BaseLayout = `
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg, var(--primary-color), transparent);
+            background: linear-gradient(90deg, #2563eb, transparent);
         }
         .details {
             background: rgba(96, 165, 250, 0.05);
@@ -118,19 +108,19 @@ const BaseLayout = `
             border: 1px solid rgba(37, 99, 235, 0.1);
         }
         .footer {
-            color: var(--text-secondary);
+            color: #4b5563;
             font-size: 14px;
             margin-top: 40px;
             padding-top: 25px;
             border-top: 1px solid rgba(37, 99, 235, 0.1);
         }
         .small-text {
-            color: var(--text-secondary);
+            color: #4b5563;
             font-size: 13px;
             line-height: 1.5;
         }
         .button {
-            background: var(--primary-color);
+            background: #2563eb;
             color: white;
             text-decoration: none;
             padding: 14px 28px;
@@ -144,7 +134,7 @@ const BaseLayout = `
 <body>
     <div class="container">
         <div class="header">
-            <h2>{{.Icon}} {{.Title}}</h2>
+            <h3>{{.Icon}} {{.Title}}</h3>
         </div>
         <div class="content">
             {{if eq .Type "email_verification" }}
@@ -160,7 +150,7 @@ const BaseLayout = `
             {{end}}
         </div>
         <div class="footer">
-            <p>Best regards,<br><strong>The Medivue Team</strong></p>
+            <p>Best regards,<br><strong>The Diagnoxix Team</strong></p>
             <div class="small-text">
                 {{.FooterContent}}
             </div>

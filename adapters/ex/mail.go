@@ -5,22 +5,8 @@ import (
 	"net/smtp"
 )
 
-type GmailConfig struct {
-	Host     string
-	Port     int
-	Username string
-	Password string // Gmail App Password
-	From     string
-}
-
-func NewGmailConfig(c GmailConfig) *GmailConfig {
-	return &GmailConfig{
-		Host:     c.Host,
-		Port:     c.Port,
-		Username: c.Username,
-		Password: c.Password,
-		From:     c.From,
-	}
+func (n *NotificationAdapter) auth() smtp.Auth {
+	return smtp.PlainAuth("", n.config.Username, n.config.Password, n.config.Host)
 }
 
 func (n *NotificationAdapter) SendEmail(
@@ -29,22 +15,29 @@ func (n *NotificationAdapter) SendEmail(
 	templateName string,
 	data interface{},
 ) error {
-	auth := smtp.PlainAuth("", n.config.Username, n.config.Password, n.config.Host)
-
+	auth := n.auth()
 	// Generate HTML content from template
 	htmlContent, err := n.emailTemplate.ExecuteTemplate(templateName, data)
 	if err != nil {
 		return fmt.Errorf("failed to execute template: %w", err)
 	}
-	msg := []byte(fmt.Sprintf("To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"MIME-Version: 1.0\r\n"+
-		"Content-Type: text/html; charset=utf-8\r\n"+
-		"X-Priority: 1 (Highest)\r\n"+
-		"X-MSMail-Priority: High\r\n"+
-		"Importance: High\r\n"+
-		"\r\n"+
-		"%s\r\n", to, subject, htmlContent))
+
+	var msg []byte
+	switch n.config.EmailType {
+	case GMAIL, ZOHO:
+		msg = []byte(fmt.Sprintf(
+			"From: Diagnoxix <%s>\r\n"+
+			"To: %s\r\n"+
+			"Subject: %s\r\n"+
+			"MIME-Version: 1.0\r\n"+
+			"Content-Type: text/html; charset=utf-8\r\n"+
+			"X-Priority: 1 (Highest)\r\n"+
+			"X-MSMail-Priority: High\r\n"+
+			"Importance: High\r\n"+
+			"\r\n"+
+			"%s\r\n", n.config.From, to, subject, htmlContent),
+		)
+	}
 
 	return smtp.SendMail(
 		fmt.Sprintf("%s:%d", n.config.Host, n.config.Port),

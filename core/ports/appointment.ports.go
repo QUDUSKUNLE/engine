@@ -21,10 +21,9 @@ type AppointmentRepository interface {
 
 // AppointmentTx represents a transaction for appointment operations
 type AppointmentTx interface {
+	DBTX
 	CreateAppointment(ctx context.Context, appointment db.CreateAppointmentParams) (*db.Appointment, error)
 	CreateSchedule(ctx context.Context, schedule db.Create_Diagnostic_ScheduleParams) (*db.DiagnosticSchedule, error)
 	CreatePayment(ctx context.Context, payment db.Create_PaymentParams) (*db.Payment, error)
 	UpdateAppointment(ctx context.Context, update db.UpdateAppointmentPaymentParams) (*db.Appointment, error)
-	Commit(ctx context.Context) error
-	Rollback(ctx context.Context) error
 }

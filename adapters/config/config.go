@@ -29,18 +29,17 @@ type Config struct {
 
 	// Generated token
 	TokenExpired string
-	// Email Host and Port
-	EMAIL_HOST string
-	EMAIL_PORT string
 
 	// Email Service for SendGRID
-	SEND_GRID_API_KEY  string
-	EMAIL_FROM_ADDRESS string
+	SEND_GRID_API_KEY string
 
-	// Gmail Service
-	GMAIL_USERNAME     string
-	GMAIL_APP_PASSWORD string
-	GMAIL_FROM_ADDRESS string
+	// Email Service
+	EMAIL_USERNAME     string
+	EMAIL_APP_PASSWORD string
+	EMAIL_FROM_ADDRESS string
+	EMAIL_TYPE         string
+	EMAIL_HOST         string
+	EMAIL_PORT         string
 
 	// Paystack Service
 	PAYSTACK_BASE_URL   string
@@ -68,12 +67,12 @@ func LoadConfig(serviceName string) (*Config, error) {
 		config.GoogleClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
 		config.GoogleRedirectURL = os.Getenv("GOOGLE_REDIRECT_URL")
 		config.AppUrl = os.Getenv("APP_URL")
-		config.EMAIL_FROM_ADDRESS = os.Getenv("EMAIL_FROM_ADDRESS")
 		config.SEND_GRID_API_KEY = os.Getenv("SEND_GRID_API_KEY")
-		config.GMAIL_FROM_ADDRESS = os.Getenv("EMAIL_FROM_ADDRESS")
-		config.GMAIL_APP_PASSWORD = os.Getenv("GMAIL_APP_PASSWORD")
-		config.GMAIL_USERNAME = os.Getenv("GMAIL_USERNAME")
+		config.EMAIL_APP_PASSWORD = os.Getenv("EMAIL_APP_PASSWORD")
+		config.EMAIL_USERNAME = os.Getenv("EMAIL_USERNAME")
+		config.EMAIL_FROM_ADDRESS = os.Getenv("EMAIL_FROM_ADDRESS")
 		config.EMAIL_HOST = os.Getenv("EMAIL_HOST")
+		config.EMAIL_TYPE = os.Getenv("EMAIL_TYPE")
 		config.EMAIL_PORT = os.Getenv("EMAIL_PORT")
 		config.OPEN_API_KEY = os.Getenv("OPEN_API_KEY")
 		// PAYSTACK

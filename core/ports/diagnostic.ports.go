@@ -31,8 +31,7 @@ type TestPriceRepository interface {
 }
 
 type DiagnosticTx interface {
+	DBTX
 	CreateDiagnosticCentre(ctx context.Context, arg db.Create_Diagnostic_CentreParams) (*db.DiagnosticCentre, error)
 	CreateTestPrice(ctx context.Context, test_price db.Create_Test_PriceParams) ([]*db.DiagnosticCentreTestPrice, error)
-	Commit(ctx context.Context) error
-	Rollback(ctx context.Context) error
 }

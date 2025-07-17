@@ -47,12 +47,13 @@ func ServicesAdapter(
 		AppointmentRepo:  appointmentPort,
 		RecordRepo:       record,
 		TestPriceRepo:    testPriceRepo,
-		notificationService: ex.NewNotificationAdapter(&ex.GmailConfig{
-			Host:     conn.EMAIL_HOST,
-			Port:     func() int { p, _ := strconv.Atoi(conn.EMAIL_PORT); return p }(),
-			Username: conn.GMAIL_USERNAME,
-			Password: conn.GMAIL_APP_PASSWORD,
-			From:     conn.EMAIL_FROM_ADDRESS,
+		notificationService: ex.NewNotificationAdapter(&ex.EmailConfig{
+			Host:      conn.EMAIL_HOST,
+			Port:      func() int { p, _ := strconv.Atoi(conn.EMAIL_PORT); return p }(),
+			Username:  conn.EMAIL_USERNAME,
+			Password:  conn.EMAIL_APP_PASSWORD,
+			From:      conn.EMAIL_FROM_ADDRESS,
+			EmailType: ex.EmailType(conn.EMAIL_TYPE),
 		}),
 		paymentService: paystack.NewPaystackAdapter(&paystack.PaystackConfig{
 			SecretKey: conn.PAYSTACK_SECRET_KEY,

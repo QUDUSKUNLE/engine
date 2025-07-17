@@ -4663,7 +4663,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "example": "Medivue Diagnostics"
+                    "example": "Diagnoxix Diagnostics"
                 },
                 "phone": {
                     "type": "string",
@@ -4859,8 +4859,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "medivue-api-production.up.railway.app",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Medivue",
-	Description:      "Medivue API",
+	Title:            "Diagnoxix",
+	Description:      "Diagnoxix API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
