@@ -13,7 +13,7 @@ const (
 	TitleResetPassword              = "Reset Your Password"
 	TitleDiagnosticCentreManager    = "Diagnostic Centre Manager Notification"
 	TitleDiagnosticCentreManagement = "Diagnostic Centre Management Notification"
-	TitleEmailVerification          = "Verify Your Email"
+	TitleEmailVerification          = "Email Verification"
 )
 
 const (
@@ -34,8 +34,8 @@ const (
 )
 
 const (
-	SubjectEmailVerification          = "Sign up for Medivue - Email Verification"
-	SubjectResetPassword              = "Reset Your Password - Medivue"
+	SubjectEmailVerification          = "Sign up for Diagnoxix - Email Verification"
+	SubjectResetPassword              = "Reset Your Password - Diagnoxix"
 	SubjectDiagnosticCentreManager    = "Diagnostic Centre Manager Notification"
 	SubjectDiagnosticCentreManagement = "Diagnostic Centre Management Notification"
 )

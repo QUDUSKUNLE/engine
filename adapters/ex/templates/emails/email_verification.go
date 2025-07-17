@@ -8,14 +8,14 @@ const emailVerificationTemplate = `
 	</strong>
 </p>
 <p>
-	Thank you for registering with Medivue. Please verify your email address to complete your registration.
+	Thank you for registering with Diagnoxix. Please verify your email address to complete your registration.
 </p>
 <p>
 	Click the button below to verify your email address:
 </p>
 <a href="{{.VerificationLink}}" style="
-background: var(--primary-color);
-	color:  #2563eb;
+background: background: #2563eb;
+	color:  white;
 	text-decoration: none;
 	padding: 14px 28px;
 	border-radius: 6px;

@@ -897,7 +897,7 @@ definitions:
         example: 3.3792
         type: number
       name:
-        example: Medivue Diagnostics
+        example: Diagnoxix Diagnostics
         type: string
       phone:
         example: "+2348000000000"
@@ -1038,8 +1038,8 @@ definitions:
 host: medivue-api-production.up.railway.app
 info:
   contact: {}
-  description: Medivue API
-  title: Medivue
+  description: Diagnoxix API
+  title: Diagnoxix
   version: "1.0"
 paths:
   /v1/account:

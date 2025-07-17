@@ -5,11 +5,11 @@ import (
 )
 
 type NotificationAdapter struct {
-	config        *GmailConfig
+	config        *EmailConfig
 	emailTemplate emails.EmailTemplateHandler
 }
 
-func NewNotificationAdapter(con *GmailConfig) *NotificationAdapter {
+func NewNotificationAdapter(con *EmailConfig) *NotificationAdapter {
 	return &NotificationAdapter{
 		config:        con,
 		emailTemplate: *emails.NewEmailTemplateHandler(),

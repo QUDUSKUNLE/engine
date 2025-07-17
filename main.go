@@ -25,9 +25,9 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-// @title Medivue
+// @title Diagnoxix
 // @version 1.0
-// @description Medivue API
+// @description Diagnoxix API
 // @host medivue-api-production.up.railway.app
 // @BasePath /
 func main() {
@@ -64,7 +64,7 @@ func main() {
 	// ---- Metrics and Observability ----
 	e.GET("/metrics", echoprometheus.NewHandler())
 	e.Use(middlewares.PrometheusMiddleware)
-	e.Use(echoprometheus.NewMiddleware("Medivue"))
+	e.Use(echoprometheus.NewMiddleware("Diagnoxix"))
 
 	// ---- Middleware Stack ----
 	// Add basic observability middleware
