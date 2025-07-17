@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "medivue-api-production.up.railway.app",
+    "host": "diagnoxix.up.railway.app",
     "basePath": "/",
     "paths": {
         "/v1/account": {

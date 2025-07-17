@@ -28,7 +28,7 @@ import (
 // @title Diagnoxix
 // @version 1.0
 // @description Diagnoxix API
-// @host medivue-api-production.up.railway.app
+// @host diagnoxix.up.railway.app
 // @BasePath /
 func main() {
 	// Initialize logger with custom configuration

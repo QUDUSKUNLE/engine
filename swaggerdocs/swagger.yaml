@@ -1035,7 +1035,7 @@ definitions:
         example: "2025-06-27T12:00:00Z"
         type: string
     type: object
-host: medivue-api-production.up.railway.app
+host: diagnoxix.up.railway.app
 info:
   contact: {}
   description: Diagnoxix API

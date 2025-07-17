@@ -4856,7 +4856,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "medivue-api-production.up.railway.app",
+	Host:             "diagnoxix.up.railway.app",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Diagnoxix",
