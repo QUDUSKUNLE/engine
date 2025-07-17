@@ -9,6 +9,9 @@ import (
 	"github.com/medivue/core/ports"
 )
 
+// Ensure Repository implements AppointmentRepository
+var _ ports.AppointmentRepository = (*Repository)(nil)
+
 func (r *Repository) IsValidTestType(ctx context.Context, testType string) bool {
 	// List of valid test types - this should match the domain validation
 	validTypes := []string{
@@ -31,9 +34,6 @@ func (r *Repository) IsValidTestType(ctx context.Context, testType string) bool 
 	}
 	return false
 }
-
-// Ensure Repository implements AppointmentRepository
-var _ ports.AppointmentRepository = (*Repository)(nil)
 
 // AppointmentTxRepository represents a transaction-aware repository
 type AppointmentTxRepository struct {

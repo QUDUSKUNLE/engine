@@ -628,7 +628,7 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 
 	// data := emails.AppointmentEmailData{
 	// 	EmailData: emails.EmailData{
-	// 		AppName: "Medivue",
+	// 		AppName: "Diagnoxix",
 	// 	},
 	// 	PatientName:     patient.Fullname.String,
 	// 	AppointmentID:   appointment.ID,
@@ -680,7 +680,7 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 
 	_ = emails.AppointmentEmailData{
 		EmailData: emails.EmailData{
-			AppName: "Medivue",
+			AppName: "Diagnoxix",
 		},
 		PatientName:     patient.Fullname.String,
 		AppointmentID:   appointment.ID,
@@ -725,7 +725,7 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 
 	_ = emails.AppointmentEmailData{
 		EmailData: emails.EmailData{
-			AppName: "Medivue",
+			AppName: "Diagnoxix",
 		},
 		PatientName:     patient.Fullname.String,
 		AppointmentID:   appointment.ID,
@@ -782,7 +782,7 @@ func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointme
 
 	_ = emails.StaffNotificationData{
 		EmailData: emails.EmailData{
-			AppName: "Medivue",
+			AppName: "Diagnoxix",
 		},
 		StaffName:       contact.Email, // Use contact email as staff name
 		PatientName:     patient.Fullname.String,

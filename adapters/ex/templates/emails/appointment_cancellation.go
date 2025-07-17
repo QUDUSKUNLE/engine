@@ -15,7 +15,7 @@ const appointmentCancellationTemplate = `
     </ul>
 </div>
 
-<p>You can book a new appointment by logging into your Medivue account anytime.</p>
+<p>You can book a new appointment by logging into your Diagnoxix account anytime.</p>
 <p>If you have any questions, feel free to contact support.</p>
 {{end}}
 `

@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Medivue API",
-        "title": "Medivue",
+        "description": "Diagnoxix API",
+        "title": "Diagnoxix",
         "contact": {},
         "version": "1.0"
     },
@@ -4657,7 +4657,7 @@
                 },
                 "name": {
                     "type": "string",
-                    "example": "Medivue Diagnostics"
+                    "example": "Diagnoxix Diagnostics"
                 },
                 "phone": {
                     "type": "string",

@@ -1,6 +1,6 @@
-# Medivue
+# Diagnoxix
 
-Medivue is a Golang-based project designed to streamline healthcare workflows and improve patient management. This repository contains the backend services, APIs, and documentation necessary to deploy and extend Medicue.
+Diagnoxix is a Golang-based project designed to streamline healthcare workflows and improve patient management. This repository contains the backend services, APIs, and documentation necessary to deploy and extend Medicue.
 
 ## Features
 

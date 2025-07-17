@@ -81,7 +81,7 @@ func (j *ReminderJob) SendReminderEmail(appointment *db.Appointment) error {
 
 	data := emails.AppointmentEmailData{
 		EmailData: emails.EmailData{
-			AppName: "Medivue",
+			AppName: "Diagnoxix",
 		},
 		PatientName:     patient.Fullname.String,
 		AppointmentID:   appointment.ID,

@@ -4,7 +4,7 @@ const diagnosticCentreManagerEmailVerificationTemplate = `
 {{define "dc_manager_notification"}}
 <p><strong>Dear {{.ManagerName}},</strong></p>
 
-<p>Thank you for registering with Medivue. We’re excited to have you onboard as a Diagnostic Centre Manager!</p>
+<p>Thank you for registering with Diagnoxix. We’re excited to have you onboard as a Diagnostic Centre Manager!</p>
 
 <p>Below are your login credentials:</p>
 

@@ -19,6 +19,6 @@ const policyUpdateTemplate = `
     {{end}}
 </div>
 
-<p>Thank you for being a valued part of the Medivue community.</p>
+<p>Thank you for being a valued part of the Diagnoxix community.</p>
 {{end}}
 `
