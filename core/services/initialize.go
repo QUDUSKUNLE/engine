@@ -5,12 +5,12 @@ import (
 	"github.com/medivue/adapters/db/repository"
 )
 
-type Services struct {
+type Service struct {
 	Core *ServicesHandler
 }
 
 // InitializeServices creates and returns all services
-func InitializeServices(repos *repository.Repositories, cfg *config.Config) *Services {
+func InitializeServices(repos *repository.Repositories, cfg *config.EnvConfiguration) *Service {
 	core := ServicesAdapter(
 		repos.User,
 		repos.Schedule,
@@ -22,7 +22,7 @@ func InitializeServices(repos *repository.Repositories, cfg *config.Config) *Ser
 		repos.TestPrice,
 		*cfg,
 	)
-	return &Services{
+	return &Service{
 		Core: core,
 	}
 }

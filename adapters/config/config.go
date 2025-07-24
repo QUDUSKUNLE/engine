@@ -16,7 +16,7 @@ func LoadEnvironmentVariable() error {
 	return nil
 }
 
-type Config struct {
+type EnvConfiguration struct {
 	Port         string
 	DB_URL       string
 	JwtKey       string
@@ -50,12 +50,12 @@ type Config struct {
 	OPEN_API_KEY string
 }
 
-func LoadConfig(serviceName string) (*Config, error) {
+func LoadEnvironmentVariables(serviceName string) (*EnvConfiguration, error) {
 	if err := LoadEnvironmentVariable(); err != nil {
 		return nil, err
 	}
 
-	config := &Config{}
+	config := &EnvConfiguration{}
 
 	switch serviceName {
 	case "MEDIVUE":

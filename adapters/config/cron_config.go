@@ -28,7 +28,7 @@ func GetConfig(
 	useRepo ports.UserRepository,
 	diagnosticCentreRepo ports.DiagnosticRepository,
 	appointmentPort ports.AppointmentRepository,
-	con Config,
+	con EnvConfiguration,
 ) *CronConfig {
 	once.Do(func() {
 

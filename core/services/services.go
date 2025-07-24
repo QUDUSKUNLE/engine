@@ -21,7 +21,7 @@ type ServicesHandler struct {
 	TestPriceRepo       ports.TestPriceRepository
 	FileRepo            ports.FileService
 	notificationService ports.NotificationService
-	Config              config.Config
+	Config              config.EnvConfiguration
 	// Payment Gateway
 	paymentService ports.PaymentProviderService
 	aiService      ports.AIService
@@ -36,7 +36,7 @@ func ServicesAdapter(
 	paymentPort ports.PaymentRepository,
 	appointmentPort ports.AppointmentRepository,
 	testPriceRepo ports.TestPriceRepository,
-	conn config.Config,
+	conn config.EnvConfiguration,
 ) *ServicesHandler {
 	return &ServicesHandler{
 		UserRepo:         useRepo,
