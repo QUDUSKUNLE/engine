@@ -1,8 +1,8 @@
 package routes
 
 import (
+	"github.com/diagnoxix/adapters/handlers"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/handlers"
 )
 
 // RoutesAdaptor registers all API routes

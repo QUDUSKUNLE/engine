@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 func (service *ServicesHandler) InterpretLabHandler(ctx echo.Context) error {

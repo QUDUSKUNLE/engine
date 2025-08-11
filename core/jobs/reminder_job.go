@@ -5,10 +5,10 @@ import (
 
 	// "time"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/adapters/ex/templates/emails"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates/emails"
-	// "github.com/medivue/core/utils"
+	// "github.com/diagnoxix/core/utils"
 )
 
 func (j *ReminderJob) Start() {

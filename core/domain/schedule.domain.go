@@ -3,8 +3,8 @@ package domain
 import (
 	"time"
 
+	"github.com/diagnoxix/adapters/db"
 	"github.com/google/uuid"
-	"github.com/medivue/adapters/db"
 )
 
 type (

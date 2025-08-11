@@ -1,4 +1,4 @@
-module github.com/medivue
+module github.com/diagnoxix
 
 go 1.24.3
 

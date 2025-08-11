@@ -398,3 +398,28 @@ GROUP BY
 ORDER BY
   distance_km ASC
 LIMIT 3;
+
+
+-- name: Get_Diagnostic_Centre_Managers :many
+SELECT
+  dc.id,
+  dc.diagnostic_centre_name,
+  dc.latitude,
+  dc.longitude,
+  dc.address,
+  dc.contact,
+  dc.doctors,
+  dc.available_tests,
+  dc.created_at,
+  dc.updated_at,
+WHERE
+  dc.id != $3 -- Exclude the current diagnostic centre
+  AND dc.latitude IS NOT NULL
+  AND dc.longitude IS NOT NULL
+  AND (dc.doctors @> $4 OR $4 IS NULL) -- doctor type
+  AND (dc.available_tests @> $5 OR $5 IS NULL) -- test type
+GROUP BY
+  dc.id, prices.test_prices
+ORDER BY
+  distance_km ASC
+LIMIT 3;

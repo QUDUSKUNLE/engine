@@ -3,11 +3,11 @@ package services
 import (
 	"strconv"
 
-	"github.com/medivue/adapters/config"
-	"github.com/medivue/adapters/ex"
-	"github.com/medivue/adapters/ex/ai"
-	"github.com/medivue/adapters/ex/paystack"
-	"github.com/medivue/core/ports"
+	"github.com/diagnoxix/adapters/config"
+	"github.com/diagnoxix/adapters/ex"
+	"github.com/diagnoxix/adapters/ex/ai"
+	"github.com/diagnoxix/adapters/ex/paystack"
+	"github.com/diagnoxix/core/ports"
 )
 
 type ServicesHandler struct {

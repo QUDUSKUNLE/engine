@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/diagnoxix/core/utils/response"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/core/utils/response"
 )
 
 // Centralized HTTP error handler for Echo

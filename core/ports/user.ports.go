@@ -3,8 +3,8 @@ package ports
 import (
 	"context"
 
+	"github.com/diagnoxix/adapters/db"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/medivue/adapters/db"
 )
 
 type UserRepository interface {

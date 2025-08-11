@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/medivue/adapters/db"
+	"github.com/diagnoxix/adapters/db"
 )
 
 // CreateTestPrice implements the ports.TestPriceRepository interface.

@@ -3,9 +3,9 @@ package routes
 import (
 	"net/http"
 
+	"github.com/diagnoxix/adapters/handlers"
+	"github.com/diagnoxix/core/domain"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/handlers"
-	"github.com/medivue/core/domain"
 )
 
 // DiagnosticRoutes registers all diagnostic centre-related routes

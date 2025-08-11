@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils/response"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils/response"
 	"go.uber.org/zap"
 )
 
@@ -129,7 +129,7 @@ func ResponseMessage(status int, data interface{}, c echo.Context) error {
 }
 
 // MarshalJSONField marshals any struct to JSON with error handling
-func MarshalJSONField(field interface{}, c echo.Context) ([]byte, error) {
+func MarshalJSONField(field interface{}) ([]byte, error) {
 	data, err := json.Marshal(field)
 	if err != nil {
 		logger.Error("json marshal failed", zap.Error(err))
@@ -139,7 +139,7 @@ func MarshalJSONField(field interface{}, c echo.Context) ([]byte, error) {
 }
 
 // UnmarshalJSONField unmarshals JSON data with validation
-func UnmarshalJSONField(data []byte, v interface{}, c echo.Context) error {
+func UnmarshalJSONField(data []byte, v interface{}) error {
 	// Sanity check: handle empty or null values
 	s := strings.TrimSpace(string(data))
 	if len(s) == 0 || s == "null" {

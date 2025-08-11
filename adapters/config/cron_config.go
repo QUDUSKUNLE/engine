@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/medivue/adapters/ex"
-	"github.com/medivue/core/jobs"
-	"github.com/medivue/core/ports"
+	"github.com/diagnoxix/adapters/ex"
+	"github.com/diagnoxix/core/jobs"
+	"github.com/diagnoxix/core/ports"
 )
 
 // CronConfig manages cron jobs and services configuration

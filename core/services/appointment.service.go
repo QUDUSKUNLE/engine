@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/adapters/ex/templates/emails"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates/emails"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 // CreateAppointment creates a new appointment and associated schedule
@@ -139,7 +139,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		utils.LogField{Key: "appointment_id", Value: appointment.ID},
 	)
 
-	metadataBytes, err := utils.MarshalJSONField(paystackResponse, context)
+	metadataBytes, err := utils.MarshalJSONField(paystackResponse)
 	if err != nil {
 		utils.Error("Failed to marshal payment metadata",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -541,7 +541,7 @@ func (service *ServicesHandler) verifyAndUpdatePayment(ctx context.Context, prov
 	}
 
 	// Convert payment metadata to JSON with error recovery
-	metadataBytes, err := utils.MarshalJSONField(verificationResponse.Data, nil)
+	metadataBytes, err := utils.MarshalJSONField(verificationResponse.Data)
 	if err != nil {
 		utils.Error("Failed to marshal payment metadata, using fallback",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -774,7 +774,7 @@ func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointme
 
 	// Extract contact information
 	var contact domain.Contact
-	if err := utils.UnmarshalJSONField(centre.Contact, &contact, nil); err != nil {
+	if err := utils.UnmarshalJSONField(centre.Contact, &contact); err != nil {
 		utils.Error("Failed to unmarshal centre contact",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return

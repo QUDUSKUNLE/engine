@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/diagnoxix/adapters/config"
+	"github.com/diagnoxix/core/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/medivue/adapters/config"
-	"github.com/medivue/core/utils"
 	"golang.org/x/time/rate"
 )
 

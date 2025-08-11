@@ -1,6 +1,8 @@
 package handlers
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+)
 
 // DiagnosticCentreSwagger is used for Swagger documentation only
 // @Description Diagnostic centre response for Swagger
@@ -260,4 +262,9 @@ func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) e
 // @Router /v1/diagnostic_centres/{diagnostic_centre_id}/records [get]
 func (handler *HTTPHandler) GetDiagnosticCentreRecords(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreRecords(context)
+}
+
+
+func (handler *HTTPHandler) GetDiagnosticCentreManagers(context echo.Context) error {
+	return nil
 }

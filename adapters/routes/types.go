@@ -3,9 +3,9 @@ package routes
 import (
 	"net/http"
 
+	"github.com/diagnoxix/adapters/middlewares"
+	"github.com/diagnoxix/core/utils"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/middlewares"
-	"github.com/medivue/core/utils"
 )
 
 // routeConfig defines the structure for route configuration

@@ -10,7 +10,7 @@ import (
 
 	"github.com/cloudinary/cloudinary-go"
 	"github.com/cloudinary/cloudinary-go/api/uploader"
-	"github.com/medivue/core/utils"
+	"github.com/diagnoxix/core/utils"
 )
 
 func cloudinaryUploader(ctx context.Context, file []byte) (string, error) {

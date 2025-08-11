@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/medivue/core/utils"
+	"github.com/diagnoxix/core/utils"
 )
 
 func (service *ServicesHandler) emailGoroutine(data interface{}, email, subject, template string) {

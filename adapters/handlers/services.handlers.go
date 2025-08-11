@@ -1,6 +1,6 @@
 package handlers
 
-import "github.com/medivue/core/services"
+import "github.com/diagnoxix/core/services"
 
 type HTTPHandler struct {
 	service services.ServicesHandler

@@ -1,8 +1,8 @@
 package domain
 
 import (
+	"github.com/diagnoxix/adapters/db"
 	"github.com/google/uuid"
-	"github.com/medivue/adapters/db"
 )
 
 type (

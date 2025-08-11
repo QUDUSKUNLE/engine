@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/medivue/adapters/config"
-	"github.com/medivue/adapters/db/repository"
+	"github.com/diagnoxix/adapters/config"
+	"github.com/diagnoxix/adapters/db/repository"
 )
 
 type Service struct {

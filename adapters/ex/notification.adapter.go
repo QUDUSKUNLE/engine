@@ -1,7 +1,7 @@
 package ex
 
 import (
-	"github.com/medivue/adapters/ex/templates/emails"
+	"github.com/diagnoxix/adapters/ex/templates/emails"
 )
 
 type NotificationAdapter struct {

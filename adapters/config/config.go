@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/diagnoxix/core/utils"
 	"github.com/joho/godotenv"
-	"github.com/medivue/core/utils"
 )
 
 func LoadEnvironmentVariable() error {

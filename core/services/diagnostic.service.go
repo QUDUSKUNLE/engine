@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/adapters/ex/templates/emails"
+	"github.com/diagnoxix/adapters/metrics"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates/emails"
-	"github.com/medivue/adapters/metrics"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) error {
@@ -26,7 +26,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateDiagnosticDTO)
 
 	// Build and validate parameters
-	params, err := buildCreateDiagnosticCentreParams(context, dto)
+	params, err := buildCreateDiagnosticCentreParams(dto)
 	if err != nil {
 		utils.Error("Failed to build diagnostic centre params",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -94,7 +94,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
 
-	response, _ := utils.MarshalJSONField(test_price, context)
+	response, _ := utils.MarshalJSONField(test_price)
 
 	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
 		ID:                   diagnostic_centre.ID,
@@ -109,7 +109,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		UpdatedAt:            diagnostic_centre.UpdatedAt,
 		TestPrices:           response,
 	}
-	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+	res, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -170,7 +170,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 		Availability:         response.Availability,
 		TestPrices:           response.TestPrices,
 	}
-	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+	res, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -213,7 +213,7 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	for _, v := range response {
 		// Map v to a DiagnosticCentre struct
 		diagnosticCentre := buildDiagnosticCentre(*v)
-		item, err := buildDiagnosticCentreResponseFromRow(diagnosticCentre, context)
+		item, err := buildDiagnosticCentreResponseFromRow(diagnosticCentre)
 		if err != nil {
 			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 		}
@@ -231,7 +231,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	}
 	body, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticBodyDTO)
 	param := context.Param(utils.DiagnosticCentreID)
-	dto, err := buildUpdateDiagnosticCentreByOwnerParams(context, body)
+	dto, err := buildUpdateDiagnosticCentreByOwnerParams(body)
 	if err != nil {
 		return err
 	}
@@ -356,7 +356,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 			CreatedAt:            centre.CreatedAt,
 			UpdatedAt:            centre.UpdatedAt,
 		}
-		item, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+		item, err := buildDiagnosticCentreResponseFromRow(centreRow)
 		if err != nil {
 			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 		}
@@ -438,7 +438,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByManager(context echo.Conte
 	}
 
 	// Build response
-	result, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+	result, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -494,7 +494,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 		CreatedAt:            response.CreatedAt,
 		UpdatedAt:            response.UpdatedAt,
 	}
-	result, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+	result, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
