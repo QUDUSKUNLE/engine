@@ -14,7 +14,7 @@ type DiagnosticCentreSwagger struct {
 	Longitude float64 `json:"longitude" example:"3.3792"`
 	Address   string  `json:"address" example:"123 Main St, Lagos"`
 	Phone     string  `json:"phone" example:"+2348000000000"`
-	Email     string  `json:"email" example:"info@medivue.com"`
+	Email     string  `json:"email" example:"info@diagnoxix.com"`
 	CreatedAt string  `json:"created_at" example:"2025-06-26T20:00:00Z"` // format: date-time
 	UpdatedAt string  `json:"updated_at" example:"2025-06-26T20:30:00Z"` // format: date-time
 	// ...add other fields as needed for docs
@@ -263,7 +263,6 @@ func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) e
 func (handler *HTTPHandler) GetDiagnosticCentreRecords(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreRecords(context)
 }
-
 
 func (handler *HTTPHandler) GetDiagnosticCentreManagers(context echo.Context) error {
 	return nil

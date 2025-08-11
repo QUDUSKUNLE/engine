@@ -8,7 +8,7 @@ import (
 )
 
 func Home(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{"Home": "Welcome to Diagnoxix Technologies"})
+	return c.JSON(http.StatusOK, map[string]string{"Home": "Diagnoxix Technologies"})
 }
 
 func Health(c echo.Context) error {

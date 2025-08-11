@@ -28,7 +28,7 @@ import (
 // @title Diagnoxix
 // @version 1.0
 // @description Diagnoxix API
-// @host diagnoxix.up.railway.app
+// @host 127.0.0.1:7556
 // @BasePath /
 func main() {
 	// Initialize logger with custom configuration

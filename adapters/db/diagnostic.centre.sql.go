@@ -439,6 +439,103 @@ func (q *Queries) Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Dia
 	return &i, err
 }
 
+const get_Diagnostic_Centre_Managers = `-- name: Get_Diagnostic_Centre_Managers :many
+SELECT
+  dc.id,
+  dc.diagnostic_centre_name,
+  dc.latitude,
+  dc.longitude,
+  dc.address,
+  dc.contact,
+  dc.doctors,
+  dc.available_tests,
+  dc.created_at,
+  dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN LATERAL (
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'test_type', dctp.test_type,
+      'price', dctp.price
+    )
+  ) AS test_prices
+  FROM diagnostic_centre_test_prices dctp
+  WHERE dctp.diagnostic_centre_id = dc.id
+) prices ON true
+WHERE
+  dc.admin_id = $1
+GROUP BY
+  dc.id, prices.test_prices
+ORDER BY dc.created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type Get_Diagnostic_Centre_ManagersParams struct {
+	AdminID string `db:"admin_id" json:"admin_id"`
+	Limit   int32  `db:"limit" json:"limit"`
+	Offset  int32  `db:"offset" json:"offset"`
+}
+
+type Get_Diagnostic_Centre_ManagersRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []string           `db:"doctors" json:"doctors"`
+	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
+}
+
+func (q *Queries) Get_Diagnostic_Centre_Managers(ctx context.Context, arg Get_Diagnostic_Centre_ManagersParams) ([]*Get_Diagnostic_Centre_ManagersRow, error) {
+	rows, err := q.db.Query(ctx, get_Diagnostic_Centre_Managers, arg.AdminID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Get_Diagnostic_Centre_ManagersRow
+	for rows.Next() {
+		var i Get_Diagnostic_Centre_ManagersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.DiagnosticCentreName,
+			&i.Latitude,
+			&i.Longitude,
+			&i.Address,
+			&i.Contact,
+			&i.Doctors,
+			&i.AvailableTests,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Availability,
+			&i.TestPrices,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const get_Nearest_Diagnostic_Centres = `-- name: Get_Nearest_Diagnostic_Centres :many
 WITH filtered_centres AS (
   SELECT dc.id

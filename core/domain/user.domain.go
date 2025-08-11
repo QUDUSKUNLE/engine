@@ -34,6 +34,7 @@ type (
 		Password        string      `json:"password" validate:"gte=6,lte=20,required"`
 		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required"`
 		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER"`
+		CreatedAdmin    uuid.UUID   `json:"created_admin" validate:"omitempty"`
 	}
 	DiagnosticCentreManagerRegisterDTO struct {
 		FirstName string      `json:"first_name" validate:"gte=3"`
@@ -129,6 +130,15 @@ func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {
 	if err != nil {
 		return db.CreateUserParams{}, err
 	}
+
+	// Handle created_admin as nullable UUID
+	var createdAdmin pgtype.UUID
+	if user.CreatedAdmin != uuid.Nil {
+		createdAdmin = pgtype.UUID{
+			Bytes: user.CreatedAdmin,
+			Valid: true,
+		}
+	}
 	params := db.CreateUserParams{
 		Email:    pgtype.Text{String: user.Email, Valid: true},
 		Password: password,
@@ -138,9 +148,8 @@ func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {
 			Valid:  true,
 		},
 		PhoneNumber: pgtype.Text{String: "", Valid: true},
+		Column8:     createdAdmin.String(),
 	}
-
-	params.PhoneNumber = pgtype.Text{String: "", Valid: true}
 	return params, nil
 }
 

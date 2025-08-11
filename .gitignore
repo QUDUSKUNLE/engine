@@ -18,3 +18,4 @@ kubernetes/secrets/
 *.pem
 *.key
 *.crt
+.air_tmp

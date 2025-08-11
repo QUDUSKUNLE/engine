@@ -9,9 +9,10 @@ INSERT INTO users (
   user_type,
   phone_number,
   email_verified,
-  fullname
-) VALUES  (
-  $1, $2, $3, $4, $5, $6, $7
+  fullname,
+  created_admin
+) VALUES (
+  $1, $2, $3, $4, $5, $6, $7, $8::uuid
 ) RETURNING *;
 
 -- name: GetUserByEmail :one

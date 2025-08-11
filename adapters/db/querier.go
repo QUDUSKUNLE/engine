@@ -64,6 +64,7 @@ type Querier interface {
 	Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*Get_Diagnostic_Centre_ByManagerRow, error)
 	// GetADiagnosticCentreByOwner :one
 	Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*Get_Diagnostic_Centre_ByOwnerRow, error)
+	Get_Diagnostic_Centre_Managers(ctx context.Context, arg Get_Diagnostic_Centre_ManagersParams) ([]*Get_Diagnostic_Centre_ManagersRow, error)
 	// Get Diagnostic Schedule
 	Get_Diagnostic_Schedule(ctx context.Context, arg Get_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	// Get Diagnostic Schedules

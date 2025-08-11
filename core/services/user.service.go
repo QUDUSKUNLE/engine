@@ -74,7 +74,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 
 func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	// Check for permission to add a diagnostic manager
-	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
+	owner, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		utils.Error("Unauthorized attempt to create diagnostic centre manager",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -98,11 +98,12 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 	userDto := domain.UserRegisterDTO{
-		Email:     dto.Email,
-		LastName:  dto.LastName,
-		FirstName: dto.FirstName,
-		Password:  password,
-		UserType:  dto.UserType,
+		Email:        dto.Email,
+		LastName:     dto.LastName,
+		FirstName:    dto.FirstName,
+		Password:     password,
+		UserType:     dto.UserType,
+		CreatedAdmin: owner.UserID,
 	}
 
 	newUser, err := domain.BuildNewUser(userDto)
@@ -525,6 +526,12 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 
 	updatedUser, err := service.UserRepo.UpdateUser(context.Request().Context(), updateParams)
 	if err != nil {
+		if err.Error() == "no rows in result set" {
+			utils.Error("Failed to update user profile",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "user_id", Value: currentUser.UserID})
+			return utils.ErrorResponse(http.StatusUnprocessableEntity, err, context)
+		}
 		utils.Error("Failed to update user profile",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: currentUser.UserID})
@@ -549,6 +556,12 @@ func (service *ServicesHandler) GetProfile(context echo.Context) error {
 	// Get user profile from database
 	user, err := service.UserRepo.GetUser(context.Request().Context(), currentUser.UserID.String())
 	if err != nil {
+		if err.Error() == "no rows in result set" {
+			utils.Error("Failed to get user profile",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "user_id", Value: currentUser.UserID})
+			return utils.ErrorResponse(http.StatusNotFound, err, context)
+		}
 		utils.Error("Failed to get user profile",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: currentUser.UserID})
@@ -617,6 +630,5 @@ func (service *ServicesHandler) createUserHelper(
 		UpdatedAt:       createdRow.UpdatedAt,
 		Fullname:        createdRow.Fullname,
 	}
-
 	return user, nil
 }

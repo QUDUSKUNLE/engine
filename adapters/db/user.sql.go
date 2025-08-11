@@ -19,10 +19,11 @@ INSERT INTO users (
   user_type,
   phone_number,
   email_verified,
-  fullname
-) VALUES  (
-  $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number
+  fullname,
+  created_admin
+) VALUES (
+  $1, $2, $3, $4, $5, $6, $7, $8::uuid
+) RETURNING id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin
 `
 
 type CreateUserParams struct {
@@ -33,6 +34,7 @@ type CreateUserParams struct {
 	PhoneNumber   pgtype.Text `db:"phone_number" json:"phone_number"`
 	EmailVerified pgtype.Bool `db:"email_verified" json:"email_verified"`
 	Fullname      pgtype.Text `db:"fullname" json:"fullname"`
+	Column8       string      `db:"column_8" json:"column_8"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, error) {
@@ -44,6 +46,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 		arg.PhoneNumber,
 		arg.EmailVerified,
 		arg.Fullname,
+		arg.Column8,
 	)
 	var i User
 	err := row.Scan(
@@ -58,12 +61,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 		&i.EmailVerified,
 		&i.EmailVerifiedAt,
 		&i.PhoneNumber,
+		&i.CreatedAdmin,
 	)
 	return &i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users where id = $1
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin FROM users where id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (*User, error) {
@@ -81,12 +85,13 @@ func (q *Queries) GetUser(ctx context.Context, id string) (*User, error) {
 		&i.EmailVerified,
 		&i.EmailVerifiedAt,
 		&i.PhoneNumber,
+		&i.CreatedAdmin,
 	)
 	return &i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users WHERE email = $1
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error) {
@@ -104,12 +109,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (*User,
 		&i.EmailVerified,
 		&i.EmailVerifiedAt,
 		&i.PhoneNumber,
+		&i.CreatedAdmin,
 	)
 	return &i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin FROM users
 ORDER BY id
 LIMIT $1 OFFSET $2
 `
@@ -140,6 +146,7 @@ func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, er
 			&i.EmailVerified,
 			&i.EmailVerifiedAt,
 			&i.PhoneNumber,
+			&i.CreatedAdmin,
 		); err != nil {
 			return nil, err
 		}
