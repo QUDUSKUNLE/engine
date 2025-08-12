@@ -1,15 +1,15 @@
-# Build stage
+# =========================================
+# 1️⃣ Build Stage
+# =========================================
 FROM golang:1.24-alpine AS builder
 
-# Install git and make for go modules and build tools
-RUN apk add --no-cache git make
+# Install tools required for build
+RUN apk add --no-cache git make upx
 
 WORKDIR /app
 
-# Copy go mod files
+# Copy go.mod & go.sum first for better caching
 COPY go.mod go.sum ./
-
-# Download dependencies
 RUN go mod download
 
 # Copy source code
@@ -18,39 +18,37 @@ COPY . .
 # Install migration tools
 RUN make setup
 
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+# Build the application (strip debug info, trim paths)
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-s -w" -trimpath \
+    -o main .
 
-# Production stage
-FROM alpine:latest
+# Optional: Compress binary to reduce size further
+RUN upx --best --lzma main
 
-# Install ca-certificates for HTTPS requests
-RUN apk --no-cache add ca-certificates tzdata
+# =========================================
+# 2️⃣ Final Production Image
+# =========================================
+FROM gcr.io/distroless/static-debian12
 
-WORKDIR /root/
+WORKDIR /
 
-# Copy the binary from builder stage
-COPY --from=builder /app/main .
+# Copy compiled app
+COPY --from=builder /app/main /main
 
-# Copy migration tools
-COPY --from=builder /app/bin/migrate ./bin/migrate
-
-# Copy migration files
-COPY --from=builder /app/adapters/db/migrations ./adapters/db/migrations
+# Copy migrations (only if needed in production)
+COPY --from=builder /app/adapters/db/migrations /adapters/db/migrations
 
 # Copy scripts
 COPY --from=builder /app/scripts/entrypoint.sh /entrypoint.sh
+
+# Make entrypoint executable
+USER 0
 RUN chmod +x /entrypoint.sh
 
-# Copy config files
-# COPY .env .env
-
-# Create logs directory
-RUN mkdir -p logs
-
-# Expose port
+# Expose service port
 EXPOSE 8080
 
-# Use entrypoint script
-ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
-CMD ["./main"]
+# Entrypoint & CMD
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/main"]
