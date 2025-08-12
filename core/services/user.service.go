@@ -619,6 +619,10 @@ func (service *ServicesHandler) ListManagers(context echo.Context) error {
 	return utils.ResponseMessage(http.StatusOK, response, context)
 }
 
+func (service *ServicesHandler) OwnerKYC(context echo.Context) error {
+	return utils.ResponseMessage(http.StatusOK, map[string]string{"kyc": "KYC processed successfully"}, context)
+}
+
 func (service *ServicesHandler) createUserHelper(
 	context echo.Context,
 	arg db.CreateUserParams,

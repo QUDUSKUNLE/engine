@@ -3,6 +3,7 @@ package middlewares
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -94,6 +95,13 @@ func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc 
 	if v, ok := dto.(*domain.UpdateMedicalRecordDTO); ok {
 		if err := handleUpdateMedicalRecordDTO(c, v); err != nil {
 			return err
+		}
+	}
+
+	if v, ok := dto.(*domain.UpgradeDTO); ok {
+		fmt.Println(v, "UUUUUUUUUUUU")
+		if v.Nin == "" && v.Passport == "" && v.DriverLicence == "" {
+			return errors.New("at least one of Nin, Passport, or DriverLicence must be provided")
 		}
 	}
 

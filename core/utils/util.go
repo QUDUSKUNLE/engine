@@ -55,6 +55,9 @@ func InitValidator() error {
 		return fmt.Errorf("failed to register min_one validator: %w", err)
 	}
 
+	if err := validate.RegisterValidation("at_least_one", atLeastOne); err != nil {
+		return fmt.Errorf("failed to register at_least_one validator: %w", err)
+	}
 	// Register validation for comparing times
 	validate.RegisterStructValidation(validateTimeComparison, domain.Slots{})
 
@@ -76,6 +79,11 @@ func validateMinOne(fl validator.FieldLevel) bool {
 		return field.Len() > 0
 	}
 	return false
+}
+
+func atLeastOne(fl validator.FieldLevel) bool {
+	u := fl.Parent().Interface().(domain.UpgradeDTO)
+	return u.Nin != "" || u.Passport != "" || u.DriverLicence != ""
 }
 
 // ValidateTime validates if a string is in either HH:MM format or ISO 8601

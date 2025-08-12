@@ -283,5 +283,5 @@ func (handler *HTTPHandler) ListManagersByAdmin(context echo.Context) error {
 }
 
 func (handler *HTTPHandler) SubmitKYC(context echo.Context) error {
-	return nil
+	return handler.service.OwnerKYC(context)
 }

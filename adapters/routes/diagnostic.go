@@ -69,7 +69,7 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodPost,
 			path:        "/diagnostic_centres_owner/kyc",
 			handler:     handler.SubmitKYC,
-			factory:     func() interface{} { return map[string]string{} },
+			factory:     func() interface{} { return &domain.UpgradeDTO{} },
 			description: "Submit diagnostic owner kyc",
 		},
 	}
