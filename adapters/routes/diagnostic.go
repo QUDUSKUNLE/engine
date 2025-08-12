@@ -65,6 +65,13 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory:     func() interface{} { return &domain.GetDiagnosticSchedulesByCentreParamDTO{} },
 			description: "Get Diagnostic centre schedules",
 		},
+		{
+			method:      http.MethodPost,
+			path:        "/diagnostic_centres_owner/kyc",
+			handler:     handler.SubmitKYC,
+			factory:     func() interface{} { return map[string]string{} },
+			description: "Submit diagnostic owner kyc",
+		},
 	}
 
 	registerRoutes(group, diagnosticGroup)

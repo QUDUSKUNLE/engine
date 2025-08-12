@@ -166,17 +166,6 @@ func (handler *HTTPHandler) ResendVerification(context echo.Context) error {
 	return handler.service.ResendVerification(context)
 }
 
-// ListManagersByAdmin godoc
-// @Summary List managers by admin
-// @Tags User
-// @Produce json
-// @Success 200 {array} handlers.ManagerSwagger "List of managers"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
-// @Router /v1/managers [get]
-func (handler *HTTPHandler) ListManagersByAdmin(context echo.Context) error {
-	return handler.service.ListManagers(context)
-}
 
 func (handler *HTTPHandler) GoogleLogin(context echo.Context) error {
 	return handler.service.GoogleLogin(context)

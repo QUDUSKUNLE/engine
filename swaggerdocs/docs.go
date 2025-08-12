@@ -1197,7 +1197,7 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "maximum": 100,
+                        "maximum": 50,
                         "minimum": 1,
                         "type": "integer",
                         "default": 20,
@@ -2639,6 +2639,40 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/managers": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "List managers by admin",
+                "responses": {
+                    "200": {
+                        "description": "List of managers",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.ManagerSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required",
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
@@ -4549,6 +4583,9 @@ const docTemplate = `{
                     "maxLength": 20,
                     "minLength": 6
                 },
+                "created_admin": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -4647,7 +4684,7 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string",
-                    "example": "info@medivue.com"
+                    "example": "info@diagnoxix.com"
                 },
                 "id": {
                     "type": "string",

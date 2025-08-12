@@ -267,3 +267,21 @@ func (handler *HTTPHandler) GetDiagnosticCentreRecords(context echo.Context) err
 func (handler *HTTPHandler) GetDiagnosticCentreManagers(context echo.Context) error {
 	return nil
 }
+
+// ListManagersByAdmin godoc
+// @Summary List managers by admin
+// @Tags DiagnosticCentre
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Success 200 {array} handlers.ManagerSwagger "List of managers"
+// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
+// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Router /v1/managers [get]
+func (handler *HTTPHandler) ListManagersByAdmin(context echo.Context) error {
+	return handler.service.ListManagers(context)
+}
+
+func (handler *HTTPHandler) SubmitKYC(context echo.Context) error {
+	return nil
+}

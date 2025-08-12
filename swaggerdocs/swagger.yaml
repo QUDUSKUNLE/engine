@@ -810,6 +810,8 @@ definitions:
         maxLength: 20
         minLength: 6
         type: string
+      created_admin:
+        type: string
       email:
         type: string
       first_name:
@@ -885,7 +887,7 @@ definitions:
         example: "2025-06-26T20:00:00Z"
         type: string
       email:
-        example: info@medivue.com
+        example: info@diagnoxix.com
         type: string
       id:
         example: dc-001
@@ -2403,7 +2405,7 @@ paths:
       - default: 20
         description: Items per page
         in: query
-        maximum: 100
+        maximum: 50
         minimum: 1
         name: per_page
         type: integer
@@ -2820,6 +2822,28 @@ paths:
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
       summary: User login
+      tags:
+      - User
+  /v1/managers:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of managers
+          schema:
+            items:
+              $ref: '#/definitions/handlers.ManagerSwagger'
+            type: array
+        "401":
+          description: Authentication required
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: List managers by admin
       tags:
       - User
   /v1/medical_records:
