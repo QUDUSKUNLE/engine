@@ -14,6 +14,7 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email pgtype.Text) (*db.User, error)
 	GetUsers(ctx context.Context, arg db.GetUsersParams) ([]*db.User, error)
 	UpdateUser(ctx context.Context, arg db.UpdateUserParams) (*db.User, error)
+	ListManagersByadmin(ctx context.Context, arg db.ListUsersByAdminParams) ([]*db.ListUsersByAdminRow, error)
 
 	// Password reset operations
 	CreatePasswordResetToken(ctx context.Context, arg db.CreatePasswordResetTokenParams) error

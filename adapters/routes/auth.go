@@ -66,6 +66,15 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			},
 			description: "Get a user profile",
 		},
+		{
+			method:  http.MethodGet,
+			path:    "/managers",
+			handler: handler.ListManagersByAdmin,
+			factory: func() interface{} {
+				return &domain.GetManagerDTO{}
+			},
+			description: "List managers",
+		},
 	}
 
 	registerRoutes(group, authGroup)

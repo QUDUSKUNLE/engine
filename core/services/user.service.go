@@ -587,6 +587,38 @@ func (service *ServicesHandler) GetProfile(context echo.Context) error {
 	return utils.ResponseMessage(http.StatusOK, db_user, context)
 }
 
+func (service *ServicesHandler) ListManagers(context echo.Context) error {
+	// Get validated DTO from context
+	dto, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetManagerDTO)
+	// Get current user from context
+	admin, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
+	if err != nil {
+		utils.Error("Failed to get current user",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+	pagination := SetDefaultPagination(&domain.PaginationQueryDTO{
+		Page:    dto.PaginationQueryDTO.Page,
+		PerPage: dto.PaginationQueryDTO.PerPage,
+	})
+	response, err := service.UserRepo.ListManagersByadmin(context.Request().Context(), db.ListUsersByAdminParams{
+		CreatedAdmin: pgtype.UUID{Bytes: admin.UserID, Valid: true},
+		Limit:        pagination.GetLimit(),
+		Offset:       pagination.GetOffset(),
+		Column4:      !dto.Assigned,
+	})
+	if err != nil {
+		utils.Error("Failed to list managers",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: admin.UserID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+	if len(response) == 0 {
+		response = []*db.ListUsersByAdminRow{}
+	}
+	return utils.ResponseMessage(http.StatusOK, response, context)
+}
+
 func (service *ServicesHandler) createUserHelper(
 	context echo.Context,
 	arg db.CreateUserParams,

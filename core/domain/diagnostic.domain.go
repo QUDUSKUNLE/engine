@@ -16,6 +16,11 @@ type (
 		SetPage(page int32)
 	}
 
+	GetManagerDTO struct {
+		Assigned bool `query:"assigned" validate:"omitempty" json:"assigned"`
+		PaginationQueryDTO
+	}
+
 	Address struct {
 		Street  string `json:"street" validate:"max=250,required"`
 		City    string `json:"city" validate:"max=50,required"`
@@ -70,7 +75,7 @@ type (
 	}
 	PaginationQueryDTO struct {
 		Page    int32 `query:"page" validate:"omitempty,min=1" json:"page"`
-		PerPage int32 `query:"per_page" validate:"omitempty,min=1,max=100" json:"per_page"`
+		PerPage int32 `query:"per_page" validate:"omitempty,min=1,max=50" json:"per_page"`
 	}
 	UpdateDiagnosticManagerDTO struct {
 		ManagerID string `json:"manager_id" validate:"required,uuid"`

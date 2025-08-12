@@ -36,7 +36,6 @@ type (
 		PerPage int `query:"per_page"`
 	}
 )
-
 // Success sends a successful response
 func Success(status int, data interface{}, c echo.Context) error {
 	resp := Response{

@@ -158,6 +158,95 @@ func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, er
 	return items, nil
 }
 
+const listUsersByAdmin = `-- name: ListUsersByAdmin :many
+SELECT
+  u.id,
+  u.email,
+  u.nin,
+  u.user_type,
+  u.fullname,
+  u.phone_number,
+  u.email_verified,
+  u.email_verified_at,
+  u.created_at,
+  u.updated_at,
+  u.created_admin,
+  dc.id AS diagnostic_centre_id,
+  dc.diagnostic_centre_name AS diagnostic_centre_name
+FROM users u
+LEFT JOIN diagnostic_centres dc
+  ON u.id = dc.admin_id
+WHERE u.created_admin = $1
+  AND (
+      $4::boolean = FALSE
+      OR dc.diagnostic_centre_name IS NULL
+    )
+ORDER BY u.id
+LIMIT $2 OFFSET $3
+`
+
+type ListUsersByAdminParams struct {
+	CreatedAdmin pgtype.UUID `db:"created_admin" json:"created_admin"`
+	Limit        int32       `db:"limit" json:"limit"`
+	Offset       int32       `db:"offset" json:"offset"`
+	Column4      bool        `db:"column_4" json:"column_4"`
+}
+
+type ListUsersByAdminRow struct {
+	ID                   string             `db:"id" json:"id"`
+	Email                pgtype.Text        `db:"email" json:"email"`
+	Nin                  pgtype.Text        `db:"nin" json:"nin"`
+	UserType             UserEnum           `db:"user_type" json:"user_type"`
+	Fullname             pgtype.Text        `db:"fullname" json:"fullname"`
+	PhoneNumber          pgtype.Text        `db:"phone_number" json:"phone_number"`
+	EmailVerified        pgtype.Bool        `db:"email_verified" json:"email_verified"`
+	EmailVerifiedAt      pgtype.Timestamptz `db:"email_verified_at" json:"email_verified_at"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	CreatedAdmin         pgtype.UUID        `db:"created_admin" json:"created_admin"`
+	DiagnosticCentreID   pgtype.UUID        `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	DiagnosticCentreName pgtype.Text        `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+}
+
+func (q *Queries) ListUsersByAdmin(ctx context.Context, arg ListUsersByAdminParams) ([]*ListUsersByAdminRow, error) {
+	rows, err := q.db.Query(ctx, listUsersByAdmin,
+		arg.CreatedAdmin,
+		arg.Limit,
+		arg.Offset,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*ListUsersByAdminRow
+	for rows.Next() {
+		var i ListUsersByAdminRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Nin,
+			&i.UserType,
+			&i.Fullname,
+			&i.PhoneNumber,
+			&i.EmailVerified,
+			&i.EmailVerifiedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CreatedAdmin,
+			&i.DiagnosticCentreID,
+			&i.DiagnosticCentreName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET

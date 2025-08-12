@@ -187,7 +187,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param page query integer false "Page number" minimum(1) default(1)
-// @Param per_page query integer false "Items per page" minimum(1) maximum(100) default(20)
+// @Param per_page query integer false "Items per page" minimum(1) maximum(50) default(20)
 // @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
 // @Failure 401 {object} handlers.ErrorResponse "Authentication required"
 // @Failure 403 {object} handlers.ErrorResponse "User is not a manager"

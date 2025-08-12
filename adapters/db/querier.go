@@ -74,6 +74,7 @@ type Querier interface {
 	// Retrieves the nearest diagnostic centres based on latitude and longitude.
 	Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Nearest_Diagnostic_CentresParams) ([]*Get_Nearest_Diagnostic_CentresRow, error)
 	Get_Payment(ctx context.Context, id string) (*Payment, error)
+	ListUsersByAdmin(ctx context.Context, arg ListUsersByAdminParams) ([]*ListUsersByAdminRow, error)
 	// Retrieves all diagnostic records for a specific owner.
 	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*List_Diagnostic_Centres_ByOwnerRow, error)
 	List_Payments(ctx context.Context, arg List_PaymentsParams) ([]*Payment, error)

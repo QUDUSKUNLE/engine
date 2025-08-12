@@ -44,6 +44,15 @@ func (repo *Repository) GetUserByEmail(ctx context.Context, email pgtype.Text) (
 	return response, nil
 }
 
+// ListManagersByadmin fetches a user by their admin.
+func (repo *Repository) ListManagersByadmin(ctx context.Context, arg db.ListUsersByAdminParams) ([]*db.ListUsersByAdminRow, error) {
+	response, err := repo.database.ListUsersByAdmin(ctx, arg)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
 // UpdateUser updates user fields that are provided in the params and returns the updated user row.
 func (repo *Repository) UpdateUser(ctx context.Context, user db.UpdateUserParams) (*db.User, error) {
 	updatedUser, err := repo.database.UpdateUser(ctx, user)
