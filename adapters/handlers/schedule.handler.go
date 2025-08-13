@@ -4,21 +4,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// ScheduleSwagger is used for Swagger documentation only
-// @Description Diagnostic schedule response for Swagger
-// @name ScheduleSwagger
-type ScheduleSwagger struct {
-	ID                 string `json:"id" example:"sched-001"`
-	UserID             string `json:"user_id" example:"user-001"`
-	DiagnosticCentreID string `json:"diagnostic_centre_id" example:"dc-001"`
-	TestType           string `json:"test_type" example:"Blood Test"`
-	ScheduleTime       string `json:"schedule_time" example:"2025-06-26T09:00:00Z"` // format: date-time
-	Status             string `json:"status" example:"pending"`
-	CreatedAt          string `json:"created_at" example:"2025-06-25T20:00:00Z"` // format: date-time
-	UpdatedAt          string `json:"updated_at" example:"2025-06-25T21:00:00Z"` // format: date-time
-	// ...add other fields as needed for docs
-}
-
 // CreateSchedule godoc
 // @Summary Create a new diagnostic schedule
 // @Description Schedule a diagnostic test at a diagnostic centre. Requires user authentication.
@@ -28,11 +13,10 @@ type ScheduleSwagger struct {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param schedule body domain.CreateScheduleDTO true "Schedule details"
-// @Success 201 {object} handlers.ScheduleSwagger "Schedule created successfully"
-// @Failure 400 {object} handlers.ErrorResponse "Invalid schedule data/Invalid datetime format"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 403 {object} handlers.ErrorResponse "Insufficient permissions"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Success 201 {object} handlers.ScheduleSwagger "SUCCESS_RESPONSE"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/diagnostic_schedules [post]
 func (handler *HTTPHandler) CreateSchedule(context echo.Context) error {
 	return handler.service.CreateSchedule(context)
@@ -46,12 +30,11 @@ func (handler *HTTPHandler) CreateSchedule(context echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid)
-// @Success 200 {object} handlers.ScheduleSwagger "Schedule details retrieved successfully"
-// @Failure 400 {object} handlers.ErrorResponse "Invalid schedule ID"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 403 {object} handlers.ErrorResponse "Not the schedule owner"
-// @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.ScheduleSwagger "SUCCESS_RESPONSE"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/diagnostic_schedules/{schedule_id} [get]
 func (handler *HTTPHandler) GetSchedule(context echo.Context) error {
 	return handler.service.GetDiagnosticSchedule(context)
@@ -67,8 +50,8 @@ func (handler *HTTPHandler) GetSchedule(context echo.Context) error {
 // @Param limit query int false "Number of records to return" minimum(1) maximum(100) default(10)
 // @Param offset query int false "Number of records to skip" minimum(0) default(0)
 // @Success 200 {array} handlers.ScheduleSwagger "List of schedules"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/diagnostic_schedules [get]
 func (handler *HTTPHandler) GetSchedules(context echo.Context) error {
 	return handler.service.GetDiagnosticSchedules(context)
@@ -86,11 +69,10 @@ func (handler *HTTPHandler) GetSchedules(context echo.Context) error {
 // @Param schedule body domain.UpdateScheduleDTO true "Updated schedule details"
 // @Success 200 {object} handlers.ScheduleSwagger "Schedule updated successfully"
 // @Success 204 {object} nil "Schedule updated successfully with no content to return"
-// @Failure 400 {object} handlers.ErrorResponse "Invalid schedule data/Invalid datetime format"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 403 {object} handlers.ErrorResponse "Not the schedule owner"
-// @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/diagnostic_schedules/{schedule_id} [put]
 func (handler *HTTPHandler) UpdateSchedule(context echo.Context) error {
 	return handler.service.UpdateDiagnosticSchedule(context)
@@ -105,10 +87,9 @@ func (handler *HTTPHandler) UpdateSchedule(context echo.Context) error {
 // @Param Authorization header string true "Bearer token"
 // @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid)
 // @Success 204 {object} nil "Schedule deleted successfully"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 403 {object} handlers.ErrorResponse "Not the schedule owner"
-// @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/diagnostic_schedules/{schedule_id} [delete]
 func (handler *HTTPHandler) DeleteDiagnosticSchedule(context echo.Context) error {
 	return nil
@@ -124,11 +105,10 @@ func (handler *HTTPHandler) DeleteDiagnosticSchedule(context echo.Context) error
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
 // @Param schedule_id path string true "Schedule ID" format(uuid)
 // @Success 200 {object} handlers.ScheduleSwagger "Schedule details"
-// @Failure 400 {object} handlers.ErrorResponse "Invalid ID format"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 403 {object} handlers.ErrorResponse "Not authorized"
-// @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules/{schedule_id} [get]
 func (handler *HTTPHandler) GetDiagnosticScheduleByCentre(context echo.Context) error {
 	return handler.service.GetDiagnosticScheduleByCentre(context)
@@ -144,12 +124,11 @@ func (handler *HTTPHandler) GetDiagnosticScheduleByCentre(context echo.Context) 
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
 // @Param limit query integer false "Number of records to return" minimum(1) maximum(100) default(10)
 // @Param offset query integer false "Number of records to skip" minimum(0) default(0)
-// @Success 200 {array} handlers.ScheduleSwagger "List of schedules"
-// @Failure 400 {object} handlers.ErrorResponse "Invalid diagnostic centre ID"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 403 {object} handlers.ErrorResponse "Not authorized"
-// @Failure 404 {object} handlers.ErrorResponse "Diagnostic centre not found"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Success 200 {array} handlers.ScheduleSwagger "SUCCESS_RESPONSE"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules [get]
 func (handler *HTTPHandler) GetDiagnosticSchedulesByCentre(context echo.Context) error {
 	return handler.service.GetDiagnosticSchedulesByCentre(context)
@@ -166,12 +145,11 @@ func (handler *HTTPHandler) GetDiagnosticSchedulesByCentre(context echo.Context)
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
 // @Param schedule_id path string true "Schedule ID" format(uuid)
 // @Param schedule body domain.UpdateDiagnosticScheduleByCentreDTO true "Updated schedule status"
-// @Success 200 {object} handlers.ScheduleSwagger "Schedule updated successfully"
-// @Failure 400 {object} handlers.ErrorResponse "Invalid input data"
-// @Failure 401 {object} handlers.ErrorResponse "Authentication required"
-// @Failure 403 {object} handlers.ErrorResponse "Not authorized"
-// @Failure 404 {object} handlers.ErrorResponse "Schedule not found"
-// @Failure 500 {object} handlers.ErrorResponse "Internal server error"
+// @Success 200 {object} handlers.ScheduleSwagger "SUCCESS_RESPONSE"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules/{schedule_id} [put]
 func (handler *HTTPHandler) UpdateDiagnosticScheduleByCentre(context echo.Context) error {
 	return handler.service.UpdateDiagnosticScheduleByCentre(context)

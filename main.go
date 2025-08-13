@@ -33,9 +33,9 @@ import (
 func main() {
 	// Initialize logger with custom configuration
 	logConfig := utils.LogConfig{
-		Level:       "info", // Set to debug in development, info in production
+		Level:       "debug", // Set to debug in development, info in production
 		OutputPath:  "logs/medivue.log",
-		Development: false, // Set to false in production
+		Development: true, // Set to false in production
 	}
 	if err := utils.InitLogger(logConfig); err != nil {
 		panic(err)
@@ -94,7 +94,10 @@ func main() {
 	services := services.InitializeServices(repos, cfg)
 
 	// Initialize CronConfig with repositories
-	cronConfig := config.GetConfig(repos.User, repos.Diagnostic, repos.Appointment, *cfg)
+	cronConfig := config.GetConfig(
+		repos.User,
+		repos.Diagnostic,
+		repos.Appointment, *cfg)
 	if err := cronConfig.Start(); err != nil {
 		log.Printf("Warning: Failed to start background services: %v", err)
 	}

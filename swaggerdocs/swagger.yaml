@@ -388,6 +388,8 @@ definitions:
         - DIAGNOSTIC_CENTRE_MANAGER
     required:
     - email
+    - first_name
+    - last_name
     - user_type
     type: object
   domain.File:
@@ -856,7 +858,6 @@ definitions:
         example: "2025-06-26T21:00:00Z"
         type: string
       created_at:
-        description: 'format: date-time'
         example: "2025-06-26T20:00:00Z"
         type: string
       diagnostic_centre_id:
@@ -872,9 +873,46 @@ definitions:
         example: pending
         type: string
       updated_at:
-        description: 'format: date-time'
         example: "2025-06-26T20:30:00Z"
         type: string
+    type: object
+  handlers.BAD_REQUEST:
+    description: BAD_REQUEST response for Swagger
+    properties:
+      error:
+        properties:
+          code:
+            example: BAD_REQUEST
+            type: string
+          message:
+            example: Invalid request
+            type: string
+        type: object
+      status:
+        example: 400
+        type: integer
+      success:
+        example: false
+        type: boolean
+    type: object
+  handlers.DUPLICATE_ERROR:
+    description: DUPLICATE_ERROR response for Swagger
+    properties:
+      error:
+        properties:
+          code:
+            example: DUPLICATE_ERROR
+            type: string
+          message:
+            example: Duplicate error
+            type: string
+        type: object
+      status:
+        example: 409
+        type: integer
+      success:
+        example: false
+        type: boolean
     type: object
   handlers.DiagnosticCentreSwagger:
     description: Diagnostic centre response for Swagger
@@ -883,7 +921,6 @@ definitions:
         example: 123 Main St, Lagos
         type: string
       created_at:
-        description: 'format: date-time'
         example: "2025-06-26T20:00:00Z"
         type: string
       email:
@@ -905,21 +942,27 @@ definitions:
         example: "+2348000000000"
         type: string
       updated_at:
-        description: 'format: date-time'
         example: "2025-06-26T20:30:00Z"
         type: string
     type: object
   handlers.ErrorResponse:
-    description: Error response for Swagger
+    description: UNAUTHORIZED_ERROR response for Swagger
     properties:
-      code:
-        example: BAD_REQUEST
-        type: string
-      details:
-        type: string
-      message:
-        example: Invalid request
-        type: string
+      error:
+        properties:
+          code:
+            example: BAD_REQUEST
+            type: string
+          message:
+            example: Invalid request
+            type: string
+        type: object
+      status:
+        example: 401
+        type: integer
+      success:
+        example: false
+        type: boolean
     type: object
   handlers.HealthResponse:
     properties:
@@ -932,10 +975,28 @@ definitions:
       version:
         type: string
     type: object
+  handlers.INTERNAL_SERVER_ERROR:
+    description: INTERNAL_SERVER_ERROR response for Swagger
+    properties:
+      error:
+        properties:
+          code:
+            example: INTERNAL_SERVER_ERROR
+            type: string
+          message:
+            example: Internal Server Error
+            type: string
+        type: object
+      status:
+        example: 500
+        type: integer
+      success:
+        example: false
+        type: boolean
+    type: object
   handlers.ManagerSwagger:
     properties:
       created_at:
-        description: 'format: date-time'
         example: "2025-06-27T12:00:00Z"
         type: string
       email:
@@ -951,7 +1012,6 @@ definitions:
         example: DIAGNOSTIC_CENTRE_MANAGER
         type: string
       updated_at:
-        description: 'format: date-time'
         example: "2025-06-27T12:00:00Z"
         type: string
     type: object
@@ -959,7 +1019,6 @@ definitions:
     description: Medical record response for Swagger
     properties:
       created_at:
-        description: 'format: date-time'
         example: "2025-06-26T20:00:00Z"
         type: string
       diagnostic_centre_id:
@@ -978,15 +1037,43 @@ definitions:
         example: user-001
         type: string
       updated_at:
-        description: 'format: date-time'
         example: "2025-06-26T20:30:00Z"
         type: string
+    type: object
+  handlers.NOT_FOUND_ERROR:
+    description: NOT_FOUND_ERROR response for Swagger
+    properties:
+      error:
+        properties:
+          code:
+            example: NOT_FOUND_ERROR
+            type: string
+          message:
+            example: Data not found
+            type: string
+        type: object
+      status:
+        example: 404
+        type: integer
+      success:
+        example: false
+        type: boolean
+    type: object
+  handlers.SUCCESS_RESPONSE:
+    properties:
+      data:
+        type: object
+      status:
+        example: 200
+        type: integer
+      success:
+        example: true
+        type: boolean
     type: object
   handlers.ScheduleSwagger:
     description: Diagnostic schedule response for Swagger
     properties:
       created_at:
-        description: 'format: date-time'
         example: "2025-06-25T20:00:00Z"
         type: string
       diagnostic_centre_id:
@@ -996,7 +1083,6 @@ definitions:
         example: sched-001
         type: string
       schedule_time:
-        description: 'format: date-time'
         example: "2025-06-26T09:00:00Z"
         type: string
       status:
@@ -1006,36 +1092,77 @@ definitions:
         example: Blood Test
         type: string
       updated_at:
-        description: 'format: date-time'
         example: "2025-06-25T21:00:00Z"
         type: string
       user_id:
         example: user-001
         type: string
     type: object
+  handlers.UNAUTHORIZED_ERROR:
+    description: UNAUTHORIZED_ERROR response for Swagger
+    properties:
+      error:
+        properties:
+          code:
+            example: UNAUTHORIZED_ERROR
+            type: string
+          message:
+            example: Unauthorized to perform this operation
+            type: string
+        type: object
+      status:
+        example: 401
+        type: integer
+      success:
+        example: false
+        type: boolean
+    type: object
+  handlers.UNPROCESSED_ERROR:
+    description: UNPROCESSED_ERROR response for Swagger
+    properties:
+      error:
+        properties:
+          code:
+            example: UNPROCESSED_ERROR
+            type: string
+          message:
+            example: Unprocessable entity
+            type: string
+        type: object
+      status:
+        example: 422
+        type: integer
+      success:
+        example: false
+        type: boolean
+    type: object
   handlers.UserSwagger:
     description: User response for Swagger
     properties:
-      created_at:
-        description: 'format: date-time'
-        example: "2025-06-27T12:00:00Z"
-        type: string
-      email:
-        example: user@example.com
-        type: string
-      full_name:
-        example: John Doe
-        type: string
-      id:
-        example: user-001
-        type: string
-      role:
-        example: PATIENT
-        type: string
-      updated_at:
-        description: 'format: date-time'
-        example: "2025-06-27T12:00:00Z"
-        type: string
+      data:
+        properties:
+          created_at:
+            example: "2025-08-13T16:59:44.649447+01:00"
+            type: string
+          email:
+            example: emi.user@diagnoxix.com
+            type: string
+          id:
+            example: 9c6bd6fe-493c-4b0a-a186-085039d24bf0
+            type: string
+          nin:
+            example: "null"
+            type: string
+          updated_at:
+            example: "2025-08-13T16:59:44.649447+01:00"
+            type: string
+        type: object
+      status:
+        example: 201
+        type: integer
+      success:
+        example: true
+        type: boolean
     type: object
 host: 127.0.0.1:7556
 info:
@@ -1065,23 +1192,21 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'message: Account deactivated successfully'
+          description: SUCCESS_RESPONSE
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
           description: Authentication required/Invalid password
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Deactivate user account
@@ -1106,17 +1231,17 @@ paths:
           schema:
             $ref: '#/definitions/handlers.UserSwagger'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: User not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get user profile
@@ -1146,17 +1271,17 @@ paths:
           schema:
             $ref: '#/definitions/handlers.UserSwagger'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Update user profile
@@ -1197,19 +1322,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: SUCCESS_RESPONSE
           schema:
             items:
               $ref: '#/definitions/handlers.AppointmentSwagger'
             type: array
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: List appointments
       tags:
       - Appointments
@@ -1228,25 +1353,25 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: SUCCESS_RESPONSE
           schema:
             $ref: '#/definitions/handlers.AppointmentSwagger'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Diagnostic centre or schedule not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Create appointment
       tags:
       - Appointments
@@ -1265,25 +1390,21 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: SUCCESS_RESPONSE
           schema:
             $ref: '#/definitions/handlers.AppointmentSwagger'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized to view this appointment
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Appointment not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Get appointment
       tags:
       - Appointments
@@ -1307,29 +1428,25 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: SUCCESS_RESPONSE
           schema:
             $ref: '#/definitions/handlers.AppointmentSwagger'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized to update this appointment
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Appointment not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Update appointment
       tags:
       - Appointments
@@ -1360,25 +1477,21 @@ paths:
               type: string
             type: object
         "400":
-          description: Invalid input data or appointment state
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized to cancel this appointment
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Appointment not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Cancel appointment
       tags:
       - Appointments
@@ -1403,17 +1516,17 @@ paths:
               type: string
             type: object
         "400":
-          description: Invalid request
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "404":
-          description: Appointment not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Confirm appointment
       tags:
       - Appointments
@@ -1438,29 +1551,25 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: SUCCESS_RESPONSE
           schema:
             $ref: '#/definitions/handlers.AppointmentSwagger'
         "400":
-          description: Invalid input data or appointment state
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized to reschedule this appointment
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Appointment not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Reschedule appointment
       tags:
       - Appointments
@@ -1484,17 +1593,21 @@ paths:
           schema:
             $ref: '#/definitions/domain.AvailabilitySlot'
         "400":
-          description: Bad Request
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Unauthorized
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Not Found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Create availability for a diagnostic centre
       tags:
       - Availability
@@ -1526,23 +1639,27 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: SUCCESS_RESPONSE
           schema:
             items:
               $ref: '#/definitions/domain.AvailabilitySlot'
             type: array
         "400":
-          description: Bad Request
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Unauthorized
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Not Found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Get availability for a diagnostic centre
       tags:
       - Availability
@@ -1566,23 +1683,27 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: SUCCESS_RESPONSE
           schema:
             items:
               $ref: '#/definitions/domain.AvailabilitySlot'
             type: array
         "400":
-          description: Bad Request
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Unauthorized
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Not Found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Bulk update availability for a diagnostic centre
       tags:
       - Availability
@@ -1608,13 +1729,17 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Unauthorized
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Not Found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Delete availability for a diagnostic centre
       tags:
       - Availability
@@ -1643,21 +1768,25 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: SUCCESS_RESPONSE
           schema:
             $ref: '#/definitions/domain.AvailabilitySlot'
         "400":
-          description: Bad Request
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Unauthorized
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Not Found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Update availability for a diagnostic centre
       tags:
       - Availability
@@ -1773,13 +1902,13 @@ paths:
               $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
             type: array
         "400":
-          description: Invalid query parameters
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Search for diagnostic centres
       tags:
       - DiagnosticCentre
@@ -1808,21 +1937,17 @@ paths:
           schema:
             $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required/invalid token
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: User is not a diagnostic centre owner
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Create a new diagnostic centre
@@ -1851,21 +1976,17 @@ paths:
           schema:
             $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: User is not the owner
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Diagnostic centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Delete a diagnostic centre
@@ -1888,17 +2009,17 @@ paths:
           schema:
             $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
         "400":
-          description: Invalid diagnostic centre ID format
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "404":
-          description: Diagnostic centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Get a diagnostic centre by ID
       tags:
       - DiagnosticCentre
@@ -1932,25 +2053,21 @@ paths:
           schema:
             $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required/invalid token
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: User is not the owner of this diagnostic centre
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Diagnostic centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Update a diagnostic centre
@@ -1988,31 +2105,27 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of schedules
+          description: SUCCESS_RESPONSE
           schema:
             items:
               $ref: '#/definitions/handlers.ScheduleSwagger'
             type: array
         "400":
-          description: Invalid diagnostic centre ID
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Diagnostic centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: List schedules for a diagnostic centre
@@ -2048,25 +2161,21 @@ paths:
           schema:
             $ref: '#/definitions/handlers.ScheduleSwagger'
         "400":
-          description: Invalid ID format
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Schedule not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get a schedule by diagnostic centre
@@ -2105,29 +2214,25 @@ paths:
       - application/json
       responses:
         "200":
-          description: Schedule updated successfully
+          description: SUCCESS_RESPONSE
           schema:
             $ref: '#/definitions/handlers.ScheduleSwagger'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Schedule not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Update schedule status by centre
@@ -2164,25 +2269,21 @@ paths:
           schema:
             $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
         "400":
-          description: Invalid input
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Update diagnostic centre manager
@@ -2246,21 +2347,17 @@ paths:
               $ref: '#/definitions/handlers.MedicalRecordSwagger'
             type: array
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Access denied
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get diagnostic centre medical records
@@ -2322,21 +2419,17 @@ paths:
               $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
             type: array
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Access denied
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get diagnostic centre schedules
@@ -2366,21 +2459,17 @@ paths:
           schema:
             $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Access denied
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Diagnostic centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get diagnostic centre statistics
@@ -2419,17 +2508,13 @@ paths:
               $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
             type: array
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: User is not a manager
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: List manager's diagnostic centres
@@ -2466,25 +2551,25 @@ paths:
               type: string
             type: object
         "400":
-          description: Invalid input data/Email already exists
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not a diagnostic centre owner
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
+        "409":
+          description: DUPLICATE_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.DUPLICATE_ERROR'
         "422":
-          description: Invalid manager type
+          description: UNPROCESSED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNPROCESSED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Create a diagnostic centre manager
@@ -2522,13 +2607,13 @@ paths:
               $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
             type: array
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: List owner's diagnostic centres
@@ -2566,13 +2651,13 @@ paths:
               $ref: '#/definitions/handlers.ScheduleSwagger'
             type: array
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: List user's diagnostic schedules
@@ -2599,25 +2684,21 @@ paths:
       - application/json
       responses:
         "201":
-          description: Schedule created successfully
+          description: SUCCESS_RESPONSE
           schema:
             $ref: '#/definitions/handlers.ScheduleSwagger'
         "400":
-          description: Invalid schedule data/Invalid datetime format
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Insufficient permissions
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Create a new diagnostic schedule
@@ -2645,21 +2726,17 @@ paths:
         "204":
           description: Schedule deleted successfully
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not the schedule owner
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Schedule not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Delete a diagnostic schedule
@@ -2684,29 +2761,25 @@ paths:
       - application/json
       responses:
         "200":
-          description: Schedule details retrieved successfully
+          description: SUCCESS_RESPONSE
           schema:
             $ref: '#/definitions/handlers.ScheduleSwagger'
         "400":
-          description: Invalid schedule ID
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not the schedule owner
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Schedule not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get a specific diagnostic schedule
@@ -2745,25 +2818,21 @@ paths:
         "204":
           description: Schedule updated successfully with no content to return
         "400":
-          description: Invalid schedule data/Invalid datetime format
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not the schedule owner
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Schedule not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Update a diagnostic schedule
@@ -2800,32 +2869,36 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'token: JWT token for authentication'
+          description: SUCCESS_RESPONSE
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
         "400":
-          description: Invalid credentials
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Invalid email or password
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: User not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: User login
       tags:
       - User
   /v1/managers:
     get:
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -2836,16 +2909,18 @@ paths:
               $ref: '#/definitions/handlers.ManagerSwagger'
             type: array
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
       summary: List managers by admin
       tags:
-      - User
+      - DiagnosticCentre
   /v1/medical_records:
     get:
       description: Get all medical records for the authenticated user with pagination
@@ -2899,13 +2974,13 @@ paths:
               $ref: '#/definitions/handlers.MedicalRecordSwagger'
             type: array
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: List user's medical records
@@ -2982,23 +3057,27 @@ paths:
         "400":
           description: Invalid input data/file format
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "403":
           description: Insufficient permissions
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
+        "409":
+          description: DUPLICATE_ERROR
+          schema:
+            $ref: '#/definitions/handlers.DUPLICATE_ERROR'
         "413":
           description: File too large
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Upload a new medical record
@@ -3028,25 +3107,21 @@ paths:
           schema:
             $ref: '#/definitions/handlers.MedicalRecordSwagger'
         "400":
-          description: Invalid record ID
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Access denied
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Record not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get a medical record by ID
@@ -3083,25 +3158,21 @@ paths:
           schema:
             $ref: '#/definitions/handlers.MedicalRecordSwagger'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized to update this record
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Record not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Update a medical record
@@ -3136,25 +3207,21 @@ paths:
           schema:
             $ref: '#/definitions/handlers.MedicalRecordSwagger'
         "400":
-          description: Invalid ID format
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized to access this record
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Record not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get an uploaded medical record
@@ -3198,25 +3265,21 @@ paths:
               $ref: '#/definitions/handlers.MedicalRecordSwagger'
             type: array
         "400":
-          description: Invalid diagnostic centre ID
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Authentication required
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "403":
-          description: Not authorized to access these records
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "404":
-          description: Diagnostic centre not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: List uploaded medical records
@@ -3243,17 +3306,17 @@ paths:
           schema:
             $ref: '#/definitions/handlers.UserSwagger'
         "400":
-          description: Invalid input data/Email already exists
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "422":
-          description: Invalid user type/Validation failed
+            $ref: '#/definitions/handlers.BAD_REQUEST'
+        "409":
+          description: DUPLICATE_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.DUPLICATE_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Register a new user
       tags:
       - User
@@ -3273,19 +3336,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'message: Reset link sent if email exists'
+          description: SUCCESS_RESPONSE
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
         "400":
-          description: Invalid email format
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Request password reset
       tags:
       - User
@@ -3305,23 +3366,21 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'message: Verification email sent'
+          description: SUCCESS_RESPONSE
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "404":
-          description: User not found
+          description: NOT_FOUND_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Resend verification email
       tags:
       - User
@@ -3341,23 +3400,21 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'message: Password reset successful'
+          description: SUCCESS_RESPONSE
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
         "400":
-          description: Invalid input/Expired token
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "422":
-          description: Password validation failed
+          description: UNPROCESSED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNPROCESSED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Reset password
       tags:
       - User
@@ -3370,23 +3427,21 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'message: Email verified successfully'
+          description: SUCCESS_RESPONSE
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
         "400":
-          description: Invalid input data
+          description: BAD_REQUEST
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
-          description: Invalid or expired token
+          description: UNAUTHORIZED_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
         "500":
-          description: Internal server error
+          description: INTERNAL_SERVER_ERROR
           schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Verify user email
       tags:
       - User

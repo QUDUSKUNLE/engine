@@ -99,7 +99,6 @@ func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc 
 	}
 
 	if v, ok := dto.(*domain.UpgradeDTO); ok {
-		fmt.Println(v, "UUUUUUUUUUUU")
 		if v.Nin == "" && v.Passport == "" && v.DriverLicence == "" {
 			return errors.New("at least one of Nin, Passport, or DriverLicence must be provided")
 		}

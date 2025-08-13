@@ -134,6 +134,8 @@ func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {
 			Bytes: user.CreatedAdmin,
 			Valid: true,
 		}
+	} else {
+		createdAdmin = pgtype.UUID{Valid: false}
 	}
 	params := db.CreateUserParams{
 		Email:    pgtype.Text{String: user.Email, Valid: true},
@@ -143,8 +145,8 @@ func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {
 			String: strings.Trim(user.FirstName, "") + " " + strings.Trim(user.LastName, ""),
 			Valid:  true,
 		},
-		PhoneNumber: pgtype.Text{String: "", Valid: true},
-		Column8:     createdAdmin.String(),
+		PhoneNumber:  pgtype.Text{String: "", Valid: true},
+		CreatedAdmin: createdAdmin,
 	}
 	return params, nil
 }
