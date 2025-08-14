@@ -28,7 +28,7 @@ import (
 // @title Diagnoxix
 // @version 1.0
 // @description Diagnoxix API
-// @host diagnoxix.onrender.com/
+// @host diagnoxix.onrender.com
 // @BasePath /
 func main() {
 	// Initialize logger with custom configuration
