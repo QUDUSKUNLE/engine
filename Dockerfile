@@ -33,14 +33,14 @@ FROM gcr.io/distroless/static-debian12
 
 WORKDIR /
 
-# Copy compiled app
+# Copy compiled app from builder
 COPY --from=builder /app/main /main
 
 # Copy migrations (only if needed in production)
 COPY --from=builder /app/adapters/db/migrations /adapters/db/migrations
 
-# Copy scripts
-COPY --from=builder /app/scripts/entrypoint.sh /entrypoint.sh
+# ✅ Copy entrypoint.sh directly from local context to avoid .dockerignore issues
+COPY scripts/entrypoint.sh /entrypoint.sh
 
 # Make entrypoint executable
 USER 0
