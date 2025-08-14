@@ -1,15 +1,15 @@
-# =========================================
-# 1️⃣ Build Stage
-# =========================================
+# Build stage
 FROM golang:1.24-alpine AS builder
 
-# Install tools required for build
-RUN apk add --no-cache git make upx
+# Install git and make for go modules and build tools
+RUN apk add --no-cache git make
 
 WORKDIR /app
 
-# Copy go.mod & go.sum first for better caching
+# Copy go mod files
 COPY go.mod go.sum ./
+
+# Download dependencies
 RUN go mod download
 
 # Copy source code
@@ -18,37 +18,39 @@ COPY . .
 # Install migration tools
 RUN make setup
 
-# Build the application (strip debug info, trim paths)
-RUN CGO_ENABLED=0 GOOS=linux go build \
-    -ldflags="-s -w" -trimpath \
-    -o main .
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-# Optional: Compress binary to reduce size further
-RUN upx --best --lzma main
+# Production stage
+FROM alpine:latest
 
-# =========================================
-# 2️⃣ Final Production Image
-# =========================================
-FROM gcr.io/distroless/static-debian12
+# Install ca-certificates for HTTPS requests
+RUN apk --no-cache add ca-certificates tzdata
 
-WORKDIR /
+WORKDIR /root/
 
-# Copy compiled app from builder
-COPY --from=builder /app/main /main
+# Copy the binary from builder stage
+COPY --from=builder /app/main .
 
-# Copy migrations (only if needed in production)
-COPY --from=builder /app/adapters/db/migrations /adapters/db/migrations
+# Copy migration tools
+COPY --from=builder /app/bin/migrate ./bin/migrate
 
-# ✅ Copy entrypoint.sh directly from local context to avoid .dockerignore issues
-COPY scripts/entrypoint.sh /entrypoint.sh
+# Copy migration files
+COPY --from=builder /app/adapters/db/migrations ./adapters/db/migrations
 
-# Make entrypoint executable
-USER 0
+# Copy scripts
+COPY --from=builder /app/scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose service port
+# Copy config files
+# COPY .env .env
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Expose port
 EXPOSE 8080
 
-# Entrypoint & CMD
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/main"]
+# Use entrypoint script
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
+CMD ["./main"]
