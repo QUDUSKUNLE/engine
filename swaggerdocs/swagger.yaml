@@ -1164,7 +1164,7 @@ definitions:
         example: true
         type: boolean
     type: object
-host: diagnoxix.onrender.com/
+host: diagnoxix.onrender.com
 info:
   contact: {}
   description: Diagnoxix API
