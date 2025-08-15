@@ -16,7 +16,7 @@ import (
 // @Param uploader_id formData string false "Uploader ID (for diagnostic centres)" format(uuid)
 // @Param schedule_id formData string false "Associated Schedule ID" format(uuid)
 // @Param title formData string true "Record title"
-// @Param document_type formData string true "Type of medical document" Enums(LAB_REPORT, PRESCRIPTION, IMAGING, DISCHARGE_SUMMARY, OTHER)
+// @Param document_type formData string true "Type of medical document" Enums(LAB_REPORT, PRESCRIPTION, DISCHARGE_SUMMARY, IMAGING, VACCINATION, ALLERGY, SURGERY, CHRONIC_CONDITION, FAMILY_HISTORY, OTHER)
 // @Param document_date formData string true "Date of the document" format(date)
 // @Param provider_name formData string false "Healthcare provider name"
 // @Param specialty formData string false "Medical specialty"

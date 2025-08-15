@@ -17,18 +17,18 @@ func LoadEnvironmentVariable() error {
 }
 
 type EnvConfiguration struct {
-	Port         string
+	PORT         string
 	DB_URL       string
-	JwtKey       string
-	AllowOrigins string
-	AppUrl       string
+	JWT_KEY       string
+	ALLOW_ORIGINS string
+	APP_URL       string
 	// Google OAuth Configuration
-	GoogleClientID     string
-	GoogleClientSecret string
-	GoogleRedirectURL  string
+	GOOGLE_CLIENT_ID     string
+	GOOGLE_CLIENT_SECRET string
+	GOOGLE_REDIRECT_URL string
 
 	// Generated token
-	TokenExpired string
+	TOKEN_EXPIRED string
 
 	// Email Service for SendGRID
 	SEND_GRID_API_KEY string
@@ -48,6 +48,9 @@ type EnvConfiguration struct {
 
 	// OPEN API
 	OPEN_API_KEY string
+
+	// MONGODB_URL
+	MONGODB_URL string
 }
 
 func LoadEnvironmentVariables(serviceName string) (*EnvConfiguration, error) {
@@ -59,40 +62,40 @@ func LoadEnvironmentVariables(serviceName string) (*EnvConfiguration, error) {
 
 	switch serviceName {
 	case "MEDIVUE":
-		config.Port = os.Getenv("PORT")
+		config.PORT = os.Getenv("PORT")
 		config.DB_URL = os.Getenv("DB_URL")
-		config.JwtKey = os.Getenv("JWT_SECRET_KEY")
-		config.AllowOrigins = os.Getenv("ALLOW_ORIGINS")
-		config.GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
-		config.GoogleClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
-		config.GoogleRedirectURL = os.Getenv("GOOGLE_REDIRECT_URL")
-		config.AppUrl = os.Getenv("APP_URL")
+		config.APP_URL = os.Getenv("APP_URL")
+		config.EMAIL_HOST = os.Getenv("EMAIL_HOST")
+		config.EMAIL_TYPE = os.Getenv("EMAIL_TYPE")
+		config.EMAIL_PORT = os.Getenv("EMAIL_PORT")
+		config.JWT_KEY = os.Getenv("JWT_SECRET_KEY")
+		config.OPEN_API_KEY = os.Getenv("OPEN_API_KEY")
+		config.ALLOW_ORIGINS = os.Getenv("ALLOW_ORIGINS")
+		config.GOOGLE_CLIENT_ID = os.Getenv("GOOGLE_CLIENT_ID")
+		config.GOOGLE_CLIENT_SECRET = os.Getenv("GOOGLE_CLIENT_SECRET")
+		config.GOOGLE_REDIRECT_URL = os.Getenv("GOOGLE_REDIRECT_URL")
 		config.SEND_GRID_API_KEY = os.Getenv("SEND_GRID_API_KEY")
 		config.EMAIL_APP_PASSWORD = os.Getenv("EMAIL_APP_PASSWORD")
 		config.EMAIL_USERNAME = os.Getenv("EMAIL_USERNAME")
 		config.EMAIL_FROM_ADDRESS = os.Getenv("EMAIL_FROM_ADDRESS")
-		config.EMAIL_HOST = os.Getenv("EMAIL_HOST")
-		config.EMAIL_TYPE = os.Getenv("EMAIL_TYPE")
-		config.EMAIL_PORT = os.Getenv("EMAIL_PORT")
-		config.OPEN_API_KEY = os.Getenv("OPEN_API_KEY")
 		// PAYSTACK
 		config.PAYSTACK_BASE_URL = os.Getenv("PAYSTACK_BASE_URL")
 		config.PAYSTACK_PUBLIC_KEY = os.Getenv("PAYSTACK_PUBLIC_KEY")
 		config.PAYSTACK_SECRET_KEY = os.Getenv("PAYSTACK_SECRET_KEY")
 
 		// Validate required fields
-		if config.Port == "" {
+		if config.PORT == "" {
 			return nil, fmt.Errorf("missing required environment variables: PORT")
 		}
 
 		// Validate Google OAuth config
-		if config.GoogleClientID == "" || config.GoogleClientSecret == "" {
+		if config.GOOGLE_CLIENT_ID == "" || config.GOOGLE_CLIENT_SECRET == "" {
 			utils.Warn("Google OAuth configuration is incomplete. Google login will be unavailable.")
 		}
 		return config, nil
 	default:
 		// Validate required fields for other services
-		if config.Port == "" {
+		if config.PORT == "" {
 			return nil, fmt.Errorf("missing required environment variables: PORT")
 		}
 		return config, nil

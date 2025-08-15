@@ -19,3 +19,4 @@ kubernetes/secrets/
 *.key
 *.crt
 .air_tmp
+booking_backup.sql
