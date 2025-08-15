@@ -12,14 +12,14 @@ type (
 		Content  []byte
 	}
 	CreateMedicalRecordDTO struct {
-		UserID     uuid.UUID `json:"user_id" validate:"required,uuid"`
-		UploaderID uuid.UUID `json:"uploader_id" validate:"required,uuid"`
-		// Diagnostic Centre ID or Doctor ID
-		UploaderAdminID uuid.UUID       `json:"uploader_admin_id"`
-		UploaderType    db.UserEnum     `json:"uploader_type"`
+		UserID             uuid.UUID `json:"user_id" validate:"required,uuid"`
+		DiagnosticCentreID uuid.UUID `json:"diagnostic_centre_id" validate:"required,uuid"`
 		ScheduleID      uuid.UUID       `json:"schedule_id" validate:"required,uuid"`
 		Title           string          `json:"title" validate:"required,min=12"`
 		DocumentType    db.DocumentType `json:"document_type" validate:"oneof=LAB_REPORT PRESCRIPTION DISCHARGE_SUMMARY IMAGING VACCINATION ALLERGY SURGERY CHRONIC_CONDITION FAMILY_HISTORY"`
+		// Diagnostic Centre ID
+		UploaderAdminID uuid.UUID
+		UploaderType    db.UserEnum
 		FileUpload      File            // Define File type below or import from the correct package
 		FilePath        string          `json:"file_path"`
 		FileType        string          `json:"file_type"`

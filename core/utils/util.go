@@ -124,7 +124,6 @@ func ErrorResponse(status int, err error, c echo.Context) error {
 	if code == "" {
 		code = response.CodeInternalError
 	}
-
 	return response.Error(status, err, c, code)
 }
 

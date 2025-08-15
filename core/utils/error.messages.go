@@ -18,9 +18,11 @@ const (
 
 // Common error types
 var (
-	ErrNotFound         = errors.New("resource not found")
-	ErrPermissionDenied = errors.New("permission denied")
-	ErrInvalidInput     = errors.New("invalid input")
-	ErrDatabaseError    = errors.New("database error")
-	ErrConflictError    = errors.New("ERROR: duplicate key value violates unique constraint \"diagnostic_centres_latitude_longitude_key\" (SQLSTATE 23505)")
+	ErrNotFound                 = errors.New("resource not found")
+	ErrNotFoundDiagnositcCentre = errors.New("diagnostic centre not found")
+	ErrPermissionDenied         = errors.New("permission denied")
+	ErrInvalidInput             = errors.New("invalid input")
+	ErrDatabaseError            = errors.New("database error")
+	ErrUnauthorized             = errors.New("unauthorized to perform operation")
+	ErrConflictError            = errors.New("ERROR: duplicate key value violates unique constraint \"diagnostic_centres_latitude_longitude_key\" (SQLSTATE 23505)")
 )

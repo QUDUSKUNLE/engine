@@ -138,6 +138,11 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 }
 
 func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error {
+	// Authentication & Authorization
+	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, utils.ErrUnauthorized, context)
+	}
 	// This validated at the middleware level
 	params, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticParamDTO)
 

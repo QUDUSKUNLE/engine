@@ -120,10 +120,9 @@ func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc 
 // handleMedicalRecordDTO processes form data for medical record creation
 func handleMedicalRecordDTO(c echo.Context, dto *domain.CreateMedicalRecordDTO) error {
 	fields := map[string]*uuid.UUID{
-		"user_id":           &dto.UserID,
-		"uploader_id":       &dto.UploaderID,
-		"schedule_id":       &dto.ScheduleID,
-		"uploader_admin_id": &dto.UploaderAdminID,
+		"user_id":              &dto.UserID,
+		"diagnostic_centre_id": &dto.DiagnosticCentreID,
+		"schedule_id":          &dto.ScheduleID,
 	}
 
 	for field, ptr := range fields {

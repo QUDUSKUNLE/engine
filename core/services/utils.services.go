@@ -64,7 +64,9 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 		return nil, err
 	}
 
-	dto := &domain.CreateMedicalRecordDTO{}
+
+
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.CreateMedicalRecordDTO)
 	if err := c.Bind(dto); err != nil {
 		utils.Error("Failed to bind medical record data",
 			utils.LogField{Key: "error", Value: err.Error()})

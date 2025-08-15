@@ -14,12 +14,10 @@ import (
 
 // CreateMedicalRecord handles the creation of a new medical record.
 func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error {
-	ctx := context.Request().Context()
-
 	// Authentication & Authorization
 	uploader, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
+		return utils.ErrorResponse(http.StatusUnauthorized, utils.ErrUnauthorized, context)
 	}
 
 	// Build and validate DTO
@@ -31,6 +29,7 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 	if dto.FileUpload.Content == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "File upload is required")
 	}
+	ctx := context.Request().Context()
 
 	// Set uploader info
 	dto.UploaderType = uploader.UserType
@@ -38,12 +37,12 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 
 	// Validate uploader_admin_id and uploader_id before uploading data to cloud
 	params := db.Get_Diagnostic_Centre_ByManagerParams{
-		ID:      dto.UploaderID.String(),
-		AdminID: dto.UploaderAdminID.String(),
+		ID:      dto.DiagnosticCentreID.String(),
+		AdminID: uploader.UserID.String(),
 	}
 	_, err = service.DiagnosticRepo.GetDiagnosticCentreByManager(ctx, params)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+		return utils.ErrorResponse(http.StatusNotFound, utils.ErrNotFoundDiagnositcCentre, context)
 	}
 
 	// Upload file to cloud
@@ -71,7 +70,7 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 	// Create medical record
 	createParams := db.CreateMedicalRecordParams{
 		UserID:          dto.UserID.String(),
-		UploaderID:      dto.UploaderID.String(),
+		UploaderID:      dto.DiagnosticCentreID.String(),
 		UploaderAdminID: pgtype.UUID{Bytes: dto.UploaderAdminID, Valid: true},
 		UploaderType:    dto.UploaderType,
 		ScheduleID:      dto.ScheduleID.String(),
