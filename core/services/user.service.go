@@ -21,8 +21,17 @@ import (
 )
 
 func (service *ServicesHandler) Create(context echo.Context) error {
-	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UserRegisterDTO)
-	newUser, err := domain.BuildNewUser(*dto)
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.RegisterationDTO)
+	registerDto := &domain.UserRegisterDTO{
+		FirstName:       dto.FirstName,
+		LastName:        dto.LastName,
+		Email:           dto.Email,
+		Password:        dto.Password,
+		ConfirmPassword: dto.ConfirmPassword,
+		UserType:        dto.UserType,
+		CreatedAdmin:    uuid.Nil,
+	}
+	newUser, err := domain.BuildNewUser(*registerDto)
 	if err != nil {
 		utils.Error("Failed to build new user",
 			utils.LogField{Key: "error", Value: err.Error()},

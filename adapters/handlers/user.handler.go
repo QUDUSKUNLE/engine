@@ -10,7 +10,7 @@ import (
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param user body domain.UserRegisterDTO true "User registration details"
+// @Param user body domain.RegisterationDTO true "User registration details"
 // @Success 201 {object} handlers.UserSwagger "User created successfully"
 // @Failure 409 {object} handlers.DUPLICATE_ERROR "DUPLICATE_ERROR"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"

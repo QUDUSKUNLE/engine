@@ -15,7 +15,7 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodPost,
 			path:        "/register",
 			handler:     handler.Register,
-			factory:     func() interface{} { return &domain.UserRegisterDTO{} },
+			factory:     func() interface{} { return &domain.RegisterationDTO{} },
 			description: "User registration",
 		},
 		{

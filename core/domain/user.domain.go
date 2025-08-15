@@ -34,6 +34,14 @@ type (
 		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER"`
 		CreatedAdmin    uuid.UUID   `json:"created_admin" validate:"omitempty"`
 	}
+	RegisterationDTO struct {
+		FirstName       string      `json:"first_name" validate:"gte=3"`
+		LastName        string      `json:"last_name" validate:"gte=3"`
+		Email           string      `json:"email" validate:"email,required"`
+		Password        string      `json:"password" validate:"gte=6,lte=20,required"`
+		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required"`
+		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER"`
+	}
 	DiagnosticCentreManagerRegisterDTO struct {
 		Email     string      `json:"email" validate:"email,required"`
 		LastName  string      `json:"last_name" validate:"gte=3,required"`

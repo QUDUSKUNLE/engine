@@ -3166,7 +3166,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.UserRegisterDTO"
+                            "$ref": "#/definitions/domain.RegisterationDTO"
                         }
                     }
                 ],
@@ -3916,6 +3916,49 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.RegisterationDTO": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "email",
+                "password",
+                "user_type"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "last_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                },
+                "user_type": {
+                    "enum": [
+                        "PATIENT",
+                        "DIAGNOSTIC_CENTRE_OWNER"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.UserEnum"
+                        }
+                    ]
+                }
+            }
+        },
         "domain.RequestPasswordResetDTO": {
             "type": "object",
             "required": [
@@ -4462,52 +4505,6 @@ const docTemplate = `{
                 },
                 "phone_number": {
                     "type": "string"
-                }
-            }
-        },
-        "domain.UserRegisterDTO": {
-            "type": "object",
-            "required": [
-                "confirm_password",
-                "email",
-                "password",
-                "user_type"
-            ],
-            "properties": {
-                "confirm_password": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 6
-                },
-                "created_admin": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string",
-                    "minLength": 3
-                },
-                "last_name": {
-                    "type": "string",
-                    "minLength": 3
-                },
-                "password": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 6
-                },
-                "user_type": {
-                    "enum": [
-                        "PATIENT",
-                        "DIAGNOSTIC_CENTRE_OWNER"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/db.UserEnum"
-                        }
-                    ]
                 }
             }
         },
