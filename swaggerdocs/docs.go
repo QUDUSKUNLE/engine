@@ -2760,8 +2760,13 @@ const docTemplate = `{
                         "enum": [
                             "LAB_REPORT",
                             "PRESCRIPTION",
-                            "IMAGING",
                             "DISCHARGE_SUMMARY",
+                            "IMAGING",
+                            "VACCINATION",
+                            "ALLERGY",
+                            "SURGERY",
+                            "CHRONIC_CONDITION",
+                            "FAMILY_HISTORY",
                             "OTHER"
                         ],
                         "type": "string",

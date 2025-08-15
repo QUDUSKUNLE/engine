@@ -25,7 +25,7 @@ func SecureHeaders() echo.MiddlewareFunc {
 
 func CORS(cfg *config.EnvConfiguration) echo.MiddlewareFunc {
 	return middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{cfg.AllowOrigins},
+		AllowOrigins:     []string{cfg.ALLOW_ORIGINS},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
 		AllowCredentials: true,

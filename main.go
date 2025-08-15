@@ -108,7 +108,7 @@ func main() {
 
 	// Add a middleware to skip JWT validation for specific routes under /v1
 	v1 := e.Group("/v1")
-	v1.Use(middlewares.ConditionalJWTMiddleware(cfg.JwtKey))
+	v1.Use(middlewares.ConditionalJWTMiddleware(cfg.JWT_KEY))
 
 	// Register routes
 	routes.RoutesAdaptor(v1, httpHandler)
@@ -121,7 +121,7 @@ func main() {
 	e.GET("", handlers.Home)
 
 	// Get port from environment (Railway and most PaaS set PORT)
-	port := cfg.Port
+	port := cfg.PORT
 	if port == "" {
 		port = "8080"
 	}

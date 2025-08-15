@@ -72,7 +72,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 
 	emaildata := &emails.EmailVerificationData{
 		Name:             newUser.Fullname.String,
-		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.AppUrl, verificationToken.Token, escapedEmail),
+		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.APP_URL, verificationToken.Token, escapedEmail),
 		ExpiryDuration:   "24 hours",
 	}
 
@@ -224,7 +224,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 
 	emailData := &emails.PasswordResetData{
 		Name:      user.Fullname.String,
-		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.AppUrl, token, url.QueryEscape(user.Email.String)),
+		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.APP_URL, token, url.QueryEscape(user.Email.String)),
 		ExpiresIn: "15 minutes",
 	}
 
@@ -402,7 +402,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	escapedEmail := url.QueryEscape(user.Email.String)
 	emaildata := &emails.EmailVerificationData{
 		Name:             user.Fullname.String,
-		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.AppUrl, token, escapedEmail),
+		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.APP_URL, token, escapedEmail),
 		ExpiryDuration:   "24 hours",
 	}
 
