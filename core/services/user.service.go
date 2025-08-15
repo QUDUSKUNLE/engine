@@ -220,7 +220,6 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	}
 
 	// Send password reset email
-
 	emailData := &emails.PasswordResetData{
 		Name:      user.Fullname.String,
 		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.APP_URL, token, url.QueryEscape(user.Email.String)),

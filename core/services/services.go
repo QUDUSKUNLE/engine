@@ -61,5 +61,6 @@ func ServicesAdapter(
 		}),
 		Config:    conn,
 		aiService: ai.NewAIAdaptor(conn.OPEN_API_KEY),
+		FileRepo: ex.NewLocalFileService(),
 	}
 }

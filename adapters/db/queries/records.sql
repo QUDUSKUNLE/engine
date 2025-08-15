@@ -67,3 +67,10 @@ WHERE id = $11 AND uploader_id = $12 AND uploader_admin_id = $13
 RETURNING *;
 
 
+-- name: UpdateFilePath :one
+UPDATE medical_records
+SET
+  file_path = COALESCE($2, file_path),
+  updated_at = NOW()
+WHERE id = $1
+RETURNING *;

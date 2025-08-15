@@ -23,6 +23,7 @@ var (
 	ErrPermissionDenied         = errors.New("permission denied")
 	ErrInvalidInput             = errors.New("invalid input")
 	ErrDatabaseError            = errors.New("database error")
+	ErrFileUploadError          = errors.New("file upload error")
 	ErrUnauthorized             = errors.New("unauthorized to perform operation")
 	ErrConflictError            = errors.New("ERROR: duplicate key value violates unique constraint \"diagnostic_centres_latitude_longitude_key\" (SQLSTATE 23505)")
 )

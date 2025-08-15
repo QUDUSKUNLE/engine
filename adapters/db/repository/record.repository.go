@@ -16,6 +16,10 @@ func (r *Repository) CreateMedicalRecord(ctx context.Context, record db.CreateMe
 	return r.database.CreateMedicalRecord(ctx, record)
 }
 
+func (r *Repository) UpdateFilePath(ctx context.Context, req db.UpdateFilePathParams) (*db.MedicalRecord, error) {
+	return r.database.UpdateFilePath(ctx, req)
+}
+
 // GetMedicalRecord implements the ports.RecordRepository interface.
 func (r *Repository) GetMedicalRecord(ctx context.Context, params db.GetMedicalRecordParams) (*db.GetMedicalRecordRow, error) {
 	// TODO: implement the actual logic to get a medical record from the database

@@ -24,4 +24,6 @@ type RecordRepository interface {
 
 	// UpdateMedicalRecord updates an existing medical record by the uploader with the provided parameters.
 	UpdateMedicalRecord(ctx context.Context, req db.UpdateMedicalRecordByUploaderParams) (*db.MedicalRecord, error)
+
+	UpdateFilePath(ctx context.Context, req db.UpdateFilePathParams) (*db.MedicalRecord, error)
 }

@@ -64,8 +64,6 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 		return nil, err
 	}
 
-
-
 	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.CreateMedicalRecordDTO)
 	if err := c.Bind(dto); err != nil {
 		utils.Error("Failed to bind medical record data",
@@ -264,7 +262,7 @@ func isValidUserType(allowedTypes []db.UserEnum, userType db.UserEnum) bool {
 // SetDefaultPagination sets default values for pagination parameters if not provided
 func SetDefaultPagination(params PaginationParams) PaginationParams {
 	if params.GetLimit() <= 0 {
-		params.SetLimit(10) // Default limit
+		params.SetLimit(50) // Default limit
 	}
 	if params.GetOffset() < 0 {
 		params.SetOffset(0) // Default offset
