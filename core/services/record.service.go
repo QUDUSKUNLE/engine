@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -41,7 +42,7 @@ func (service *ServicesHandler) CreateMedicalRecord(cont echo.Context) error {
 		ID:      dto.DiagnosticCentreID.String(),
 		AdminID: uploader.UserID.String(),
 	}
-	_, err = service.DiagnosticRepo.GetDiagnosticCentreByManager(ctx, params)
+	_, err = service.diagnosticPort.GetDiagnosticCentreByManager(ctx, params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, utils.ErrNotFoundDiagnositcCentre, cont)
 	}
@@ -77,7 +78,7 @@ func (service *ServicesHandler) CreateMedicalRecord(cont echo.Context) error {
 		SharedUntil:     sharedUntilTime,
 	}
 
-	record, err := service.RecordRepo.CreateMedicalRecord(ctx, createParams)
+	record, err := service.recordPort.CreateMedicalRecord(ctx, createParams)
 	if err != nil {
 		cont.Logger().Error("Failed to create medical record:", err)
 		switch {
@@ -91,13 +92,19 @@ func (service *ServicesHandler) CreateMedicalRecord(cont echo.Context) error {
 	}
 
 	go func(recordID string, fileContent []byte) {
-		fileUrl, err := service.FileRepo.UploadFile(context.Background(), fileContent)
+		fileUrl, err := service.filePort.UploadFile(context.Background(), fileContent)
+		// service.aiPort.
 		if err != nil {
 			cont.Logger().Errorf("File upload failed for record %s: %v", recordID, err)
 			return
 		}
+		_, err = service.aiPort.OCR.Parse(context.Background(), fileContent)
+		if err != nil {
+			fmt.Printf("Error %v", err)
+			return
+		}
 		// Update DB with final file URL
-		_, err = service.RecordRepo.UpdateFilePath(context.Background(), db.UpdateFilePathParams{
+		_, err = service.recordPort.UpdateFilePath(context.Background(), db.UpdateFilePathParams{
 			ID:       recordID,
 			FilePath: fileUrl,
 		})
@@ -125,7 +132,7 @@ func (service *ServicesHandler) GetMedicalRecord(cont echo.Context) error {
 	param, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.GetMedicalRecordParamsDTO)
 
 	// Fetch medical record
-	response, err := service.RecordRepo.GetMedicalRecord(
+	response, err := service.recordPort.GetMedicalRecord(
 		cont.Request().Context(),
 		db.GetMedicalRecordParams{
 			ID:     param.RecordID.String(),
@@ -163,7 +170,7 @@ func (service *ServicesHandler) GetMedicalRecords(cont echo.Context) error {
 
 	query = SetDefaultPagination(query).(*domain.GetMedicalRecordsParamQueryDTO)
 
-	response, err := service.RecordRepo.GetMedicalRecords(cont.Request().Context(), db.GetMedicalRecordsParams{
+	response, err := service.recordPort.GetMedicalRecords(cont.Request().Context(), db.GetMedicalRecordsParams{
 		UserID: user.UserID.String(),
 		Limit:  query.GetLimit(),
 		Offset: query.GetOffset(),
@@ -187,7 +194,7 @@ func (service *ServicesHandler) GetUploaderMedicalRecord(cont echo.Context) erro
 	// This validated at the middleware level
 	query, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.GetUploaderMedicalRecordParamsDTO)
 
-	response, err := service.RecordRepo.GetUploaderMedicalRecord(cont.Request().Context(), db.GetUploaderMedicalRecordParams{
+	response, err := service.recordPort.GetUploaderMedicalRecord(cont.Request().Context(), db.GetUploaderMedicalRecordParams{
 		ID:              query.RecordID.String(),
 		UploaderID:      query.DiagnosticCentreID.String(),
 		UploaderAdminID: pgtype.UUID{Bytes: uploader.UserID, Valid: true},
@@ -210,7 +217,7 @@ func (service *ServicesHandler) GetUploaderMedicalRecords(cont echo.Context) err
 
 	query = SetDefaultPagination(query).(*domain.GetUploaderMedicalRecordsParamQueryDTO)
 
-	response, err := service.RecordRepo.GetUploaderMedicalRecords(cont.Request().Context(), db.GetUploaderMedicalRecordsParams{
+	response, err := service.recordPort.GetUploaderMedicalRecords(cont.Request().Context(), db.GetUploaderMedicalRecordsParams{
 		UploaderID:      query.DiagnosticCentreID.String(),
 		UploaderAdminID: pgtype.UUID{Bytes: admin.UserID, Valid: true},
 		Limit:           query.GetLimit(),
@@ -263,7 +270,7 @@ func (service *ServicesHandler) UpdateMedicalRecord(cont echo.Context) error {
 	// Handle file upload if provided
 	var fileUrl string
 	if dto.FileUpload.Content != nil {
-		fileUrl, err = service.FileRepo.UploadFile(ctx, dto.FileUpload.Content)
+		fileUrl, err = service.filePort.UploadFile(ctx, dto.FileUpload.Content)
 		if err != nil {
 			cont.Logger().Error("File upload failed:", err)
 			return echo.NewHTTPError(http.StatusUnprocessableEntity, "Failed to upload file")
@@ -302,7 +309,7 @@ func (service *ServicesHandler) UpdateMedicalRecord(cont echo.Context) error {
 	}
 
 	// Update the record
-	record, err := service.RecordRepo.UpdateMedicalRecord(ctx, updateParams)
+	record, err := service.recordPort.UpdateMedicalRecord(ctx, updateParams)
 	if err != nil {
 		cont.Logger().Error("Failed to update medical record:", err)
 		switch {
