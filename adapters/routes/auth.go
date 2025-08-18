@@ -3,9 +3,9 @@ package routes
 import (
 	"net/http"
 
+	"github.com/diagnoxix/adapters/handlers"
+	"github.com/diagnoxix/core/domain"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/handlers"
-	"github.com/medivue/core/domain"
 )
 
 // AuthRoutes registers all authentication-related routes
@@ -15,7 +15,7 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodPost,
 			path:        "/register",
 			handler:     handler.Register,
-			factory:     func() interface{} { return &domain.UserRegisterDTO{} },
+			factory:     func() interface{} { return &domain.RegisterationDTO{} },
 			description: "User registration",
 		},
 		{
@@ -65,6 +65,15 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 				return &domain.GetProfileDTO{}
 			},
 			description: "Get a user profile",
+		},
+		{
+			method:  http.MethodGet,
+			path:    "/managers",
+			handler: handler.ListManagersByAdmin,
+			factory: func() interface{} {
+				return &domain.GetManagerDTO{}
+			},
+			description: "List managers",
 		},
 	}
 

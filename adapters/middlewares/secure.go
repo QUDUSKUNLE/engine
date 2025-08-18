@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/diagnoxix/adapters/config"
+	"github.com/diagnoxix/core/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/medivue/adapters/config"
-	"github.com/medivue/core/utils"
 	"golang.org/x/time/rate"
 )
 
@@ -23,9 +23,9 @@ func SecureHeaders() echo.MiddlewareFunc {
 	})
 }
 
-func CORS(cfg *config.Config) echo.MiddlewareFunc {
+func CORS(cfg *config.EnvConfiguration) echo.MiddlewareFunc {
 	return middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{cfg.AllowOrigins},
+		AllowOrigins:     []string{cfg.ALLOW_ORIGINS},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
 		AllowCredentials: true,

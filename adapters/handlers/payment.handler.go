@@ -36,6 +36,5 @@ func (h *HTTPHandler) VerifyPayment(c echo.Context) error {
 			"error": "payment reference is required",
 		})
 	}
-
 	return h.service.VerifyPayment(c, reference)
 }

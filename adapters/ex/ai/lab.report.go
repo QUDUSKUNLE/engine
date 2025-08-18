@@ -47,7 +47,7 @@ func (open *AIAdaptor) InterpretLabResult(prompt string) (interface{}, error) {
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("Authorization", "Bearer "+open.api_key)
+	// req.Header.Set("Authorization", "Bearer "+open.open_api_key)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

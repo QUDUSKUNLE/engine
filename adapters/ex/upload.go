@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/medivue/core/ports"
-	"github.com/medivue/core/utils"
+	"github.com/diagnoxix/core/ports"
+	"github.com/diagnoxix/core/utils"
 )
 
 // Supported file types and their extensions
@@ -32,15 +32,8 @@ type LocalFileService struct {
 }
 
 // NewLocalFileService creates a new LocalFileService instance
-func NewLocalFileService(uploadDir string) (*LocalFileService, error) {
-	if err := os.MkdirAll(uploadDir, 0755); err != nil {
-		utils.Error("Failed to create upload directory",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "path", Value: uploadDir})
-		return nil, fmt.Errorf("failed to create upload directory: %w", err)
-	}
-
-	return &LocalFileService{uploadDir: uploadDir}, nil
+func NewLocalFileService() *LocalFileService {
+	return &LocalFileService{}
 }
 
 // UploadFile implements the ports.FileService interface.

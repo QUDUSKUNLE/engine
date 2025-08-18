@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/ports"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/ports"
 )
 
 // Ensure Repository implements ports.UserRepository
@@ -38,6 +38,15 @@ func (repo *Repository) GetUser(ctx context.Context, id string) (*db.User, error
 // GetUserByEmail fetches a user by their email address.
 func (repo *Repository) GetUserByEmail(ctx context.Context, email pgtype.Text) (*db.User, error) {
 	response, err := repo.database.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+// ListManagersByadmin fetches a user by their admin.
+func (repo *Repository) ListManagersByadmin(ctx context.Context, arg db.ListUsersByAdminParams) ([]*db.ListUsersByAdminRow, error) {
+	response, err := repo.database.ListUsersByAdmin(ctx, arg)
 	if err != nil {
 		return nil, err
 	}

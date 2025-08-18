@@ -3,9 +3,9 @@ package routes
 import (
 	"net/http"
 
+	"github.com/diagnoxix/adapters/handlers"
+	"github.com/diagnoxix/core/domain"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/handlers"
-	"github.com/medivue/core/domain"
 )
 
 // DiagnosticRoutes registers all diagnostic centre-related routes
@@ -64,6 +64,13 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			handler:     handler.GetDiagnosticCentreSchedules,
 			factory:     func() interface{} { return &domain.GetDiagnosticSchedulesByCentreParamDTO{} },
 			description: "Get Diagnostic centre schedules",
+		},
+		{
+			method:      http.MethodPost,
+			path:        "/diagnostic_centres_owner/kyc",
+			handler:     handler.SubmitKYC,
+			factory:     func() interface{} { return &domain.UpgradeDTO{} },
+			description: "Submit diagnostic owner kyc",
 		},
 	}
 

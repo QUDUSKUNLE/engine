@@ -1,36 +1,37 @@
 package services
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 // CreateMedicalRecord handles the creation of a new medical record.
-func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error {
-	ctx := context.Request().Context()
-
+func (service *ServicesHandler) CreateMedicalRecord(cont echo.Context) error {
 	// Authentication & Authorization
-	uploader, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	uploader, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
+		return utils.ErrorResponse(http.StatusUnauthorized, utils.ErrUnauthorized, cont)
 	}
 
 	// Build and validate DTO
-	dto, err := buildCreateMedicalRecordDto(context)
+	dto, err := buildCreateMedicalRecordDto(cont)
 	if err != nil {
-		context.Logger().Error("Failed to build medical record DTO:", err)
+		cont.Logger().Error("Failed to build medical record DTO:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
 	}
 	if dto.FileUpload.Content == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "File upload is required")
 	}
+	ctx := cont.Request().Context()
 
 	// Set uploader info
 	dto.UploaderType = uploader.UserType
@@ -38,28 +39,19 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 
 	// Validate uploader_admin_id and uploader_id before uploading data to cloud
 	params := db.Get_Diagnostic_Centre_ByManagerParams{
-		ID:      dto.UploaderID.String(),
-		AdminID: dto.UploaderAdminID.String(),
+		ID:      dto.DiagnosticCentreID.String(),
+		AdminID: uploader.UserID.String(),
 	}
-	_, err = service.DiagnosticRepo.GetDiagnosticCentreByManager(ctx, params)
+	_, err = service.diagnosticPort.GetDiagnosticCentreByManager(ctx, params)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusForbidden, err.Error())
-	}
-
-	// Upload file to cloud
-	fileUrl, err := service.FileRepo.UploadFile(ctx, dto.FileUpload.Content)
-	if err != nil {
-		context.Logger().Error("File upload failed:", err)
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, "Failed to upload file")
+		return utils.ErrorResponse(http.StatusNotFound, utils.ErrNotFoundDiagnositcCentre, cont)
 	}
 
 	// Parse SharedUntil string to time.Time
 	var sharedUntilTime pgtype.Timestamp
 	if dto.SharedUntil != "" {
-		// Try RFC3339 format first (includes time)
 		t, err := time.Parse(time.RFC3339, dto.SharedUntil)
 		if err != nil {
-			// Fallback to date-only format
 			t, err = time.Parse("2006-01-02", dto.SharedUntil)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "Invalid date format. Expected RFC3339 or YYYY-MM-DD")
@@ -71,13 +63,13 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 	// Create medical record
 	createParams := db.CreateMedicalRecordParams{
 		UserID:          dto.UserID.String(),
-		UploaderID:      dto.UploaderID.String(),
+		UploaderID:      dto.DiagnosticCentreID.String(),
 		UploaderAdminID: pgtype.UUID{Bytes: dto.UploaderAdminID, Valid: true},
-		UploaderType:    dto.UploaderType,
+		UploaderType:    db.UserEnum(dto.UploaderType),
 		ScheduleID:      dto.ScheduleID.String(),
 		Title:           dto.Title,
 		DocumentType:    dto.DocumentType,
-		FilePath:        fileUrl,
+		FilePath:        "uplaoding",
 		FileType:        pgtype.Text{String: dto.FileType, Valid: true},
 		UploadedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
 		ProviderName:    pgtype.Text{String: dto.ProviderName, Valid: true},
@@ -86,9 +78,9 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 		SharedUntil:     sharedUntilTime,
 	}
 
-	record, err := service.RecordRepo.CreateMedicalRecord(ctx, createParams)
+	record, err := service.recordPort.CreateMedicalRecord(ctx, createParams)
 	if err != nil {
-		context.Logger().Error("Failed to create medical record:", err)
+		cont.Logger().Error("Failed to create medical record:", err)
 		switch {
 		case errors.Is(err, utils.ErrDatabaseError):
 			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
@@ -99,30 +91,56 @@ func (service *ServicesHandler) CreateMedicalRecord(context echo.Context) error 
 		}
 	}
 
-	return utils.ResponseMessage(http.StatusCreated, record, context)
+	go func(recordID string, fileContent []byte) {
+		fileUrl, err := service.filePort.UploadFile(context.Background(), fileContent)
+		// service.aiPort.
+		if err != nil {
+			cont.Logger().Errorf("File upload failed for record %s: %v", recordID, err)
+			return
+		}
+		_, err = service.aiPort.OCR.Parse(context.Background(), fileContent)
+		if err != nil {
+			fmt.Printf("Error %v", err)
+			return
+		}
+		// Update DB with final file URL
+		_, err = service.recordPort.UpdateFilePath(context.Background(), db.UpdateFilePathParams{
+			ID:       recordID,
+			FilePath: fileUrl,
+		})
+		if err != nil {
+			cont.Logger().Errorf("Failed to update file path for record %s: %v", recordID, err)
+			return
+		}
+	}(record.ID, dto.FileUpload.Content)
+
+	return utils.ResponseMessage(http.StatusAccepted, map[string]string{
+		"record_id": record.ID,
+		"status":    "File is uploading in background",
+	}, cont)
 }
 
 // GetMedicalRecord retrieves a single medical record.
-func (service *ServicesHandler) GetMedicalRecord(context echo.Context) error {
+func (service *ServicesHandler) GetMedicalRecord(cont echo.Context) error {
 	// Authentication check
-	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
+	user, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
 	}
 
 	// This validated at the middleware level
-	param, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetMedicalRecordParamsDTO)
+	param, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.GetMedicalRecordParamsDTO)
 
 	// Fetch medical record
-	response, err := service.RecordRepo.GetMedicalRecord(
-		context.Request().Context(),
+	response, err := service.recordPort.GetMedicalRecord(
+		cont.Request().Context(),
 		db.GetMedicalRecordParams{
 			ID:     param.RecordID.String(),
 			UserID: user.UserID.String(),
 		},
 	)
 	if err != nil {
-		context.Logger().Error("Failed to get medical record:", err)
+		cont.Logger().Error("Failed to get medical record:", err)
 		switch {
 		case errors.Is(err, utils.ErrNotFound):
 			return echo.NewHTTPError(http.StatusNotFound, "Medical record not found")
@@ -137,95 +155,96 @@ func (service *ServicesHandler) GetMedicalRecord(context echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Medical record not found")
 	}
 
-	return utils.ResponseMessage(http.StatusOK, response, context)
+	return utils.ResponseMessage(http.StatusOK, response, cont)
 }
 
 // GetMedicalRecords retrieves multiple medical records for a user.
-func (service *ServicesHandler) GetMedicalRecords(context echo.Context) error {
-	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
+func (service *ServicesHandler) GetMedicalRecords(cont echo.Context) error {
+	user, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		return utils.ErrorResponse(http.StatusUnauthorized, err, cont)
 	}
 
 	// This validated at the middleware level
-	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetMedicalRecordsParamQueryDTO)
+	query, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.GetMedicalRecordsParamQueryDTO)
 
 	query = SetDefaultPagination(query).(*domain.GetMedicalRecordsParamQueryDTO)
 
-	response, err := service.RecordRepo.GetMedicalRecords(context.Request().Context(), db.GetMedicalRecordsParams{
+	response, err := service.recordPort.GetMedicalRecords(cont.Request().Context(), db.GetMedicalRecordsParams{
 		UserID: user.UserID.String(),
 		Limit:  query.GetLimit(),
 		Offset: query.GetOffset(),
 	})
 	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		return utils.ErrorResponse(http.StatusInternalServerError, err, cont)
 	}
 	if len(response) == 0 {
-		return utils.ResponseMessage(http.StatusOK, []interface{}{}, context)
+		return utils.ResponseMessage(http.StatusOK, []interface{}{}, cont)
 	}
 
-	return utils.ResponseMessage(http.StatusOK, response, context)
+	return utils.ResponseMessage(http.StatusOK, response, cont)
 }
 
 // GetUploaderMedicalRecord retrieves a single medical record uploaded by a specific uploader.
-func (service *ServicesHandler) GetUploaderMedicalRecord(context echo.Context) error {
-	uploader, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+func (service *ServicesHandler) GetUploaderMedicalRecord(cont echo.Context) error {
+	uploader, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		return utils.ErrorResponse(http.StatusUnauthorized, err, cont)
 	}
 	// This validated at the middleware level
-	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetUploaderMedicalRecordParamsDTO)
+	query, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.GetUploaderMedicalRecordParamsDTO)
 
-	response, err := service.RecordRepo.GetUploaderMedicalRecord(context.Request().Context(), db.GetUploaderMedicalRecordParams{
+	response, err := service.recordPort.GetUploaderMedicalRecord(cont.Request().Context(), db.GetUploaderMedicalRecordParams{
 		ID:              query.RecordID.String(),
-		UploaderID:      query.UploaderID.String(),
+		UploaderID:      query.DiagnosticCentreID.String(),
 		UploaderAdminID: pgtype.UUID{Bytes: uploader.UserID, Valid: true},
 	})
 	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		return utils.ErrorResponse(http.StatusInternalServerError, err, cont)
 	}
-	return utils.ResponseMessage(http.StatusOK, response, context)
+	return utils.ResponseMessage(http.StatusOK, response, cont)
 }
 
 // GetUploaderMedicalRecords retrieves multiple medical records uploaded by a specific uploader.
-func (service *ServicesHandler) GetUploaderMedicalRecords(context echo.Context) error {
-	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+func (service *ServicesHandler) GetUploaderMedicalRecords(cont echo.Context) error {
+	admin, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		return utils.ErrorResponse(http.StatusUnauthorized, err, cont)
 	}
 
 	// This validated at the middleware level
-	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetUploaderMedicalRecordsParamQueryDTO)
+	query, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.GetUploaderMedicalRecordsParamQueryDTO)
 
 	query = SetDefaultPagination(query).(*domain.GetUploaderMedicalRecordsParamQueryDTO)
 
-	response, err := service.RecordRepo.GetUploaderMedicalRecords(context.Request().Context(), db.GetUploaderMedicalRecordsParams{
-		UploaderID: query.UploaderID.String(),
-		Limit:      query.GetLimit(),
-		Offset:     query.GetOffset(),
+	response, err := service.recordPort.GetUploaderMedicalRecords(cont.Request().Context(), db.GetUploaderMedicalRecordsParams{
+		UploaderID:      query.DiagnosticCentreID.String(),
+		UploaderAdminID: pgtype.UUID{Bytes: admin.UserID, Valid: true},
+		Limit:           query.GetLimit(),
+		Offset:          query.GetOffset(),
 	})
 	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		return utils.ErrorResponse(http.StatusInternalServerError, err, cont)
 	}
 	if len(response) == 0 {
-		return utils.ResponseMessage(http.StatusOK, []interface{}{}, context)
+		return utils.ResponseMessage(http.StatusOK, []interface{}{}, cont)
 	}
 
-	return utils.ResponseMessage(http.StatusOK, response, context)
+	return utils.ResponseMessage(http.StatusOK, response, cont)
 }
 
 // UpdateMedicalRecord updates an existing medical record by the uploader.
-func (service *ServicesHandler) UpdateMedicalRecord(context echo.Context) error {
-	ctx := context.Request().Context()
+func (service *ServicesHandler) UpdateMedicalRecord(cont echo.Context) error {
+	ctx := cont.Request().Context()
 
 	// Authentication & Authorization
-	uploader, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	uploader, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
 	}
 
-	// Get the validated DTO from context
-	dto, ok := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateMedicalRecordDTO)
+	// Get the validated DTO from cont
+	dto, ok := cont.Get(utils.ValidatedBodyDTO).(*domain.UpdateMedicalRecordDTO)
 	if !ok {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
 	}
@@ -251,9 +270,9 @@ func (service *ServicesHandler) UpdateMedicalRecord(context echo.Context) error 
 	// Handle file upload if provided
 	var fileUrl string
 	if dto.FileUpload.Content != nil {
-		fileUrl, err = service.FileRepo.UploadFile(ctx, dto.FileUpload.Content)
+		fileUrl, err = service.filePort.UploadFile(ctx, dto.FileUpload.Content)
 		if err != nil {
-			context.Logger().Error("File upload failed:", err)
+			cont.Logger().Error("File upload failed:", err)
 			return echo.NewHTTPError(http.StatusUnprocessableEntity, "Failed to upload file")
 		}
 	}
@@ -290,9 +309,9 @@ func (service *ServicesHandler) UpdateMedicalRecord(context echo.Context) error 
 	}
 
 	// Update the record
-	record, err := service.RecordRepo.UpdateMedicalRecord(ctx, updateParams)
+	record, err := service.recordPort.UpdateMedicalRecord(ctx, updateParams)
 	if err != nil {
-		context.Logger().Error("Failed to update medical record:", err)
+		cont.Logger().Error("Failed to update medical record:", err)
 		switch {
 		case errors.Is(err, utils.ErrDatabaseError):
 			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
@@ -305,5 +324,5 @@ func (service *ServicesHandler) UpdateMedicalRecord(context echo.Context) error 
 		}
 	}
 
-	return utils.ResponseMessage(http.StatusOK, record, context)
+	return utils.ResponseMessage(http.StatusOK, record, cont)
 }

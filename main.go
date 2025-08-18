@@ -10,32 +10,32 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/diagnoxix/adapters/config"
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/adapters/db/repository"
+	"github.com/diagnoxix/adapters/handlers"
+	"github.com/diagnoxix/adapters/middlewares"
+	"github.com/diagnoxix/adapters/routes"
+	"github.com/diagnoxix/core/services"
+	"github.com/diagnoxix/core/utils"
+	_ "github.com/diagnoxix/swaggerdocs"
 	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/medivue/adapters/config"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/db/repository"
-	"github.com/medivue/adapters/handlers"
-	"github.com/medivue/adapters/middlewares"
-	"github.com/medivue/adapters/routes"
-	"github.com/medivue/core/services"
-	"github.com/medivue/core/utils"
-	_ "github.com/medivue/swaggerdocs"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // @title Diagnoxix
 // @version 1.0
 // @description Diagnoxix API
-// @host medivue-api-production.up.railway.app
+// @host diagnoxix.onrender.com
 // @BasePath /
 func main() {
 	// Initialize logger with custom configuration
 	logConfig := utils.LogConfig{
-		Level:       "info", // Set to debug in development, info in production
+		Level:       "debug", // Set to debug in development, info in production
 		OutputPath:  "logs/medivue.log",
-		Development: false, // Set to false in production
+		Development: true, // Set to false in production
 	}
 	if err := utils.InitLogger(logConfig); err != nil {
 		panic(err)
@@ -47,7 +47,7 @@ func main() {
 	}()
 
 	// Load configuration
-	cfg, err := config.LoadConfig("MEDIVUE")
+	cfg, err := config.LoadEnvironmentVariables("MEDIVUE")
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
@@ -94,7 +94,10 @@ func main() {
 	services := services.InitializeServices(repos, cfg)
 
 	// Initialize CronConfig with repositories
-	cronConfig := config.GetConfig(repos.User, repos.Diagnostic, repos.Appointment, *cfg)
+	cronConfig := config.GetConfig(
+		repos.User,
+		repos.Diagnostic,
+		repos.Appointment, *cfg)
 	if err := cronConfig.Start(); err != nil {
 		log.Printf("Warning: Failed to start background services: %v", err)
 	}
@@ -105,7 +108,7 @@ func main() {
 
 	// Add a middleware to skip JWT validation for specific routes under /v1
 	v1 := e.Group("/v1")
-	v1.Use(middlewares.ConditionalJWTMiddleware(cfg.JwtKey))
+	v1.Use(middlewares.ConditionalJWTMiddleware(cfg.JWT_KEY))
 
 	// Register routes
 	routes.RoutesAdaptor(v1, httpHandler)
@@ -118,7 +121,7 @@ func main() {
 	e.GET("", handlers.Home)
 
 	// Get port from environment (Railway and most PaaS set PORT)
-	port := cfg.Port
+	port := cfg.PORT
 	if port == "" {
 		port = "8080"
 	}

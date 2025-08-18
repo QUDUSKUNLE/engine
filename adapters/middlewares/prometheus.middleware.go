@@ -3,8 +3,8 @@ package middlewares
 import (
 	"time"
 
+	"github.com/diagnoxix/adapters/metrics"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/metrics"
 )
 
 // PrometheusMiddleware adds custom metrics tracking to Echo

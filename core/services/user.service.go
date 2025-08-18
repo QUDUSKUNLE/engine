@@ -9,20 +9,29 @@ import (
 	"os"
 	"time"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/adapters/ex/templates/emails"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates/emails"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 	"golang.org/x/oauth2"
 	oauth2v2 "google.golang.org/api/oauth2/v2"
 )
 
 func (service *ServicesHandler) Create(context echo.Context) error {
-	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UserRegisterDTO)
-	newUser, err := domain.BuildNewUser(*dto)
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.RegisterationDTO)
+	registerDto := &domain.UserRegisterDTO{
+		FirstName:       dto.FirstName,
+		LastName:        dto.LastName,
+		Email:           dto.Email,
+		Password:        dto.Password,
+		ConfirmPassword: dto.ConfirmPassword,
+		UserType:        dto.UserType,
+		CreatedAdmin:    uuid.Nil,
+	}
+	newUser, err := domain.BuildNewUser(*registerDto)
 	if err != nil {
 		utils.Error("Failed to build new user",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -47,7 +56,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	}
 
 	// Save verification token
-	verificationToken, err := service.UserRepo.CreateEmailVerificationToken(
+	verificationToken, err := service.userPort.CreateEmailVerificationToken(
 		context.Request().Context(),
 		verificationParams,
 	)
@@ -63,7 +72,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 
 	emaildata := &emails.EmailVerificationData{
 		Name:             newUser.Fullname.String,
-		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.AppUrl, verificationToken.Token, escapedEmail),
+		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.APP_URL, verificationToken.Token, escapedEmail),
 		ExpiryDuration:   "24 hours",
 	}
 
@@ -74,7 +83,7 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 
 func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	// Check for permission to add a diagnostic manager
-	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
+	owner, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		utils.Error("Unauthorized attempt to create diagnostic centre manager",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -98,11 +107,12 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 	userDto := domain.UserRegisterDTO{
-		Email:     dto.Email,
-		LastName:  dto.LastName,
-		FirstName: dto.FirstName,
-		Password:  password,
-		UserType:  dto.UserType,
+		Email:        dto.Email,
+		LastName:     dto.LastName,
+		FirstName:    dto.FirstName,
+		Password:     password,
+		UserType:     dto.UserType,
+		CreatedAdmin: owner.UserID,
 	}
 
 	newUser, err := domain.BuildNewUser(userDto)
@@ -136,7 +146,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 func (service *ServicesHandler) Login(context echo.Context) error {
 	// This validated at the middleware level
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UserSignInDTO)
-	user, err := service.UserRepo.GetUserByEmail(
+	user, err := service.userPort.GetUserByEmail(
 		context.Request().Context(), pgtype.Text{String: dto.Email, Valid: true})
 	if err != nil {
 		utils.Error("Login failed - user not found",
@@ -183,7 +193,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.RequestPasswordResetDTO)
 
 	// Check if user exists
-	user, err := service.UserRepo.GetUserByEmail(context.Request().Context(), pgtype.Text{String: dto.Email, Valid: true})
+	user, err := service.userPort.GetUserByEmail(context.Request().Context(), pgtype.Text{String: dto.Email, Valid: true})
 	if err != nil {
 		utils.Error("Password reset requested for non-existent user",
 			utils.LogField{Key: "email", Value: dto.Email})
@@ -196,14 +206,13 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	// Generate reset token
 	token := generateResetToken()
 	expiresAt := time.Now().Add(10 * time.Minute)
-
 	// Save token to database
 	resetToken := db.CreatePasswordResetTokenParams{
 		Email:     user.Email.String,
 		Token:     token,
 		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
 	}
-	if err := service.UserRepo.CreatePasswordResetToken(context.Request().Context(), resetToken); err != nil {
+	if err := service.userPort.CreatePasswordResetToken(context.Request().Context(), resetToken); err != nil {
 		utils.Error("Failed to create password reset token",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: user.ID})
@@ -211,10 +220,9 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	}
 
 	// Send password reset email
-
 	emailData := &emails.PasswordResetData{
 		Name:      user.Fullname.String,
-		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.AppUrl, token, url.QueryEscape(user.Email.String)),
+		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.APP_URL, token, url.QueryEscape(user.Email.String)),
 		ExpiresIn: "15 minutes",
 	}
 
@@ -234,7 +242,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.ResetPasswordDTO)
 
 	// Verify token
-	token, err := service.UserRepo.GetPasswordResetToken(context.Request().Context(), dto.Token)
+	token, err := service.userPort.GetPasswordResetToken(context.Request().Context(), dto.Token)
 	if err != nil {
 		utils.Error("Invalid password reset token",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -265,7 +273,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	}
 
 	// Update password
-	if err := service.UserRepo.UpdateUserPassword(context.Request().Context(), db.UpdateUserPasswordParams{
+	if err := service.userPort.UpdateUserPassword(context.Request().Context(), db.UpdateUserPasswordParams{
 		Email:    pgtype.Text{String: dto.Email, Valid: true},
 		Password: hashedPassword,
 	}); err != nil {
@@ -275,7 +283,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	}
 
 	// Mark token as used
-	if err := service.UserRepo.MarkResetTokenUsed(context.Request().Context(), token.ID); err != nil {
+	if err := service.userPort.MarkResetTokenUsed(context.Request().Context(), token.ID); err != nil {
 		utils.Error("Failed to mark reset token as used",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "token_id", Value: token.ID})
@@ -294,7 +302,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.EmailVerificationDTO)
 
 	// Get user by email
-	user, err := service.UserRepo.GetUserByEmail(
+	user, err := service.userPort.GetUserByEmail(
 		context.Request().Context(),
 		pgtype.Text{String: dto.Email, Valid: true},
 	)
@@ -305,7 +313,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	}
 
 	// Get and verify token
-	token, err := service.UserRepo.GetEmailVerificationToken(context.Request().Context(), dto.Token)
+	token, err := service.userPort.GetEmailVerificationToken(context.Request().Context(), dto.Token)
 	if err != nil {
 		utils.Error("Invalid verification token",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -327,7 +335,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	}
 
 	// Marked user as verified
-	err = service.UserRepo.MarkEmailAsVerified(context.Request().Context(), dto.Email)
+	err = service.userPort.MarkEmailAsVerified(context.Request().Context(), dto.Email)
 	if err != nil {
 		utils.Error("Failed to mark user as verified",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -336,7 +344,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	}
 
 	// Mark token as used
-	if err := service.UserRepo.MarkEmailVerificationTokenUsed(context.Request().Context(), token.ID); err != nil {
+	if err := service.userPort.MarkEmailVerificationTokenUsed(context.Request().Context(), token.ID); err != nil {
 		utils.Error("Failed to mark verification token as used",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "token_id", Value: token.ID})
@@ -356,7 +364,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.ResendVerificationDTO)
 
 	// Get user by email
-	user, err := service.UserRepo.GetUserByEmail(
+	user, err := service.userPort.GetUserByEmail(
 		context.Request().Context(),
 		pgtype.Text{String: dto.Email, Valid: true},
 	)
@@ -377,7 +385,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	}
 
 	// Save token to database
-	_, err = service.UserRepo.CreateEmailVerificationToken(
+	_, err = service.userPort.CreateEmailVerificationToken(
 		context.Request().Context(),
 		verificationParams,
 	)
@@ -392,7 +400,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	escapedEmail := url.QueryEscape(user.Email.String)
 	emaildata := &emails.EmailVerificationData{
 		Name:             user.Fullname.String,
-		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.AppUrl, token, escapedEmail),
+		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.APP_URL, token, escapedEmail),
 		ExpiryDuration:   "24 hours",
 	}
 
@@ -448,7 +456,7 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 	}
 
 	// Check if user exists
-	user, err := service.UserRepo.GetUserByEmail(
+	user, err := service.userPort.GetUserByEmail(
 		context.Request().Context(),
 		pgtype.Text{String: tokenInfo.Email, Valid: true},
 	)
@@ -470,7 +478,7 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 			UserType: db.UserEnumPATIENT,
 		}
 
-		user, err = service.UserRepo.CreateUser(context.Request().Context(), newUser)
+		user, err = service.userPort.CreateUser(context.Request().Context(), newUser)
 		if err != nil {
 			utils.Error("Failed to create user from Google login",
 				utils.LogField{Key: "error", Value: err.Error()},
@@ -523,8 +531,14 @@ func (service *ServicesHandler) UpdateProfile(context echo.Context) error {
 		updateParams.PhoneNumber = pgtype.Text{String: dto.PhoneNumber, Valid: true}
 	}
 
-	updatedUser, err := service.UserRepo.UpdateUser(context.Request().Context(), updateParams)
+	updatedUser, err := service.userPort.UpdateUser(context.Request().Context(), updateParams)
 	if err != nil {
+		if err.Error() == "no rows in result set" {
+			utils.Error("Failed to update user profile",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "user_id", Value: currentUser.UserID})
+			return utils.ErrorResponse(http.StatusUnprocessableEntity, err, context)
+		}
 		utils.Error("Failed to update user profile",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: currentUser.UserID})
@@ -547,8 +561,14 @@ func (service *ServicesHandler) GetProfile(context echo.Context) error {
 	}
 
 	// Get user profile from database
-	user, err := service.UserRepo.GetUser(context.Request().Context(), currentUser.UserID.String())
+	user, err := service.userPort.GetUser(context.Request().Context(), currentUser.UserID.String())
 	if err != nil {
+		if err.Error() == "no rows in result set" {
+			utils.Error("Failed to get user profile",
+				utils.LogField{Key: "error", Value: err.Error()},
+				utils.LogField{Key: "user_id", Value: currentUser.UserID})
+			return utils.ErrorResponse(http.StatusNotFound, err, context)
+		}
 		utils.Error("Failed to get user profile",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: currentUser.UserID})
@@ -574,6 +594,42 @@ func (service *ServicesHandler) GetProfile(context echo.Context) error {
 	return utils.ResponseMessage(http.StatusOK, db_user, context)
 }
 
+func (service *ServicesHandler) ListManagers(context echo.Context) error {
+	// Get validated DTO from context
+	dto, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetManagerDTO)
+	// Get current user from context
+	admin, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
+	if err != nil {
+		utils.Error("Failed to get current user",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+	pagination := SetDefaultPagination(&domain.PaginationQueryDTO{
+		Page:    dto.PaginationQueryDTO.Page,
+		PerPage: dto.PaginationQueryDTO.PerPage,
+	})
+	response, err := service.userPort.ListManagersByadmin(context.Request().Context(), db.ListUsersByAdminParams{
+		CreatedAdmin: pgtype.UUID{Bytes: admin.UserID, Valid: true},
+		Limit:        pagination.GetLimit(),
+		Offset:       pagination.GetOffset(),
+		Column4:      !dto.Assigned,
+	})
+	if err != nil {
+		utils.Error("Failed to list managers",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: admin.UserID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+	if len(response) == 0 {
+		response = []*db.ListUsersByAdminRow{}
+	}
+	return utils.ResponseMessage(http.StatusOK, response, context)
+}
+
+func (service *ServicesHandler) OwnerKYC(context echo.Context) error {
+	return utils.ResponseMessage(http.StatusOK, map[string]string{"kyc": "KYC processed successfully"}, context)
+}
+
 func (service *ServicesHandler) createUserHelper(
 	context echo.Context,
 	arg db.CreateUserParams,
@@ -587,7 +643,7 @@ func (service *ServicesHandler) createUserHelper(
 	}
 
 	// Check if user exists
-	existingUser, _ := service.UserRepo.GetUserByEmail(
+	existingUser, _ := service.userPort.GetUserByEmail(
 		context.Request().Context(),
 		arg.Email,
 	)
@@ -598,7 +654,7 @@ func (service *ServicesHandler) createUserHelper(
 	}
 
 	// Create user
-	createdRow, err := service.UserRepo.CreateUser(context.Request().Context(), arg)
+	createdRow, err := service.userPort.CreateUser(context.Request().Context(), arg)
 	if err != nil {
 		utils.Error("Failed to create user",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -617,6 +673,5 @@ func (service *ServicesHandler) createUserHelper(
 		UpdatedAt:       createdRow.UpdatedAt,
 		Fullname:        createdRow.Fullname,
 	}
-
 	return user, nil
 }

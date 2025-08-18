@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/domain"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

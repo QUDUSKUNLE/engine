@@ -1,7 +1,7 @@
 GOBASE=$(shell pwd)
 GOBIN=$(GOBASE)/bin
 
-.PHONY: setup generate migrate-up migrate-down
+.PHONY: setup generate migrate-up migrate-up-online migrate-down 
 
 SQLC_VERSION=v1.27.0
 MIGRATE_VERSION=v4.17.0
@@ -17,8 +17,14 @@ generate:
 migrate-up:
 	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgres://abumuhsinah:abumuhsinah@localhost:5432/medivue?sslmode=disable" up
 
+migrate-up-online:
+	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgresql://diagnoxix_postgres_user:arrxOcvRhZjKBNmQn9HVuDBNRErF3gT7@dpg-d2dmhj95pdvs73f2ce90-a.frankfurt-postgres.render.com/diagnoxix_postgres?sslmode=require" up
+
 migrate-down:
 	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgres://abumuhsinah:abumuhsinah@localhost:5432/medivue?sslmode=disable" down
+
+migrate-down-online:
+	$(GOBIN)/migrate -path="adapters/db/migrations" -database "postgresql://diagnoxix_postgres_user:arrxOcvRhZjKBNmQn9HVuDBNRErF3gT7@dpg-d2dmhj95pdvs73f2ce90-a.frankfurt-postgres.render.com/diagnoxix_postgres?sslmode=require" down
 
 force-migrate:
 	@if [ -z "$(V)" ]; then \

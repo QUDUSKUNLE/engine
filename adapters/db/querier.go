@@ -64,6 +64,7 @@ type Querier interface {
 	Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*Get_Diagnostic_Centre_ByManagerRow, error)
 	// GetADiagnosticCentreByOwner :one
 	Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*Get_Diagnostic_Centre_ByOwnerRow, error)
+	Get_Diagnostic_Centre_Managers(ctx context.Context, arg Get_Diagnostic_Centre_ManagersParams) ([]*Get_Diagnostic_Centre_ManagersRow, error)
 	// Get Diagnostic Schedule
 	Get_Diagnostic_Schedule(ctx context.Context, arg Get_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	// Get Diagnostic Schedules
@@ -73,6 +74,7 @@ type Querier interface {
 	// Retrieves the nearest diagnostic centres based on latitude and longitude.
 	Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Nearest_Diagnostic_CentresParams) ([]*Get_Nearest_Diagnostic_CentresRow, error)
 	Get_Payment(ctx context.Context, id string) (*Payment, error)
+	ListUsersByAdmin(ctx context.Context, arg ListUsersByAdminParams) ([]*ListUsersByAdminRow, error)
 	// Retrieves all diagnostic records for a specific owner.
 	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*List_Diagnostic_Centres_ByOwnerRow, error)
 	List_Payments(ctx context.Context, arg List_PaymentsParams) ([]*Payment, error)
@@ -89,6 +91,7 @@ type Querier interface {
 	Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*Search_Diagnostic_Centres_ByDoctorRow, error)
 	UpdateAppointmentPayment(ctx context.Context, arg UpdateAppointmentPaymentParams) (*Appointment, error)
 	UpdateAppointmentStatus(ctx context.Context, arg UpdateAppointmentStatusParams) (*Appointment, error)
+	UpdateFilePath(ctx context.Context, arg UpdateFilePathParams) (*MedicalRecord, error)
 	// Uploader Update a Medical Record
 	// Updates a medical record by uploader, allowing partial updates to fields. Only the uploader can update their own records. Updates the 'updated_at' timestamp.
 	UpdateMedicalRecordByUploader(ctx context.Context, arg UpdateMedicalRecordByUploaderParams) (*MedicalRecord, error)

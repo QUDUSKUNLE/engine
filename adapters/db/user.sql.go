@@ -19,10 +19,11 @@ INSERT INTO users (
   user_type,
   phone_number,
   email_verified,
-  fullname
-) VALUES  (
-  $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number
+  fullname,
+  created_admin
+) VALUES (
+  $1, $2, $3, $4, $5, $6, $7, $8
+) RETURNING id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin
 `
 
 type CreateUserParams struct {
@@ -33,6 +34,7 @@ type CreateUserParams struct {
 	PhoneNumber   pgtype.Text `db:"phone_number" json:"phone_number"`
 	EmailVerified pgtype.Bool `db:"email_verified" json:"email_verified"`
 	Fullname      pgtype.Text `db:"fullname" json:"fullname"`
+	CreatedAdmin  pgtype.UUID `db:"created_admin" json:"created_admin"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, error) {
@@ -44,6 +46,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 		arg.PhoneNumber,
 		arg.EmailVerified,
 		arg.Fullname,
+		arg.CreatedAdmin,
 	)
 	var i User
 	err := row.Scan(
@@ -58,12 +61,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 		&i.EmailVerified,
 		&i.EmailVerifiedAt,
 		&i.PhoneNumber,
+		&i.CreatedAdmin,
 	)
 	return &i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users where id = $1
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin FROM users where id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (*User, error) {
@@ -81,12 +85,13 @@ func (q *Queries) GetUser(ctx context.Context, id string) (*User, error) {
 		&i.EmailVerified,
 		&i.EmailVerifiedAt,
 		&i.PhoneNumber,
+		&i.CreatedAdmin,
 	)
 	return &i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users WHERE email = $1
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error) {
@@ -104,12 +109,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (*User,
 		&i.EmailVerified,
 		&i.EmailVerifiedAt,
 		&i.PhoneNumber,
+		&i.CreatedAdmin,
 	)
 	return &i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number FROM users
+SELECT id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin FROM users
 ORDER BY id
 LIMIT $1 OFFSET $2
 `
@@ -140,6 +146,96 @@ func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, er
 			&i.EmailVerified,
 			&i.EmailVerifiedAt,
 			&i.PhoneNumber,
+			&i.CreatedAdmin,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsersByAdmin = `-- name: ListUsersByAdmin :many
+SELECT
+  u.id,
+  u.email,
+  u.nin,
+  u.user_type,
+  u.fullname,
+  u.phone_number,
+  u.email_verified,
+  u.email_verified_at,
+  u.created_at,
+  u.updated_at,
+  u.created_admin,
+  dc.id AS diagnostic_centre_id,
+  dc.diagnostic_centre_name AS diagnostic_centre_name
+FROM users u
+LEFT JOIN diagnostic_centres dc
+  ON u.id = dc.admin_id
+WHERE u.created_admin = $1
+  AND (
+      $4::boolean = FALSE
+      OR dc.diagnostic_centre_name IS NULL
+    )
+ORDER BY u.id
+LIMIT $2 OFFSET $3
+`
+
+type ListUsersByAdminParams struct {
+	CreatedAdmin pgtype.UUID `db:"created_admin" json:"created_admin"`
+	Limit        int32       `db:"limit" json:"limit"`
+	Offset       int32       `db:"offset" json:"offset"`
+	Column4      bool        `db:"column_4" json:"column_4"`
+}
+
+type ListUsersByAdminRow struct {
+	ID                   string             `db:"id" json:"id"`
+	Email                pgtype.Text        `db:"email" json:"email"`
+	Nin                  pgtype.Text        `db:"nin" json:"nin"`
+	UserType             UserEnum           `db:"user_type" json:"user_type"`
+	Fullname             pgtype.Text        `db:"fullname" json:"fullname"`
+	PhoneNumber          pgtype.Text        `db:"phone_number" json:"phone_number"`
+	EmailVerified        pgtype.Bool        `db:"email_verified" json:"email_verified"`
+	EmailVerifiedAt      pgtype.Timestamptz `db:"email_verified_at" json:"email_verified_at"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	CreatedAdmin         pgtype.UUID        `db:"created_admin" json:"created_admin"`
+	DiagnosticCentreID   pgtype.UUID        `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	DiagnosticCentreName pgtype.Text        `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+}
+
+func (q *Queries) ListUsersByAdmin(ctx context.Context, arg ListUsersByAdminParams) ([]*ListUsersByAdminRow, error) {
+	rows, err := q.db.Query(ctx, listUsersByAdmin,
+		arg.CreatedAdmin,
+		arg.Limit,
+		arg.Offset,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*ListUsersByAdminRow
+	for rows.Next() {
+		var i ListUsersByAdminRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Nin,
+			&i.UserType,
+			&i.Fullname,
+			&i.PhoneNumber,
+			&i.EmailVerified,
+			&i.EmailVerifiedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CreatedAdmin,
+			&i.DiagnosticCentreID,
+			&i.DiagnosticCentreName,
 		); err != nil {
 			return nil, err
 		}

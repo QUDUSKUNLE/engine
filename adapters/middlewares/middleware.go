@@ -3,17 +3,18 @@ package middlewares
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 const (
@@ -97,6 +98,12 @@ func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc 
 		}
 	}
 
+	if v, ok := dto.(*domain.UpgradeDTO); ok {
+		if v.Nin == "" && v.Passport == "" && v.DriverLicence == "" {
+			return errors.New("at least one of Nin, Passport, or DriverLicence must be provided")
+		}
+	}
+
 	if err := c.Validate(dto); err != nil {
 		return err
 	}
@@ -113,10 +120,9 @@ func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc 
 // handleMedicalRecordDTO processes form data for medical record creation
 func handleMedicalRecordDTO(c echo.Context, dto *domain.CreateMedicalRecordDTO) error {
 	fields := map[string]*uuid.UUID{
-		"user_id":           &dto.UserID,
-		"uploader_id":       &dto.UploaderID,
-		"schedule_id":       &dto.ScheduleID,
-		"uploader_admin_id": &dto.UploaderAdminID,
+		"user_id":              &dto.UserID,
+		"diagnostic_centre_id": &dto.DiagnosticCentreID,
+		"schedule_id":          &dto.ScheduleID,
 	}
 
 	for field, ptr := range fields {

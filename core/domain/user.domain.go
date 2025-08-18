@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/diagnoxix/adapters/db"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/medivue/adapters/db"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,7 +17,6 @@ type (
 	GoogleAuthDTO struct {
 		IDToken string `json:"id_token" validate:"required"`
 	}
-
 	// GoogleUserInfo represents the verified user info from Google
 	GoogleUserInfo struct {
 		Email         string `json:"email"`
@@ -26,8 +25,16 @@ type (
 		Picture       string `json:"picture"`
 		GoogleID      string `json:"sub"`
 	}
-
 	UserRegisterDTO struct {
+		FirstName       string      `json:"first_name" validate:"gte=3"`
+		LastName        string      `json:"last_name" validate:"gte=3"`
+		Email           string      `json:"email" validate:"email,required"`
+		Password        string      `json:"password" validate:"gte=6,lte=20,required"`
+		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required"`
+		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER"`
+		CreatedAdmin    uuid.UUID   `json:"created_admin" validate:"omitempty"`
+	}
+	RegisterationDTO struct {
 		FirstName       string      `json:"first_name" validate:"gte=3"`
 		LastName        string      `json:"last_name" validate:"gte=3"`
 		Email           string      `json:"email" validate:"email,required"`
@@ -36,9 +43,9 @@ type (
 		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER"`
 	}
 	DiagnosticCentreManagerRegisterDTO struct {
-		FirstName string      `json:"first_name" validate:"gte=3"`
-		LastName  string      `json:"last_name" validate:"gte=3"`
 		Email     string      `json:"email" validate:"email,required"`
+		LastName  string      `json:"last_name" validate:"gte=3,required"`
+		FirstName string      `json:"first_name" validate:"gte=3,required"`
 		UserType  db.UserEnum `json:"user_type" validate:"required,oneof=DIAGNOSTIC_CENTRE_MANAGER"`
 	}
 	UserSignInDTO struct {
@@ -47,13 +54,13 @@ type (
 	}
 	CurrentUserDTO struct {
 		UserID       uuid.UUID   `json:"user_id"`
-		DiagnosticID uuid.UUID   `json:"diagnostic_id"`
 		UserType     db.UserEnum `json:"user_type"`
+		DiagnosticID uuid.UUID   `json:"diagnostic_id"`
 	}
 	JwtCustomClaimsDTO struct {
 		UserID       uuid.UUID   `json:"user_id"`
-		DiagnosticID uuid.UUID   `json:"diagnostic_id"`
 		UserType     db.UserEnum `json:"user_type"`
+		DiagnosticID uuid.UUID   `json:"diagnostic_id"`
 		jwt.RegisteredClaims
 	}
 	ResetPasswordDTO struct {
@@ -82,38 +89,31 @@ type (
 		ExpiresAt time.Time
 		CreatedAt time.Time
 	}
-
 	ChangePasswordDTO struct {
 		CurrentPassword string `json:"current_password" validate:"required"`
 		NewPassword     string `json:"new_password" validate:"gte=6,lte=20,required"`
 		ConfirmPassword string `json:"confirm_password" validate:"eqfield=NewPassword,required"`
 	}
-
 	UpdateUserProfileDTO struct {
 		FirstName   string `json:"first_name" validate:"required,min=3"`
 		LastName    string `json:"last_name" validate:"required,min=3"`
 		Nin         string `json:"nin" validate:"omitempty,min=11"`
 		PhoneNumber string `json:"phone_number" validate:"omitempty,e164"`
 	}
-
 	GetUserProfileParamDTO struct {
 		UserID uuid.UUID `json:"user_id" validate:"required"`
 	}
-
 	DeactivateAccountDTO struct {
 		Password string `json:"password" validate:"required"`
 		Reason   string `json:"reason" validate:"omitempty"`
 	}
-
 	EmailVerificationDTO struct {
 		Email string `query:"email" validate:"email,required"`
 		Token string `query:"token" validate:"required"`
 	}
-
 	ResendVerificationDTO struct {
 		Email string `json:"email" validate:"email,required"`
 	}
-
 	EmailVerificationToken struct {
 		ID        string
 		Email     string
@@ -122,12 +122,28 @@ type (
 		ExpiresAt time.Time
 		CreatedAt time.Time
 	}
+	UpgradeDTO struct {
+		Nin           string `json:"nin" validate:"at_least_one"`
+		Passport      string `json:"passport" validate:"at_least_one"`
+		DriverLicence string `json:"driver_licence" validate:"at_least_one"`
+	}
 )
 
 func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {
 	password, err := HashPassword(user.Password)
 	if err != nil {
 		return db.CreateUserParams{}, err
+	}
+
+	// Handle created_admin as nullable UUID
+	var createdAdmin pgtype.UUID
+	if user.CreatedAdmin != uuid.Nil {
+		createdAdmin = pgtype.UUID{
+			Bytes: user.CreatedAdmin,
+			Valid: true,
+		}
+	} else {
+		createdAdmin = pgtype.UUID{Valid: false}
 	}
 	params := db.CreateUserParams{
 		Email:    pgtype.Text{String: user.Email, Valid: true},
@@ -137,10 +153,9 @@ func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {
 			String: strings.Trim(user.FirstName, "") + " " + strings.Trim(user.LastName, ""),
 			Valid:  true,
 		},
-		PhoneNumber: pgtype.Text{String: "", Valid: true},
+		PhoneNumber:  pgtype.Text{String: "", Valid: true},
+		CreatedAdmin: createdAdmin,
 	}
-
-	params.PhoneNumber = pgtype.Text{String: "", Valid: true}
 	return params, nil
 }
 

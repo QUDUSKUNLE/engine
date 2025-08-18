@@ -53,30 +53,27 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "message: Account deactivated successfully",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
                         "description": "Authentication required/Invalid password",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -117,21 +114,21 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "User not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -179,21 +176,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -252,7 +249,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -261,15 +258,15 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -299,33 +296,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "$ref": "#/definitions/handlers.AppointmentSwagger"
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Diagnostic centre or schedule not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -355,33 +352,27 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "$ref": "#/definitions/handlers.AppointmentSwagger"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized to view this appointment",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Appointment not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -418,39 +409,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "$ref": "#/definitions/handlers.AppointmentSwagger"
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized to update this appointment",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Appointment not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -498,33 +483,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid input data or appointment state",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized to cancel this appointment",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Appointment not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -563,21 +542,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "404": {
-                        "description": "Appointment not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -616,39 +595,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "$ref": "#/definitions/handlers.AppointmentSwagger"
                         }
                     },
                     "400": {
-                        "description": "Invalid input data or appointment state",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized to reschedule this appointment",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Appointment not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -686,21 +659,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -745,7 +724,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -754,21 +733,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -805,7 +790,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -814,21 +799,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -874,27 +865,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "$ref": "#/definitions/domain.AvailabilitySlot"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -932,15 +929,21 @@ const docTemplate = `{
                         "description": "No Content"
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1083,15 +1086,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid query parameters",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1139,27 +1142,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required/invalid token",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "User is not a diagnostic centre owner",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1197,7 +1194,7 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "maximum": 100,
+                        "maximum": 50,
                         "minimum": 1,
                         "type": "integer",
                         "default": 20,
@@ -1217,21 +1214,15 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "User is not a manager",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1288,33 +1279,33 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid input data/Email already exists",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
-                    "403": {
-                        "description": "Not a diagnostic centre owner",
+                    "409": {
+                        "description": "DUPLICATE_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.DUPLICATE_ERROR"
                         }
                     },
                     "422": {
-                        "description": "Invalid manager type",
+                        "description": "UNPROCESSED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNPROCESSED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1372,15 +1363,15 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1414,21 +1405,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid diagnostic centre ID format",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "404": {
-                        "description": "Diagnostic centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1484,33 +1475,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required/invalid token",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "User is not the owner of this diagnostic centre",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Diagnostic centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1554,27 +1539,21 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "User is not the owner",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Diagnostic centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1631,7 +1610,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of schedules",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -1640,33 +1619,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid diagnostic centre ID",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Diagnostic centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1720,33 +1693,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid ID format",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Schedule not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1804,39 +1771,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Schedule updated successfully",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "$ref": "#/definitions/handlers.ScheduleSwagger"
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Schedule not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -1894,33 +1855,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid input",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2013,27 +1968,21 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Access denied",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2124,27 +2073,21 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Access denied",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2190,27 +2133,21 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Access denied",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Diagnostic centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2268,15 +2205,15 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2318,33 +2255,27 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Schedule created successfully",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "$ref": "#/definitions/handlers.ScheduleSwagger"
                         }
                     },
                     "400": {
-                        "description": "Invalid schedule data/Invalid datetime format",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Insufficient permissions",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2384,39 +2315,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Schedule details retrieved successfully",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
                             "$ref": "#/definitions/handlers.ScheduleSwagger"
                         }
                     },
                     "400": {
-                        "description": "Invalid schedule ID",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not the schedule owner",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Schedule not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2475,33 +2400,27 @@ const docTemplate = `{
                         "description": "Schedule updated successfully with no content to return"
                     },
                     "400": {
-                        "description": "Invalid schedule data/Invalid datetime format",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not the schedule owner",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Schedule not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2542,27 +2461,21 @@ const docTemplate = `{
                         "description": "Schedule deleted successfully"
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not the schedule owner",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Schedule not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2617,36 +2530,81 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "token: JWT token for authentication",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
                         }
                     },
                     "400": {
-                        "description": "Invalid credentials",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Invalid email or password",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "User not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/managers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "List managers by admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of managers",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.ManagerSwagger"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2731,15 +2689,15 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2802,8 +2760,13 @@ const docTemplate = `{
                         "enum": [
                             "LAB_REPORT",
                             "PRESCRIPTION",
-                            "IMAGING",
                             "DISCHARGE_SUMMARY",
+                            "IMAGING",
+                            "VACCINATION",
+                            "ALLERGY",
+                            "SURGERY",
+                            "CHRONIC_CONDITION",
+                            "FAMILY_HISTORY",
                             "OTHER"
                         ],
                         "type": "string",
@@ -2850,19 +2813,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input data/file format",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "403": {
                         "description": "Insufficient permissions",
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "DUPLICATE_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DUPLICATE_ERROR"
                         }
                     },
                     "413": {
@@ -2872,9 +2841,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -2940,33 +2909,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid diagnostic centre ID",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized to access these records",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Diagnostic centre not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3012,33 +2975,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid record ID",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Access denied",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Record not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3094,33 +3051,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized to update this record",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Record not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3174,33 +3125,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid ID format",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Authentication required",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Not authorized to access this record",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "404": {
-                        "description": "Record not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3226,7 +3171,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.UserRegisterDTO"
+                            "$ref": "#/definitions/domain.RegisterationDTO"
                         }
                     }
                 ],
@@ -3238,21 +3183,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid input data/Email already exists",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
-                    "422": {
-                        "description": "Invalid user type/Validation failed",
+                    "409": {
+                        "description": "DUPLICATE_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.DUPLICATE_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3284,24 +3229,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "message: Reset link sent if email exists",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
                         }
                     },
                     "400": {
-                        "description": "Invalid email format",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3333,30 +3275,27 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "message: Verification email sent",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "404": {
-                        "description": "User not found",
+                        "description": "NOT_FOUND_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3388,30 +3327,27 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "message: Password reset successful",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
                         }
                     },
                     "400": {
-                        "description": "Invalid input/Expired token",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "422": {
-                        "description": "Password validation failed",
+                        "description": "UNPROCESSED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNPROCESSED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3432,30 +3368,27 @@ const docTemplate = `{
                 "summary": "Verify user email",
                 "responses": {
                     "200": {
-                        "description": "message: Email verified successfully",
+                        "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
                         }
                     },
                     "400": {
-                        "description": "Invalid input data",
+                        "description": "BAD_REQUEST",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
-                        "description": "Invalid or expired token",
+                        "description": "UNAUTHORIZED_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3943,6 +3876,8 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
+                "first_name",
+                "last_name",
                 "user_type"
             ],
             "properties": {
@@ -3983,6 +3918,49 @@ const docTemplate = `{
                 },
                 "fileSize": {
                     "type": "integer"
+                }
+            }
+        },
+        "domain.RegisterationDTO": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "email",
+                "password",
+                "user_type"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "last_name": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6
+                },
+                "user_type": {
+                    "enum": [
+                        "PATIENT",
+                        "DIAGNOSTIC_CENTRE_OWNER"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/db.UserEnum"
+                        }
+                    ]
                 }
             }
         },
@@ -4535,49 +4513,6 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.UserRegisterDTO": {
-            "type": "object",
-            "required": [
-                "confirm_password",
-                "email",
-                "password",
-                "user_type"
-            ],
-            "properties": {
-                "confirm_password": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 6
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string",
-                    "minLength": 3
-                },
-                "last_name": {
-                    "type": "string",
-                    "minLength": 3
-                },
-                "password": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 6
-                },
-                "user_type": {
-                    "enum": [
-                        "PATIENT",
-                        "DIAGNOSTIC_CENTRE_OWNER"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/db.UserEnum"
-                        }
-                    ]
-                }
-            }
-        },
         "domain.UserSignInDTO": {
             "type": "object",
             "required": [
@@ -4605,7 +4540,6 @@ const docTemplate = `{
                     "example": "2025-06-26T21:00:00Z"
                 },
                 "created_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-26T20:00:00Z"
                 },
@@ -4626,9 +4560,62 @@ const docTemplate = `{
                     "example": "pending"
                 },
                 "updated_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-26T20:30:00Z"
+                }
+            }
+        },
+        "handlers.BAD_REQUEST": {
+            "description": "BAD_REQUEST response for Swagger",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "example": "BAD_REQUEST"
+                        },
+                        "message": {
+                            "type": "string",
+                            "example": "Invalid request"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "handlers.DUPLICATE_ERROR": {
+            "description": "DUPLICATE_ERROR response for Swagger",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "example": "DUPLICATE_ERROR"
+                        },
+                        "message": {
+                            "type": "string",
+                            "example": "Duplicate error"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 409
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
@@ -4641,13 +4628,12 @@ const docTemplate = `{
                     "example": "123 Main St, Lagos"
                 },
                 "created_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-26T20:00:00Z"
                 },
                 "email": {
                     "type": "string",
-                    "example": "info@medivue.com"
+                    "example": "info@diagnoxix.com"
                 },
                 "id": {
                     "type": "string",
@@ -4670,26 +4656,35 @@ const docTemplate = `{
                     "example": "+2348000000000"
                 },
                 "updated_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-26T20:30:00Z"
                 }
             }
         },
         "handlers.ErrorResponse": {
-            "description": "Error response for Swagger",
+            "description": "UNAUTHORIZED_ERROR response for Swagger",
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "string",
-                    "example": "BAD_REQUEST"
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "example": "BAD_REQUEST"
+                        },
+                        "message": {
+                            "type": "string",
+                            "example": "Invalid request"
+                        }
+                    }
                 },
-                "details": {
-                    "type": "string"
+                "status": {
+                    "type": "integer",
+                    "example": 401
                 },
-                "message": {
-                    "type": "string",
-                    "example": "Invalid request"
+                "success": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
@@ -4710,11 +4705,37 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.INTERNAL_SERVER_ERROR": {
+            "description": "INTERNAL_SERVER_ERROR response for Swagger",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "example": "INTERNAL_SERVER_ERROR"
+                        },
+                        "message": {
+                            "type": "string",
+                            "example": "Internal Server Error"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
         "handlers.ManagerSwagger": {
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-27T12:00:00Z"
                 },
@@ -4735,7 +4756,6 @@ const docTemplate = `{
                     "example": "DIAGNOSTIC_CENTRE_MANAGER"
                 },
                 "updated_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-27T12:00:00Z"
                 }
@@ -4746,7 +4766,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-26T20:00:00Z"
                 },
@@ -4771,9 +4790,51 @@ const docTemplate = `{
                     "example": "user-001"
                 },
                 "updated_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-26T20:30:00Z"
+                }
+            }
+        },
+        "handlers.NOT_FOUND_ERROR": {
+            "description": "NOT_FOUND_ERROR response for Swagger",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "example": "NOT_FOUND_ERROR"
+                        },
+                        "message": {
+                            "type": "string",
+                            "example": "Data not found"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 404
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "handlers.SUCCESS_RESPONSE": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -4782,7 +4843,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-25T20:00:00Z"
                 },
@@ -4795,7 +4855,6 @@ const docTemplate = `{
                     "example": "sched-001"
                 },
                 "schedule_time": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-26T09:00:00Z"
                 },
@@ -4808,7 +4867,6 @@ const docTemplate = `{
                     "example": "Blood Test"
                 },
                 "updated_at": {
-                    "description": "format: date-time",
                     "type": "string",
                     "example": "2025-06-25T21:00:00Z"
                 },
@@ -4818,35 +4876,96 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.UNAUTHORIZED_ERROR": {
+            "description": "UNAUTHORIZED_ERROR response for Swagger",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "example": "UNAUTHORIZED_ERROR"
+                        },
+                        "message": {
+                            "type": "string",
+                            "example": "Unauthorized to perform this operation"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 401
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "handlers.UNPROCESSED_ERROR": {
+            "description": "UNPROCESSED_ERROR response for Swagger",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "example": "UNPROCESSED_ERROR"
+                        },
+                        "message": {
+                            "type": "string",
+                            "example": "Unprocessable entity"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 422
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
         "handlers.UserSwagger": {
             "description": "User response for Swagger",
             "type": "object",
             "properties": {
-                "created_at": {
-                    "description": "format: date-time",
-                    "type": "string",
-                    "example": "2025-06-27T12:00:00Z"
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "created_at": {
+                            "type": "string",
+                            "example": "2025-08-13T16:59:44.649447+01:00"
+                        },
+                        "email": {
+                            "type": "string",
+                            "example": "emi.user@diagnoxix.com"
+                        },
+                        "id": {
+                            "type": "string",
+                            "example": "9c6bd6fe-493c-4b0a-a186-085039d24bf0"
+                        },
+                        "nin": {
+                            "type": "string",
+                            "example": "null"
+                        },
+                        "updated_at": {
+                            "type": "string",
+                            "example": "2025-08-13T16:59:44.649447+01:00"
+                        }
+                    }
                 },
-                "email": {
-                    "type": "string",
-                    "example": "user@example.com"
+                "status": {
+                    "type": "integer",
+                    "example": 201
                 },
-                "full_name": {
-                    "type": "string",
-                    "example": "John Doe"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "user-001"
-                },
-                "role": {
-                    "type": "string",
-                    "example": "PATIENT"
-                },
-                "updated_at": {
-                    "description": "format: date-time",
-                    "type": "string",
-                    "example": "2025-06-27T12:00:00Z"
+                "success": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         }
@@ -4856,7 +4975,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "medivue-api-production.up.railway.app",
+	Host:             "diagnoxix.onrender.com",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Diagnoxix",

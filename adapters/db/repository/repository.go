@@ -1,9 +1,9 @@
 package repository
 
 import (
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/ports"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/ports"
 )
 
 type Repository struct {

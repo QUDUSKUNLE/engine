@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 // PaymentError represents a payment service error with context
@@ -350,7 +350,7 @@ func (s *ServicesHandler) IsPaymentVerificationError(err error) bool {
 func (s *ServicesHandler) CreatePayment(ctx echo.Context) error {
 	dto := ctx.Get(utils.ValidatedBodyDTO).(*domain.CreatePaymentDTO)
 	// Validate appointment exists and is in valid state
-	appointment, err := s.AppointmentRepo.GetAppointment(ctx.Request().Context(), dto.AppointmentID)
+	appointment, err := s.appointmentPort.GetAppointment(ctx.Request().Context(), dto.AppointmentID)
 	if err != nil {
 		if errors.Is(err, utils.ErrNotFound) {
 			return fmt.Errorf("appointment not found: %v", utils.ErrNotFound)
@@ -382,7 +382,7 @@ func (s *ServicesHandler) CreatePayment(ctx echo.Context) error {
 		return fmt.Errorf("invalid appointment ID: %v", utils.ErrBadRequest)
 	}
 
-	payment, err := s.PaymentRepo.CreatePayment(ctx.Request().Context(), db.Create_PaymentParams{
+	payment, err := s.paymentPort.CreatePayment(ctx.Request().Context(), db.Create_PaymentParams{
 		AppointmentID:      appointmentUUID.String(),
 		PatientID:          appointment.PatientID,
 		DiagnosticCentreID: appointment.DiagnosticCentreID,
@@ -400,7 +400,7 @@ func (s *ServicesHandler) CreatePayment(ctx echo.Context) error {
 // GetPayment retrieves a payment by ID
 func (s *ServicesHandler) GetPayment(ctx echo.Context) error {
 	dto := ctx.Get(utils.ValidatedQueryParamDTO).(*domain.GetPaymentDTO)
-	payment, err := s.PaymentRepo.GetPayment(ctx.Request().Context(), dto.PaymentID)
+	payment, err := s.paymentPort.GetPayment(ctx.Request().Context(), dto.PaymentID)
 	if err != nil {
 		if errors.Is(err, utils.ErrNotFound) {
 			return fmt.Errorf("payment not found: %v", utils.ErrNotFound)
@@ -453,7 +453,7 @@ func (s *ServicesHandler) ListPayments(ctx echo.Context) error {
 		params.Column5.Valid = true
 	}
 
-	payments, err := s.PaymentRepo.ListPayments(ctx.Request().Context(), params)
+	payments, err := s.paymentPort.ListPayments(ctx.Request().Context(), params)
 	if err != nil {
 		return fmt.Errorf("failed to list payments: %v", err)
 	}
@@ -465,7 +465,7 @@ func (s *ServicesHandler) ListPayments(ctx echo.Context) error {
 func (s *ServicesHandler) RPayment(ctx echo.Context) error {
 	// Get payment to validate it
 	dto := ctx.Get(utils.ValidatedBodyDTO).(*domain.RefundPaymentDTO)
-	payment, err := s.PaymentRepo.GetPayment(ctx.Request().Context(), dto.PaymentID)
+	payment, err := s.paymentPort.GetPayment(ctx.Request().Context(), dto.PaymentID)
 	if err != nil {
 		if errors.Is(err, utils.ErrNotFound) {
 			return fmt.Errorf("payment not found: %v", utils.ErrNotFound)
@@ -502,7 +502,7 @@ func (s *ServicesHandler) RPayment(ctx echo.Context) error {
 	}
 
 	// Process refund
-	refundedPayment, err := s.PaymentRepo.RefundPayment(ctx.Request().Context(), db.Refund_PaymentParams{
+	refundedPayment, err := s.paymentPort.RefundPayment(ctx.Request().Context(), db.Refund_PaymentParams{
 		ID:           dto.PaymentID,
 		RefundAmount: refundAmount,
 		RefundReason: pgtype.Text{String: dto.RefundReason, Valid: true},
@@ -528,7 +528,7 @@ func (s *ServicesHandler) HandlePaymentWebhook(ctx echo.Context) error {
 	}
 
 	// Update payment status
-	payment, err := s.PaymentRepo.UpdatePaymentStatus(ctx.Request().Context(), db.Update_Payment_StatusParams{
+	payment, err := s.paymentPort.UpdatePaymentStatus(ctx.Request().Context(), db.Update_Payment_StatusParams{
 		ID:              dto.PaymentID,
 		PaymentStatus:   db.PaymentStatus(dto.Status),
 		TransactionID:   pgtype.Text{String: dto.TransactionID, Valid: true},
@@ -547,7 +547,7 @@ func (s *ServicesHandler) HandlePaymentWebhook(ctx echo.Context) error {
 // VerifyPayment verifies a payment using Paystack and updates the payment status
 func (s *ServicesHandler) VerifyPayment(c echo.Context, reference string) error {
 	// Start transaction
-	tx, err := s.PaymentRepo.BeginWith(c.Request().Context())
+	tx, err := s.paymentPort.BeginWith(c.Request().Context())
 	if err != nil {
 		return &PaymentError{
 			Code:    ErrCodeSystemError,
@@ -646,7 +646,7 @@ func (s *ServicesHandler) verifyAndUpdatePaymentWithRetry(ctx context.Context, r
 	// Get payment by reference using retry
 	err = s.withRetry(ctx, "get_payment", func() error {
 		var err error
-		payment, err = s.PaymentRepo.GetPaymentByReference(ctx, reference)
+		payment, err = s.paymentPort.GetPaymentByReference(ctx, reference)
 		if err != nil {
 			if errors.Is(err, utils.ErrNotFound) {
 				return &PaymentError{
@@ -704,7 +704,7 @@ func (s *ServicesHandler) verifyAndUpdatePaymentWithRetry(ctx context.Context, r
 	}
 
 	// Update payment status with validated data
-	updatedPayment, err := s.PaymentRepo.UpdatePaymentStatus(ctx, db.Update_Payment_StatusParams{
+	updatedPayment, err := s.paymentPort.UpdatePaymentStatus(ctx, db.Update_Payment_StatusParams{
 		ID:              payment.ID,
 		PaymentStatus:   db.PaymentStatusSuccess,
 		TransactionID:   pgtype.Text{String: verificationResponse.Data.Reference, Valid: true},

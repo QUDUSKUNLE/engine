@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/ports"
 	"github.com/jackc/pgx/v5"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/ports"
 )
 
 // Ensure Repository implements AppointmentRepository

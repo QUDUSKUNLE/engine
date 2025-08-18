@@ -10,13 +10,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 var (
@@ -64,7 +64,7 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 		return nil, err
 	}
 
-	dto := &domain.CreateMedicalRecordDTO{}
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.CreateMedicalRecordDTO)
 	if err := c.Bind(dto); err != nil {
 		utils.Error("Failed to bind medical record data",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -87,9 +87,9 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 }
 
 // Helper to unmarshal address and contact, and build response
-func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_CentresRow, c echo.Context) (map[string]interface{}, error) {
+func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_CentresRow) (map[string]interface{}, error) {
 	var address domain.Address
-	if err := utils.UnmarshalJSONField(row.Address, &address, c); err != nil {
+	if err := utils.UnmarshalJSONField(row.Address, &address); err != nil {
 		utils.Error("Failed to unmarshal address",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "diagnostic_centre_id", Value: row.ID})
@@ -97,7 +97,7 @@ func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_Centres
 	}
 
 	var contact domain.Contact
-	if err := utils.UnmarshalJSONField(row.Contact, &contact, c); err != nil {
+	if err := utils.UnmarshalJSONField(row.Contact, &contact); err != nil {
 		utils.Error("Failed to unmarshal contact",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "diagnostic_centre_id", Value: row.ID})
@@ -105,7 +105,7 @@ func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_Centres
 	}
 
 	var price []domain.TestPrices
-	if err := utils.UnmarshalJSONField(row.TestPrices, &price, c); err != nil {
+	if err := utils.UnmarshalJSONField(row.TestPrices, &price); err != nil {
 		utils.Error("Failed to unmarshal Test Prices",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "diagnostic_centre_id", Value: row.ID})
@@ -150,15 +150,15 @@ func buildTestPrice(value *domain.CreateDiagnosticDTO, diagnostic_centre_id stri
 	return paramsList, nil
 }
 
-func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.CreateDiagnosticDTO) (*db.Create_Diagnostic_CentreParams, error) {
-	addressBytes, err := utils.MarshalJSONField(value.Address, context)
+func buildCreateDiagnosticCentreParams(value *domain.CreateDiagnosticDTO) (*db.Create_Diagnostic_CentreParams, error) {
+	addressBytes, err := utils.MarshalJSONField(value.Address)
 	if err != nil {
 		utils.Error("Failed to marshal address data",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return nil, err
 	}
 
-	contactBytes, err := utils.MarshalJSONField(value.Contact, context)
+	contactBytes, err := utils.MarshalJSONField(value.Contact)
 	if err != nil {
 		utils.Error("Failed to marshal contact data",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -193,15 +193,15 @@ func buildCreateDiagnosticCentreParams(context echo.Context, value *domain.Creat
 	return params, nil
 }
 
-func buildUpdateDiagnosticCentreByOwnerParams(context echo.Context, value *domain.UpdateDiagnosticBodyDTO) (*db.Update_Diagnostic_Centre_ByOwnerParams, error) {
-	addressBytes, err := utils.MarshalJSONField(value.Address, context)
+func buildUpdateDiagnosticCentreByOwnerParams(value *domain.UpdateDiagnosticBodyDTO) (*db.Update_Diagnostic_Centre_ByOwnerParams, error) {
+	addressBytes, err := utils.MarshalJSONField(value.Address)
 	if err != nil {
 		utils.Error("Failed to marshal address data for update",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return nil, err
 	}
 
-	contactBytes, err := utils.MarshalJSONField(value.Contact, context)
+	contactBytes, err := utils.MarshalJSONField(value.Contact)
 	if err != nil {
 		utils.Error("Failed to marshal contact data for update",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -262,7 +262,7 @@ func isValidUserType(allowedTypes []db.UserEnum, userType db.UserEnum) bool {
 // SetDefaultPagination sets default values for pagination parameters if not provided
 func SetDefaultPagination(params PaginationParams) PaginationParams {
 	if params.GetLimit() <= 0 {
-		params.SetLimit(10) // Default limit
+		params.SetLimit(50) // Default limit
 	}
 	if params.GetOffset() < 0 {
 		params.SetOffset(0) // Default offset

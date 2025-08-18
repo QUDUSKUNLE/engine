@@ -1,16 +1,16 @@
 package services
 
 import (
-	"github.com/medivue/adapters/config"
-	"github.com/medivue/adapters/db/repository"
+	"github.com/diagnoxix/adapters/config"
+	"github.com/diagnoxix/adapters/db/repository"
 )
 
-type Services struct {
+type Service struct {
 	Core *ServicesHandler
 }
 
 // InitializeServices creates and returns all services
-func InitializeServices(repos *repository.Repositories, cfg *config.Config) *Services {
+func InitializeServices(repos *repository.Repositories, cfg *config.EnvConfiguration) *Service {
 	core := ServicesAdapter(
 		repos.User,
 		repos.Schedule,
@@ -22,7 +22,7 @@ func InitializeServices(repos *repository.Repositories, cfg *config.Config) *Ser
 		repos.TestPrice,
 		*cfg,
 	)
-	return &Services{
+	return &Service{
 		Core: core,
 	}
 }

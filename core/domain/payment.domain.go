@@ -3,7 +3,7 @@ package domain
 import (
 	"time"
 
-	"github.com/medivue/adapters/db"
+	"github.com/diagnoxix/adapters/db"
 )
 
 const (

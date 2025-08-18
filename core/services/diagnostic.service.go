@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/adapters/ex/templates/emails"
+	"github.com/diagnoxix/adapters/metrics"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/adapters/ex/templates/emails"
-	"github.com/medivue/adapters/metrics"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) error {
@@ -26,7 +26,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateDiagnosticDTO)
 
 	// Build and validate parameters
-	params, err := buildCreateDiagnosticCentreParams(context, dto)
+	params, err := buildCreateDiagnosticCentreParams(dto)
 	if err != nil {
 		utils.Error("Failed to build diagnostic centre params",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -34,7 +34,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid diagnostic centre data")
 	}
 
-	admin, err := service.UserRepo.GetUser(context.Request().Context(), dto.AdminId.String())
+	admin, err := service.userPort.GetUser(context.Request().Context(), dto.AdminId.String())
 	if err != nil {
 		utils.Error("Failed to get admin",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -45,7 +45,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	params.CreatedBy = currentUser.UserID.String()
 
 	// Start transaction
-	tx, err := service.DiagnosticRepo.BeginDiagnostic(context.Request().Context())
+	tx, err := service.diagnosticPort.BeginDiagnostic(context.Request().Context())
 	if err != nil {
 		utils.Error("Failed to start diagnostic transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -94,7 +94,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
 
-	response, _ := utils.MarshalJSONField(test_price, context)
+	response, _ := utils.MarshalJSONField(test_price)
 
 	centreRow := &db.Get_Nearest_Diagnostic_CentresRow{
 		ID:                   diagnostic_centre.ID,
@@ -109,7 +109,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		UpdatedAt:            diagnostic_centre.UpdatedAt,
 		TestPrices:           response,
 	}
-	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+	res, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -138,11 +138,16 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 }
 
 func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error {
+	// Authentication & Authorization
+	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, utils.ErrUnauthorized, context)
+	}
 	// This validated at the middleware level
 	params, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticParamDTO)
 
 	// Get diagnostic centre
-	response, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), params.DiagnosticCentreID)
+	response, err := service.diagnosticPort.GetDiagnosticCentre(context.Request().Context(), params.DiagnosticCentreID)
 	if err != nil {
 		utils.Error("Failed to get diagnostic centre",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -170,7 +175,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 		Availability:         response.Availability,
 		TestPrices:           response.TestPrices,
 	}
-	res, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+	res, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -201,7 +206,7 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 		hasFilters = true
 	}
 
-	response, err := service.DiagnosticRepo.GetNearestDiagnosticCentres(context.Request().Context(), params)
+	response, err := service.diagnosticPort.GetNearestDiagnosticCentres(context.Request().Context(), params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -213,7 +218,7 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 	for _, v := range response {
 		// Map v to a DiagnosticCentre struct
 		diagnosticCentre := buildDiagnosticCentre(*v)
-		item, err := buildDiagnosticCentreResponseFromRow(diagnosticCentre, context)
+		item, err := buildDiagnosticCentreResponseFromRow(diagnosticCentre)
 		if err != nil {
 			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 		}
@@ -231,13 +236,13 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	}
 	body, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticBodyDTO)
 	param := context.Param(utils.DiagnosticCentreID)
-	dto, err := buildUpdateDiagnosticCentreByOwnerParams(context, body)
+	dto, err := buildUpdateDiagnosticCentreByOwnerParams(body)
 	if err != nil {
 		return err
 	}
 	dto.ID = param
 	dto.CreatedBy = currentUser.UserID.String()
-	response, err := service.DiagnosticRepo.UpdateDiagnosticCentreByOwner(context.Request().Context(), *dto)
+	response, err := service.diagnosticPort.UpdateDiagnosticCentreByOwner(context.Request().Context(), *dto)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotAcceptable, err, context)
 	}
@@ -272,7 +277,7 @@ func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) err
 	}
 
 	// First check if the diagnostic center exists and is owned by this user
-	_, err = service.DiagnosticRepo.GetDiagnosticCentreByOwner(context.Request().Context(), db.Get_Diagnostic_Centre_ByOwnerParams{
+	_, err = service.diagnosticPort.GetDiagnosticCentreByOwner(context.Request().Context(), db.Get_Diagnostic_Centre_ByOwnerParams{
 		ID:        parsedUUID.String(),
 		CreatedBy: currentUser.UserID.String(),
 	})
@@ -295,7 +300,7 @@ func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) err
 	}
 
 	// Attempt to delete
-	response, err := service.DiagnosticRepo.DeleteDiagnosticCentreByOwner(context.Request().Context(), params)
+	response, err := service.diagnosticPort.DeleteDiagnosticCentreByOwner(context.Request().Context(), params)
 	if err != nil {
 		utils.Error("Failed to delete diagnostic centre",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -332,7 +337,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 		Offset:    params.GetOffset(),
 	}
 
-	response, err := service.DiagnosticRepo.ListDiagnosticCentresByOwner(context.Request().Context(), dbParams)
+	response, err := service.diagnosticPort.ListDiagnosticCentresByOwner(context.Request().Context(), dbParams)
 	if err != nil {
 		utils.Error("Failed to list diagnostic centres",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -356,7 +361,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 			CreatedAt:            centre.CreatedAt,
 			UpdatedAt:            centre.UpdatedAt,
 		}
-		item, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+		item, err := buildDiagnosticCentreResponseFromRow(centreRow)
 		if err != nil {
 			return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 		}
@@ -377,7 +382,7 @@ func (service *ServicesHandler) GetDiagnosticCentreStats(context echo.Context) e
 	// Get diagnostic centre ID
 	param := context.Param(utils.DiagnosticCentreID)
 
-	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), param)
+	centre, err := service.diagnosticPort.GetDiagnosticCentre(context.Request().Context(), param)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
 	}
@@ -414,7 +419,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByManager(context echo.Conte
 	}
 
 	// Get diagnostic centres
-	centre, err := service.DiagnosticRepo.GetDiagnosticCentreByManager(context.Request().Context(), dbParams)
+	centre, err := service.diagnosticPort.GetDiagnosticCentreByManager(context.Request().Context(), dbParams)
 	if err != nil {
 		utils.Error("Failed to get diagnostic centres by manager",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -438,7 +443,7 @@ func (service *ServicesHandler) GetDiagnosticCentresByManager(context echo.Conte
 	}
 
 	// Build response
-	result, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+	result, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -459,7 +464,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 	managerDetails, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticManagerDTO)
 
 	// Verify ownership
-	_, err = service.DiagnosticRepo.GetDiagnosticCentreByOwner(context.Request().Context(), db.Get_Diagnostic_Centre_ByOwnerParams{
+	_, err = service.diagnosticPort.GetDiagnosticCentreByOwner(context.Request().Context(), db.Get_Diagnostic_Centre_ByOwnerParams{
 		ID:        centreID,
 		CreatedBy: currentUser.UserID.String(),
 	})
@@ -474,7 +479,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 		AdminID:   managerDetails.ManagerID,
 	}
 
-	response, err := service.DiagnosticRepo.UpdateDiagnosticCentreByOwner(context.Request().Context(), updateParams)
+	response, err := service.diagnosticPort.UpdateDiagnosticCentreByOwner(context.Request().Context(), updateParams)
 	if err != nil {
 		utils.Error("Failed to update diagnostic centre manager",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -494,7 +499,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 		CreatedAt:            response.CreatedAt,
 		UpdatedAt:            response.UpdatedAt,
 	}
-	result, err := buildDiagnosticCentreResponseFromRow(centreRow, context)
+	result, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
@@ -518,7 +523,7 @@ func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Contex
 	params = SetDefaultPagination(params).(*domain.GetDiagnosticSchedulesByCentreParamDTO)
 
 	// Verify centre exists
-	if _, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), centreID); err != nil {
+	if _, err := service.diagnosticPort.GetDiagnosticCentre(context.Request().Context(), centreID); err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
 	}
 
@@ -529,7 +534,7 @@ func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Contex
 		Limit:              params.GetLimit(),
 	}
 
-	schedules, err := service.ScheduleRepo.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
+	schedules, err := service.schedulePort.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
 	if err != nil {
 		utils.Error("Failed to retrieve schedules",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -560,7 +565,7 @@ func (service *ServicesHandler) GetDiagnosticCentreRecords(context echo.Context)
 	}
 	params = SetDefaultPagination(params).(*domain.GetDiagnosticRecordsParamDTO)
 
-	if _, err := service.DiagnosticRepo.GetDiagnosticCentre(context.Request().Context(), centreID); err != nil {
+	if _, err := service.diagnosticPort.GetDiagnosticCentre(context.Request().Context(), centreID); err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
 	}
 

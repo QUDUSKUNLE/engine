@@ -67,7 +67,7 @@ SET email_verified = true,
     email_verified_at = NOW(),
     updated_at = NOW()
 WHERE email = $1
-RETURNING id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number
+RETURNING id, email, nin, password, user_type, created_at, updated_at, fullname, email_verified, email_verified_at, phone_number, created_admin
 `
 
 func (q *Queries) MarkEmailAsVerified(ctx context.Context, email pgtype.Text) error {

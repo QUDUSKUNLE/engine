@@ -3,8 +3,8 @@ package jobs
 import (
 	"time"
 
+	"github.com/diagnoxix/core/ports"
 	"github.com/go-co-op/gocron"
-	"github.com/medivue/core/ports"
 )
 
 type ReminderJob struct {

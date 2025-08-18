@@ -398,3 +398,46 @@ GROUP BY
 ORDER BY
   distance_km ASC
 LIMIT 3;
+
+
+-- name: Get_Diagnostic_Centre_Managers :many
+SELECT
+  dc.id,
+  dc.diagnostic_centre_name,
+  dc.latitude,
+  dc.longitude,
+  dc.address,
+  dc.contact,
+  dc.doctors,
+  dc.available_tests,
+  dc.created_at,
+  dc.updated_at,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN LATERAL (
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'test_type', dctp.test_type,
+      'price', dctp.price
+    )
+  ) AS test_prices
+  FROM diagnostic_centre_test_prices dctp
+  WHERE dctp.diagnostic_centre_id = dc.id
+) prices ON true
+WHERE
+  dc.admin_id = $1
+GROUP BY
+  dc.id, prices.test_prices
+ORDER BY dc.created_at DESC
+LIMIT $2 OFFSET $3;

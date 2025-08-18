@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils/response"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils/response"
 	"go.uber.org/zap"
 )
 
@@ -55,6 +55,9 @@ func InitValidator() error {
 		return fmt.Errorf("failed to register min_one validator: %w", err)
 	}
 
+	if err := validate.RegisterValidation("at_least_one", atLeastOne); err != nil {
+		return fmt.Errorf("failed to register at_least_one validator: %w", err)
+	}
 	// Register validation for comparing times
 	validate.RegisterStructValidation(validateTimeComparison, domain.Slots{})
 
@@ -76,6 +79,11 @@ func validateMinOne(fl validator.FieldLevel) bool {
 		return field.Len() > 0
 	}
 	return false
+}
+
+func atLeastOne(fl validator.FieldLevel) bool {
+	u := fl.Parent().Interface().(domain.UpgradeDTO)
+	return u.Nin != "" || u.Passport != "" || u.DriverLicence != ""
 }
 
 // ValidateTime validates if a string is in either HH:MM format or ISO 8601
@@ -116,7 +124,6 @@ func ErrorResponse(status int, err error, c echo.Context) error {
 	if code == "" {
 		code = response.CodeInternalError
 	}
-
 	return response.Error(status, err, c, code)
 }
 
@@ -129,7 +136,7 @@ func ResponseMessage(status int, data interface{}, c echo.Context) error {
 }
 
 // MarshalJSONField marshals any struct to JSON with error handling
-func MarshalJSONField(field interface{}, c echo.Context) ([]byte, error) {
+func MarshalJSONField(field interface{}) ([]byte, error) {
 	data, err := json.Marshal(field)
 	if err != nil {
 		logger.Error("json marshal failed", zap.Error(err))
@@ -139,7 +146,7 @@ func MarshalJSONField(field interface{}, c echo.Context) ([]byte, error) {
 }
 
 // UnmarshalJSONField unmarshals JSON data with validation
-func UnmarshalJSONField(data []byte, v interface{}, c echo.Context) error {
+func UnmarshalJSONField(data []byte, v interface{}) error {
 	// Sanity check: handle empty or null values
 	s := strings.TrimSpace(string(data))
 	if len(s) == 0 || s == "null" {

@@ -364,6 +364,46 @@ func (q *Queries) GetUploaderMedicalRecords(ctx context.Context, arg GetUploader
 	return items, nil
 }
 
+const updateFilePath = `-- name: UpdateFilePath :one
+UPDATE medical_records
+SET
+  file_path = COALESCE($2, file_path),
+  updated_at = NOW()
+WHERE id = $1
+RETURNING id, user_id, uploader_id, uploader_type, schedule_id, title, document_type, file_path, file_type, document_date, uploaded_at, provider_name, specialty, is_shared, shared_until, created_at, updated_at, uploader_admin_id
+`
+
+type UpdateFilePathParams struct {
+	ID       string `db:"id" json:"id"`
+	FilePath string `db:"file_path" json:"file_path"`
+}
+
+func (q *Queries) UpdateFilePath(ctx context.Context, arg UpdateFilePathParams) (*MedicalRecord, error) {
+	row := q.db.QueryRow(ctx, updateFilePath, arg.ID, arg.FilePath)
+	var i MedicalRecord
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.UploaderID,
+		&i.UploaderType,
+		&i.ScheduleID,
+		&i.Title,
+		&i.DocumentType,
+		&i.FilePath,
+		&i.FileType,
+		&i.DocumentDate,
+		&i.UploadedAt,
+		&i.ProviderName,
+		&i.Specialty,
+		&i.IsShared,
+		&i.SharedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UploaderAdminID,
+	)
+	return &i, err
+}
+
 const updateMedicalRecordByUploader = `-- name: UpdateMedicalRecordByUploader :one
 UPDATE medical_records
 SET 

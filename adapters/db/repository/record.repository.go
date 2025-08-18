@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/ports"
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/ports"
 )
 
 // Ensure Repository implements RecordRepository
@@ -14,6 +14,10 @@ var _ ports.RecordRepository = (*Repository)(nil)
 func (r *Repository) CreateMedicalRecord(ctx context.Context, record db.CreateMedicalRecordParams) (*db.MedicalRecord, error) {
 	// TODO: implement the actual logic to create a medical record in the database
 	return r.database.CreateMedicalRecord(ctx, record)
+}
+
+func (r *Repository) UpdateFilePath(ctx context.Context, req db.UpdateFilePathParams) (*db.MedicalRecord, error) {
+	return r.database.UpdateFilePath(ctx, req)
 }
 
 // GetMedicalRecord implements the ports.RecordRepository interface.

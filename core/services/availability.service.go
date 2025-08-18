@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/diagnoxix/adapters/db"
+	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	"github.com/medivue/adapters/db"
-	"github.com/medivue/core/domain"
-	"github.com/medivue/core/utils"
 )
 
 const (
@@ -95,7 +95,7 @@ func (s *ServicesHandler) CreateAvailability(ctx echo.Context) error {
 		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
 	}
 
-	slot, err := s.AvailabilityRepo.CreateAvailability(ctx.Request().Context(), *params)
+	slot, err := s.availabilityPort.CreateAvailability(ctx.Request().Context(), *params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
 	}
@@ -165,7 +165,7 @@ func (s *ServicesHandler) UpdateAvailability(ctx echo.Context) error {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, ctx)
 	}
 
-	slot, err := s.AvailabilityRepo.UpdateAvailability(ctx.Request().Context(), *params)
+	slot, err := s.availabilityPort.UpdateAvailability(ctx.Request().Context(), *params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
 	}
@@ -255,7 +255,7 @@ func (s *ServicesHandler) UpdateManyAvailability(ctx echo.Context) error {
 		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
 	}
 
-	slots, err := s.AvailabilityRepo.UpdateManyAvailability(ctx.Request().Context(), params)
+	slots, err := s.availabilityPort.UpdateManyAvailability(ctx.Request().Context(), params)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
 	}
@@ -295,12 +295,12 @@ func (s *ServicesHandler) GetAvailability(ctx echo.Context) error {
 	}
 	var slots []*db.DiagnosticCentreAvailability
 	if params.Column2 == "" {
-		slots, err = s.AvailabilityRepo.GetDiagnosticAvailability(ctx.Request().Context(), params.DiagnosticCentreID)
+		slots, err = s.availabilityPort.GetDiagnosticAvailability(ctx.Request().Context(), params.DiagnosticCentreID)
 		if err != nil {
 			return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
 		}
 	} else {
-		slots, err = s.AvailabilityRepo.GetAvailability(ctx.Request().Context(), *params)
+		slots, err = s.availabilityPort.GetAvailability(ctx.Request().Context(), *params)
 		if err != nil {
 			return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
 		}

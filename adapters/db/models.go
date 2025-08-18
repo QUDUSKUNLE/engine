@@ -1029,4 +1029,5 @@ type User struct {
 	EmailVerified   pgtype.Bool        `db:"email_verified" json:"email_verified"`
 	EmailVerifiedAt pgtype.Timestamptz `db:"email_verified_at" json:"email_verified_at"`
 	PhoneNumber     pgtype.Text        `db:"phone_number" json:"phone_number"`
+	CreatedAdmin    pgtype.UUID        `db:"created_admin" json:"created_admin"`
 }
