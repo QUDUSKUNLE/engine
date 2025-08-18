@@ -30,7 +30,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateAppointmentDTO)
 
 	// Start transaction
-	tx, err := service.AppointmentRepo.BeginTx(context.Request().Context())
+	tx, err := service.appointmentPort.BeginTx(context.Request().Context())
 	if err != nil {
 		utils.Error("Failed to start transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -40,7 +40,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 
 	// Normalize test type format
 	testType := strings.ToUpper(strings.ReplaceAll(string(dto.TestType), " ", "_"))
-	if !service.AppointmentRepo.IsValidTestType(context.Request().Context(), testType) {
+	if !service.appointmentPort.IsValidTestType(context.Request().Context(), testType) {
 		utils.Error("Failed to validate test_type",
 			utils.LogField{Key: "error", Value: "Invalid test type"})
 		return utils.ErrorResponse(
@@ -111,7 +111,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	}
 
 	// Get User Email
-	user, err := service.UserRepo.GetUser(context.Request().Context(), currentUser.UserID.String())
+	user, err := service.userPort.GetUser(context.Request().Context(), currentUser.UserID.String())
 
 	if err != nil {
 		utils.Error("Failed to get user email",
@@ -215,7 +215,7 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	dto := context.Get(utils.ValidatedBodyDTO).(*domain.ConfirmAppointmentDTO)
 
 	// Start transaction
-	tx, err := service.AppointmentRepo.BeginTx(context.Request().Context())
+	tx, err := service.appointmentPort.BeginTx(context.Request().Context())
 	if err != nil {
 		utils.Error("Failed to start transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -235,7 +235,7 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	// Get appointment with retries
 	var appointment *db.Appointment
 	for retries := 0; retries < 3; retries++ {
-		appointment, err = service.AppointmentRepo.GetAppointment(context.Request().Context(), dto.AppointmentID)
+		appointment, err = service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
 		if err == nil {
 			break
 		}
@@ -340,7 +340,7 @@ func (service *ServicesHandler) GetAppointment(context echo.Context) error {
 	dto := context.Get(utils.ValidatedBodyDTO).(*domain.GetAppointmentDTO)
 
 	// Get appointment
-	appointment, err := service.AppointmentRepo.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	appointment, err := service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("appointment not found"), context)
 	}
@@ -394,7 +394,7 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 		Offset:             int32((dto.Page - 1) * dto.PageSize),
 	}
 
-	appointments, err := service.AppointmentRepo.ListAppointments(context.Request().Context(), params)
+	appointments, err := service.appointmentPort.ListAppointments(context.Request().Context(), params)
 	if err != nil {
 		utils.Error("Failed to list appointments",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -417,7 +417,7 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 	dto := context.Get(utils.ValidatedBodyDTO).(*domain.CancelAppointmentDTO)
 
 	// Verify appointment exists and belongs to user
-	appointment, err := service.AppointmentRepo.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	appointment, err := service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("appointment not found"), context)
 	}
@@ -439,12 +439,12 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 		CancellationFee:    toNumeric(0), // Fee could be configured based on business rules
 	}
 
-	err = service.AppointmentRepo.CancelAppointment(context.Request().Context(), dto.AppointmentID)
+	err = service.appointmentPort.CancelAppointment(context.Request().Context(), dto.AppointmentID)
 	if err != nil {
 		return err
 	}
 
-	cancelledAppointment, err := service.AppointmentRepo.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	cancelledAppointment, err := service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
 	if err != nil {
 		utils.Error("Failed to cancel appointment",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -470,7 +470,7 @@ func (service *ServicesHandler) RescheduleAppointment(context echo.Context) erro
 	dto := context.Get(utils.ValidatedBodyDTO).(*domain.RescheduleAppointmentDTO)
 
 	// Verify appointment exists and belongs to user
-	appointment, err := service.AppointmentRepo.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	appointment, err := service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("appointment not found"), context)
 	}
@@ -485,7 +485,7 @@ func (service *ServicesHandler) RescheduleAppointment(context echo.Context) erro
 	}
 
 	// Verify new schedule exists and is valid
-	newSchedule, err := service.ScheduleRepo.GetDiagnosticScheduleByCentre(context.Request().Context(), db.Get_Diagnsotic_Schedule_By_CentreParams{
+	newSchedule, err := service.schedulePort.GetDiagnosticScheduleByCentre(context.Request().Context(), db.Get_Diagnsotic_Schedule_By_CentreParams{
 		ID:                 dto.NewScheduleID,
 		DiagnosticCentreID: appointment.DiagnosticCentreID,
 	})
@@ -508,7 +508,7 @@ func (service *ServicesHandler) RescheduleAppointment(context echo.Context) erro
 		TimeSlot:           dto.NewTimeSlot,
 	}
 
-	rescheduledAppointment, err := service.AppointmentRepo.RescheduleAppointment(context.Request().Context(), params)
+	rescheduledAppointment, err := service.appointmentPort.RescheduleAppointment(context.Request().Context(), params)
 	if err != nil {
 		utils.Error("Failed to reschedule appointment",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -550,7 +550,7 @@ func (service *ServicesHandler) verifyAndUpdatePayment(ctx context.Context, prov
 	}
 
 	// Get payment by provider reference
-	payment, err := service.PaymentRepo.GetPaymentByReference(ctx, providerReference)
+	payment, err := service.paymentPort.GetPaymentByReference(ctx, providerReference)
 	if err != nil {
 		utils.Error("Failed to get payment by reference",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -561,7 +561,7 @@ func (service *ServicesHandler) verifyAndUpdatePayment(ctx context.Context, prov
 	// Update payment status with retries
 	var updatedPayment *db.Payment
 	for retries := 0; retries < 3; retries++ {
-		updatedPayment, err = service.PaymentRepo.UpdatePaymentStatus(ctx, db.Update_Payment_StatusParams{
+		updatedPayment, err = service.paymentPort.UpdatePaymentStatus(ctx, db.Update_Payment_StatusParams{
 			ID:              payment.ID,
 			PaymentStatus:   db.PaymentStatus(db.PaymentStatusSuccess),
 			TransactionID:   pgtype.Text{String: verificationResponse.Data.Reference, Valid: true},
@@ -591,7 +591,7 @@ func (service *ServicesHandler) verifyAndUpdatePayment(ctx context.Context, prov
 // Helper functions to send appointment emails
 func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db.Appointment) {
 	// Get patient details by email
-	_, err := service.UserRepo.GetUser(
+	_, err := service.userPort.GetUser(
 		context.Background(),
 		appointment.PatientID,
 	)
@@ -602,7 +602,7 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	}
 
 	// Get centre details
-	_, err = service.DiagnosticRepo.GetDiagnosticCentre(
+	_, err = service.diagnosticPort.GetDiagnosticCentre(
 		context.Background(),
 		appointment.DiagnosticCentreID,
 	)
@@ -613,7 +613,7 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	}
 
 	// Get schedule details for test type
-	_, err = service.ScheduleRepo.GetDiagnosticScheduleByCentre(
+	_, err = service.schedulePort.GetDiagnosticScheduleByCentre(
 		context.Background(),
 		db.Get_Diagnsotic_Schedule_By_CentreParams{
 			ID:                 appointment.ScheduleID,
@@ -648,7 +648,7 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	// }
 
 	// // Send email
-	// if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Confirmation", emailBody); err != nil {
+	// if err := service.notificationPort.SendEmail(patient.Email.String, "Appointment Confirmation", emailBody); err != nil {
 	// 	utils.Error("Failed to send confirmation email",
 	// 		utils.LogField{Key: "error", Value: err.Error()})
 	// }
@@ -660,7 +660,7 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 
 func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db.Appointment) {
 	// Get patient details by email
-	patient, err := service.UserRepo.GetUser(context.Background(), appointment.PatientID)
+	patient, err := service.userPort.GetUser(context.Background(), appointment.PatientID)
 	if err != nil {
 		utils.Error("Failed to get patient details for cancellation email",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -668,7 +668,7 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 	}
 
 	// Get centre details
-	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(
+	centre, err := service.diagnosticPort.GetDiagnosticCentre(
 		context.Background(),
 		appointment.DiagnosticCentreID,
 	)
@@ -697,7 +697,7 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 	// 	return
 	// }"
 
-	// if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Cancelled", body); err != nil {
+	// if err := service.notificationPort.SendEmail(patient.Email.String, "Appointment Cancelled", body); err != nil {
 	// 	utils.Error("Failed to send cancellation email",
 	// 		utils.LogField{Key: "error", Value: err.Error()})
 	// }
@@ -705,7 +705,7 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 
 func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.Appointment) {
 	// Get patient details by email
-	patient, err := service.UserRepo.GetUser(context.Background(), appointment.PatientID)
+	patient, err := service.userPort.GetUser(context.Background(), appointment.PatientID)
 	if err != nil {
 		utils.Error("Failed to get patient details for reschedule email",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -713,7 +713,7 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 	}
 
 	// Get centre details
-	centre, err := service.DiagnosticRepo.GetDiagnosticCentre(
+	centre, err := service.diagnosticPort.GetDiagnosticCentre(
 		context.Background(),
 		appointment.DiagnosticCentreID,
 	)
@@ -742,7 +742,7 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 	// 	return
 	// }
 
-	// if err := service.notificationService.SendEmail(patient.Email.String, "Appointment Rescheduled", body); err != nil {
+	// if err := service.notificationPort.SendEmail(patient.Email.String, "Appointment Rescheduled", body); err != nil {
 	// 	utils.Error("Failed to send reschedule email",
 	// 		utils.LogField{Key: "error", Value: err.Error()})
 	// }
@@ -751,7 +751,7 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 // notifyDiagnosticCentreOfNewAppointment notifies the diagnostic centre about a new appointment
 func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointment *db.Appointment, centre *db.DiagnosticCentre) {
 	// Get schedule details to get test type and doctor preference
-	schedule, err := service.ScheduleRepo.GetDiagnosticScheduleByCentre(context.Background(), db.Get_Diagnsotic_Schedule_By_CentreParams{
+	schedule, err := service.schedulePort.GetDiagnosticScheduleByCentre(context.Background(), db.Get_Diagnsotic_Schedule_By_CentreParams{
 		ID:                 appointment.ScheduleID,
 		DiagnosticCentreID: appointment.DiagnosticCentreID,
 	})
@@ -762,7 +762,7 @@ func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointme
 	}
 
 	// Get patient details
-	patient, err := service.UserRepo.GetUserByEmail(
+	patient, err := service.userPort.GetUserByEmail(
 		context.Background(),
 		pgtype.Text{String: appointment.PatientID, Valid: true},
 	)
@@ -803,7 +803,7 @@ func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointme
 	// }
 
 	// // Send email to diagnostic centre's primary email
-	// if err := service.notificationService.SendEmail(contact.Email, "New Appointment Confirmation", body); err != nil {
+	// if err := service.notificationPort.SendEmail(contact.Email, "New Appointment Confirmation", body); err != nil {
 	// 	utils.Error("Failed to send centre notification email",
 	// 		utils.LogField{Key: "error", Value: err.Error()})
 	// }
@@ -818,7 +818,7 @@ func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointme
 			patient.Fullname.String,
 			schedule.TestType,
 		)
-		if err := service.notificationService.SendSMS(phone, message); err != nil {
+		if err := service.notificationPort.SendSMS(phone, message); err != nil {
 			utils.Error("Failed to send SMS notification",
 				utils.LogField{Key: "error", Value: err.Error()},
 				utils.LogField{Key: "phone", Value: phone})

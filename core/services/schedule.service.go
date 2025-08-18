@@ -41,7 +41,7 @@ func (service *ServicesHandler) CreateSchedule(context echo.Context) error {
 		Doctor:             string(dto.Doctor),
 		Notes:              pgtype.Text{String: dto.Notes},
 	}
-	response, err := service.ScheduleRepo.CreateDiagnosticSchedule(context.Request().Context(), params)
+	response, err := service.schedulePort.CreateDiagnosticSchedule(context.Request().Context(), params)
 	if err != nil {
 		utils.Error("Failed to create diagnostic schedule",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -63,7 +63,7 @@ func (service *ServicesHandler) GetDiagnosticSchedule(context echo.Context) erro
 		ID:     param.ScheduleID.String(),
 		UserID: currentUser.UserID.String(),
 	}
-	response, err := service.ScheduleRepo.GetDiagnosticSchedule(context.Request().Context(), req)
+	response, err := service.schedulePort.GetDiagnosticSchedule(context.Request().Context(), req)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -87,7 +87,7 @@ func (service *ServicesHandler) GetDiagnosticSchedules(context echo.Context) err
 		Limit:  query.GetLimit(),
 		Offset: query.GetOffset(),
 	}
-	response, err := service.ScheduleRepo.GetDiagnosticSchedules(context.Request().Context(), req)
+	response, err := service.schedulePort.GetDiagnosticSchedules(context.Request().Context(), req)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -123,7 +123,7 @@ func (service *ServicesHandler) UpdateDiagnosticSchedule(context echo.Context) e
 		Doctor:         string(dto.Doctor),
 		UserID:         currentUser.UserID.String(),
 	}
-	response, err := service.ScheduleRepo.UpdateDiagnosticSchedule(context.Request().Context(), body)
+	response, err := service.schedulePort.UpdateDiagnosticSchedule(context.Request().Context(), body)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -144,7 +144,7 @@ func (service *ServicesHandler) GetDiagnosticScheduleByCentre(context echo.Conte
 		ID:                 param.ScheduleID.String(),
 		DiagnosticCentreID: param.DiagnosticCentreID.String(),
 	}
-	response, err := service.ScheduleRepo.GetDiagnosticScheduleByCentre(context.Request().Context(), req)
+	response, err := service.schedulePort.GetDiagnosticScheduleByCentre(context.Request().Context(), req)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
@@ -167,7 +167,7 @@ func (service *ServicesHandler) GetDiagnosticSchedulesByCentre(context echo.Cont
 		Offset:             param.GetOffset(),
 		Limit:              param.GetLimit(),
 	}
-	response, err := service.ScheduleRepo.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
+	response, err := service.schedulePort.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
 	if err != nil {
 		switch {
 		case errors.Is(err, utils.ErrNotFound):
@@ -217,7 +217,7 @@ func (service *ServicesHandler) UpdateDiagnosticScheduleByCentre(context echo.Co
 		AcceptanceStatus:   body.AcceptanceStatus,
 		ID:                 schedule_id,
 	}
-	response, err := service.ScheduleRepo.UpdateDiagnosticScheduleByCentre(context.Request().Context(), req)
+	response, err := service.schedulePort.UpdateDiagnosticScheduleByCentre(context.Request().Context(), req)
 	if err != nil {
 		// Handle specific error cases
 		switch {

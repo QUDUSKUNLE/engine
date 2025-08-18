@@ -11,27 +11,28 @@ import (
 )
 
 type ServicesHandler struct {
-	UserRepo            ports.UserRepository
-	ScheduleRepo        ports.ScheduleRepository
-	DiagnosticRepo      ports.DiagnosticRepository
-	RecordRepo          ports.RecordRepository
-	AvailabilityRepo    ports.AvailabilityRepository
-	PaymentRepo         ports.PaymentRepository
-	AppointmentRepo     ports.AppointmentRepository
-	TestPriceRepo       ports.TestPriceRepository
-	FileRepo            ports.FileService
-	notificationService ports.NotificationService
-	Config              config.EnvConfiguration
+	userPort         ports.UserRepository
+	schedulePort     ports.ScheduleRepository
+	diagnosticPort   ports.DiagnosticRepository
+	recordPort       ports.RecordRepository
+	availabilityPort ports.AvailabilityRepository
+	paymentPort      ports.PaymentRepository
+	appointmentPort  ports.AppointmentRepository
+	testPricePort    ports.TestPriceRepository
+	filePort         ports.FileService
+	notificationPort ports.NotificationService
+	Config           config.EnvConfiguration
 	// Payment Gateway
 	paymentService ports.PaymentProviderService
-	aiService      ports.AIService
+
+	aiPort *ai.AIAdaptor
 }
 
 func ServicesAdapter(
 	useRepo ports.UserRepository,
-	scheduleRepo ports.ScheduleRepository,
+	schedulePort ports.ScheduleRepository,
 	diagnosticCentreRepo ports.DiagnosticRepository,
-	availabilityRepo ports.AvailabilityRepository,
+	availabilityPort ports.AvailabilityRepository,
 	record ports.RecordRepository,
 	paymentPort ports.PaymentRepository,
 	appointmentPort ports.AppointmentRepository,
@@ -39,15 +40,15 @@ func ServicesAdapter(
 	conn config.EnvConfiguration,
 ) *ServicesHandler {
 	return &ServicesHandler{
-		UserRepo:         useRepo,
-		ScheduleRepo:     scheduleRepo,
-		DiagnosticRepo:   diagnosticCentreRepo,
-		AvailabilityRepo: availabilityRepo,
-		PaymentRepo:      paymentPort,
-		AppointmentRepo:  appointmentPort,
-		RecordRepo:       record,
-		TestPriceRepo:    testPriceRepo,
-		notificationService: ex.NewNotificationAdapter(&ex.EmailConfig{
+		userPort:         useRepo,
+		schedulePort:     schedulePort,
+		diagnosticPort:   diagnosticCentreRepo,
+		availabilityPort: availabilityPort,
+		paymentPort:      paymentPort,
+		appointmentPort:  appointmentPort,
+		recordPort:       record,
+		testPricePort:    testPriceRepo,
+		notificationPort: ex.NewNotificationAdapter(&ex.EmailConfig{
 			Host:      conn.EMAIL_HOST,
 			Port:      func() int { p, _ := strconv.Atoi(conn.EMAIL_PORT); return p }(),
 			Username:  conn.EMAIL_USERNAME,
@@ -59,8 +60,16 @@ func ServicesAdapter(
 			SecretKey: conn.PAYSTACK_SECRET_KEY,
 			BaseURL:   conn.PAYSTACK_BASE_URL,
 		}),
-		Config:    conn,
-		aiService: ai.NewAIAdaptor(conn.OPEN_API_KEY),
-		FileRepo: ex.NewLocalFileService(),
+		Config: conn,
+		aiPort: ai.NewAIAdaptor(
+			conn.OPEN_API_KEY,
+			ai.WithOCR(ai.NewTesseractOCR()),
+			ai.WithAnomalyDetector(ai.NewAnomalyDetection()),
+			ai.WithReportGenerator(ai.NewAutomatedReport()),
+			ai.WithDecisionSupport(ai.NewDecisionSupport()),
+			ai.WithImageAnalyzer(ai.NewImageAnalysis()),
+			ai.WithPackageAnalyzer(ai.NewPackageAnalysis()),
+		),
+		filePort: ex.NewLocalFileService(),
 	}
 }

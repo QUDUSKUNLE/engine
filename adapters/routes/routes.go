@@ -18,6 +18,6 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 	AppointmentRoutes(public, handler)
 	PaymentRoutes(public, handler)
 	AvailabilityRoutes(public, handler)
-	AIRoutes(public, handler)
+	// AIRoutes(public, handler)
 	return public
 }
