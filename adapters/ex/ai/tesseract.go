@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"github.com/diagnoxix/core/ports"
-	"github.com/diagnoxix/core/utils"
-	"github.com/otiai10/gosseract/v2"
 	"golang.org/x/net/html"
 )
 
@@ -16,23 +14,8 @@ type TesseractOCR struct{}
 var _ ports.OCR = (*TesseractOCR)(nil)
 
 func (t *TesseractOCR) Parse(ctx context.Context, imgURL []byte) ([]ports.OCRWord, error) {
-	cli := gosseract.NewClient()
-	defer cli.Close()
 
-	utils.Info("Starting file Parsing using OCR",
-		utils.LogField{Key: "file_size", Value: len(imgURL)})
-
-	cli.SetImageFromBytes(imgURL)
-	cli.SetLanguage("eng")
-	cli.SetPageSegMode(gosseract.PSM_AUTO) // detect blocks, lines, words automatically
-	cli.SetVariable("tessedit_char_whitelist", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-	hocr, err := cli.HOCRText()
-	if err != nil {
-		return nil, err
-	}
-
-	return parseHOCR(hocr), nil
+	return parseHOCR(""), nil
 }
 
 // --- HOCR parsing helper ---
