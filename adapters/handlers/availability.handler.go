@@ -9,6 +9,8 @@ import (
 // @Tags Availability
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param availability body domain.CreateAvailabilityDTO true "Availability information"
 // @Success 201 {object} domain.AvailabilitySlot
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -26,7 +28,7 @@ func (handler *HTTPHandler) CreateAvailability(context echo.Context) error {
 // @Tags Availability
 // @Accept json
 // @Produce json
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param day_of_week query string false "Day of week" Enums(monday,tuesday,wednesday,thursday,friday,saturday,sunday)
 // @Success 200 {array} domain.AvailabilitySlot "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -43,7 +45,7 @@ func (handler *HTTPHandler) GetAvailability(context echo.Context) error {
 // @Tags Availability
 // @Accept json
 // @Produce json
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param day_of_week path string true "Day of week (monday, tuesday, etc.)"
 // @Param availability body domain.UpdateAvailabilityDTO true "Updated availability information"
 // @Success 200 {object} domain.AvailabilitySlot "SUCCESS_RESPONSE"
@@ -61,7 +63,7 @@ func (h *HTTPHandler) UpdateAvailability(c echo.Context) error {
 // @Tags Availability
 // @Accept json
 // @Produce json
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param availability body domain.UpdateManyAvailabilityDTO true "Updated availability information"
 // @Success 200 {array} domain.AvailabilitySlot "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -78,7 +80,7 @@ func (handler *HTTPHandler) UpdateManyAvailability(context echo.Context) error {
 // @Tags Availability
 // @Accept json
 // @Produce json
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID"
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param day_of_week path string true "Day of week (monday, tuesday, etc.)"
 // @Success 204 "No Content"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"

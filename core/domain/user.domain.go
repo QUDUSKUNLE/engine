@@ -26,21 +26,21 @@ type (
 		GoogleID      string `json:"sub"`
 	}
 	UserRegisterDTO struct {
-		FirstName       string      `json:"first_name" validate:"gte=3"`
-		LastName        string      `json:"last_name" validate:"gte=3"`
-		Email           string      `json:"email" validate:"email,required"`
-		Password        string      `json:"password" validate:"gte=6,lte=20,required"`
-		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required"`
-		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER"`
+		FirstName       string      `json:"first_name" validate:"gte=3" example:"FirstName"`
+		LastName        string      `json:"last_name" validate:"gte=3" example:"LastName"`
+		Email           string      `json:"email" validate:"email,required" example:"example@diagnoxix.com"`
+		Password        string      `json:"password" validate:"gte=6,lte=20,required" example:"Diagnoxix12345"`
+		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required" example:"Diagnoxix12345"`
+		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER" example:"PATIENT"`
 		CreatedAdmin    uuid.UUID   `json:"created_admin" validate:"omitempty"`
 	}
 	RegisterationDTO struct {
-		FirstName       string      `json:"first_name" validate:"gte=3"`
-		LastName        string      `json:"last_name" validate:"gte=3"`
-		Email           string      `json:"email" validate:"email,required"`
-		Password        string      `json:"password" validate:"gte=6,lte=20,required"`
-		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required"`
-		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER"`
+		FirstName       string      `json:"first_name" validate:"gte=3" example:"FirstName"`
+		LastName        string      `json:"last_name" validate:"gte=3" example:"LastName"`
+		Email           string      `json:"email" validate:"email,required" example:"example@diagnoxix.com"`
+		Password        string      `json:"password" validate:"gte=6,lte=20,required" example:"Diagnoxix12345"`
+		ConfirmPassword string      `json:"confirm_password" validate:"eqfield=Password,gte=6,lte=20,required" example:"Diagnoxix12345"`
+		UserType        db.UserEnum `json:"user_type" validate:"required,oneof=PATIENT DIAGNOSTIC_CENTRE_OWNER" example:"PATIENT"`
 	}
 	DiagnosticCentreManagerRegisterDTO struct {
 		Email     string      `json:"email" validate:"email,required"`
@@ -49,8 +49,8 @@ type (
 		UserType  db.UserEnum `json:"user_type" validate:"required,oneof=DIAGNOSTIC_CENTRE_MANAGER"`
 	}
 	UserSignInDTO struct {
-		Email    string `json:"email" validate:"email,required"`
-		Password string `json:"password" validate:"gte=6,lte=20,required"`
+		Email    string `json:"email" validate:"email,required" example:"example@diagnoxix.com"`
+		Password string `json:"password" validate:"gte=6,lte=20,required" example:"Diagnoxix12345"`
 	}
 	CurrentUserDTO struct {
 		UserID       uuid.UUID   `json:"user_id"`
@@ -64,15 +64,15 @@ type (
 		jwt.RegisteredClaims
 	}
 	ResetPasswordDTO struct {
-		Email           string `json:"email" validate:"email,required"`
-		Token           string `json:"token" validate:"required"`
-		NewPassword     string `json:"new_password" validate:"gte=6,lte=20,required"`
-		ConfirmPassword string `json:"confirm_password" validate:"eqfield=NewPassword,required"`
+		Email           string `json:"email" validate:"email,required" example:"example@diagnoxix.com"`
+		Token           string `json:"token" validate:"required" example:"1234556664uuuyy33uu3u4i4i4ooo3u3i"`
+		NewPassword     string `json:"new_password" validate:"gte=6,lte=20,required" example:"NewPAssword12345"`
+		ConfirmPassword string `json:"confirm_password" validate:"eqfield=NewPassword,required" example:"NewPAssword12345"`
 	}
 	GetProfileDTO struct{}
 
 	RequestPasswordResetDTO struct {
-		Email string `json:"email" validate:"email,required"`
+		Email string `json:"email" validate:"email,required" example:"resetpassword@diagnoxix.com"`
 	}
 
 	PasswordResetTokenDTO struct {
@@ -89,30 +89,25 @@ type (
 		ExpiresAt time.Time
 		CreatedAt time.Time
 	}
-	ChangePasswordDTO struct {
-		CurrentPassword string `json:"current_password" validate:"required"`
-		NewPassword     string `json:"new_password" validate:"gte=6,lte=20,required"`
-		ConfirmPassword string `json:"confirm_password" validate:"eqfield=NewPassword,required"`
-	}
 	UpdateUserProfileDTO struct {
-		FirstName   string `json:"first_name" validate:"required,min=3"`
-		LastName    string `json:"last_name" validate:"required,min=3"`
-		Nin         string `json:"nin" validate:"omitempty,min=11"`
-		PhoneNumber string `json:"phone_number" validate:"omitempty,e164"`
+		FirstName   string `json:"first_name" validate:"required,min=3" example:"FirstName"`
+		LastName    string `json:"last_name" validate:"required,min=3" example:"LastName"`
+		Nin         string `json:"nin" validate:"omitempty,min=11" example:"1234567891011"`
+		PhoneNumber string `json:"phone_number" validate:"omitempty,e164" example:"+23470311787767"`
 	}
 	GetUserProfileParamDTO struct {
-		UserID uuid.UUID `json:"user_id" validate:"required"`
+		UserID uuid.UUID `json:"user_id" validate:"required" example:"7512431d-5dad-4f37-8873-3e8ea8264e1c"`
 	}
 	DeactivateAccountDTO struct {
-		Password string `json:"password" validate:"required"`
-		Reason   string `json:"reason" validate:"omitempty"`
+		Password string `json:"password" validate:"required" example:"deativate01234"`
+		Reason   string `json:"reason" validate:"omitempty" example:"On Personal grounds. Thank you."`
 	}
 	EmailVerificationDTO struct {
 		Email string `query:"email" validate:"email,required"`
 		Token string `query:"token" validate:"required"`
 	}
 	ResendVerificationDTO struct {
-		Email string `json:"email" validate:"email,required"`
+		Email string `json:"email" validate:"email,required" example:"resendpasswordverification@diagnoxix.com"`
 	}
 	EmailVerificationToken struct {
 		ID        string

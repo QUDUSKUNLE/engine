@@ -48,7 +48,7 @@ func (handler *HTTPHandler) CreateDiagnosticCentreManager(context echo.Context) 
 // @Description Retrieve detailed information about a specific diagnostic centre
 // @Tags DiagnosticCentre
 // @Produce json
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID (UUID format)" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID (UUID format)" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre details retrieved successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
@@ -63,8 +63,8 @@ func (handler *HTTPHandler) GetDiagnosticCentre(context echo.Context) error {
 // @Description Search for diagnostic centres based on location, available doctors, and test types
 // @Tags DiagnosticCentre
 // @Produce json
-// @Param latitude query number true "Latitude (-90 to 90)" minimum(-90) maximum(90)
-// @Param longitude query number true "Longitude (-180 to 180)" minimum(-180) maximum(180)
+// @Param latitude query number true "Latitude (-90 to 90)" minimum(-90) maximum(90) default(25.06)
+// @Param longitude query number true "Longitude (-180 to 180)" minimum(-180) maximum(180) default(56.67)
 // @Param day_of_week query string true "Filter by day" Enums(monday,tuesday,wednesday,thursday,friday,saturday,sunday)
 // @Param doctor query string false "Filter by doctor specialization" Enums(Male,Female)
 // @Param available_tests query string false "Filter by available test type" Enums(BLOOD_TEST,URINE_TEST,X_RAY,MRI,CT_SCAN,ULTRASOUND,ECG,EEG,BIOPSY,SKIN_TEST,ALLERGY_TEST,GENETIC_TEST,IMMUNOLOGY_TEST,HORMONE_TEST,VIRAL_TEST,BACTERIAL_TEST,PARASITIC_TEST,FUNGAL_TEST,MOLECULAR_TEST,TOXICOLOGY_TEST,ECHO,COVID_19_TEST,OTHER,BLOOD_SUGAR_TEST,LIPID_PROFILE,HEMOGLOBIN_TEST,THYROID_TEST,LIVER_FUNCTION_TEST,KIDNEY_FUNCTION_TEST,URIC_ACID_TEST,VITAMIN_D_TEST,VITAMIN_B12_TEST,HEMOGRAM,COMPLETE_BLOOD_COUNT,BLOOD_GROUPING,HEPATITIS_B_TEST,HEPATITIS_C_TEST,HIV_TEST,MALARIA_TEST,DENGUE_TEST,TYPHOID_TEST,COVID_19_ANTIBODY_TEST,COVID_19_RAPID_ANTIGEN_TEST,COVID_19_RT_PCR_TEST,PREGNANCY_TEST)
@@ -86,7 +86,7 @@ func (handler *HTTPHandler) SearchDiagnosticCentre(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID (UUID format)" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID (UUID format)" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Param diagnostic_centre body domain.UpdateDiagnosticBodyDTO true "Updated diagnostic centre details"
 // @Success 200 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre updated successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -105,7 +105,7 @@ func (handler *HTTPHandler) UpdateDiagnosticCentre(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre deleted successfully"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
@@ -139,7 +139,7 @@ func (handler *HTTPHandler) GetDiagnosticCentresByOwner(context echo.Context) er
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} handlers.DiagnosticCentreSwagger "Centre statistics"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
@@ -174,7 +174,7 @@ func (handler *HTTPHandler) GetDiagnosticCentresByManager(context echo.Context) 
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Param manager_details body domain.UpdateDiagnosticManagerDTO true "Manager details"
 // @Success 200 {object} handlers.DiagnosticCentreSwagger "Manager updated successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -193,7 +193,7 @@ func (handler *HTTPHandler) UpdateDiagnosticCentreManager(context echo.Context) 
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Param start_date query string false "Filter by start date (YYYY-MM-DD)" format(date)
 // @Param end_date query string false "Filter by end date (YYYY-MM-DD)" format(date)
 // @Param status query string false "Filter by status" Enums(PENDING,ACCEPTED,REJECTED)
@@ -215,7 +215,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) e
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param start_date query string false "Filter by start date (YYYY-MM-DD)" format(date)
 // @Param end_date query string false "Filter by end date (YYYY-MM-DD)" format(date)
 // @Param document_type query string false "Filter by document type" Enums(LAB_REPORT,PRESCRIPTION,IMAGING,DISCHARGE_SUMMARY,OTHER)

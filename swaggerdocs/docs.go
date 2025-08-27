@@ -198,6 +198,11 @@ const docTemplate = `{
         },
         "/v1/appointments": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "List appointments with optional filters",
                 "consumes": [
                     "application/json"
@@ -212,13 +217,29 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Filter by diagnostic centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "pending",
+                            "confirmed",
+                            "in_progress",
+                            "completed",
+                            "cancelled",
+                            "rescheduled"
+                        ],
                         "type": "string",
-                        "description": "Filter by status (pending, confirmed, in_progress, completed, cancelled, rescheduled)",
+                        "description": "Filter by status",
                         "name": "status",
                         "in": "query"
                     },
@@ -236,12 +257,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "default": 1,
                         "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "default": 50,
                         "description": "Items per page",
                         "name": "page_size",
                         "in": "query"
@@ -330,6 +353,11 @@ const docTemplate = `{
         },
         "/v1/appointments/{appointment_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get an appointment by its ID",
                 "consumes": [
                     "application/json"
@@ -344,6 +372,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Appointment ID",
                         "name": "appointment_id",
                         "in": "path",
@@ -378,6 +414,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update an existing appointment's details",
                 "consumes": [
                     "application/json"
@@ -392,6 +433,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Appointment ID",
                         "name": "appointment_id",
                         "in": "path",
@@ -457,6 +506,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Appointment ID",
                         "name": "appointment_id",
                         "in": "path",
@@ -511,6 +561,11 @@ const docTemplate = `{
         },
         "/v1/appointments/{appointment_id}/confirm": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Confirm an appointment by its ID",
                 "consumes": [
                     "application/json"
@@ -525,6 +580,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Appointment ID",
                         "name": "appointment_id",
                         "in": "path",
@@ -564,6 +627,11 @@ const docTemplate = `{
         },
         "/v1/appointments/{appointment_id}/reschedule": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Reschedule an existing appointment to a new time",
                 "consumes": [
                     "application/json"
@@ -578,6 +646,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Appointment ID",
                         "name": "appointment_id",
                         "in": "path",
@@ -629,6 +705,11 @@ const docTemplate = `{
         },
         "/v1/availability": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new availability slot for the diagnostic centre",
                 "consumes": [
                     "application/json"
@@ -641,6 +722,13 @@ const docTemplate = `{
                 ],
                 "summary": "Create availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Availability information",
                         "name": "availability",
@@ -701,6 +789,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -773,6 +862,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -841,6 +931,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -911,6 +1002,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -964,6 +1056,7 @@ const docTemplate = `{
                         "maximum": 90,
                         "minimum": -90,
                         "type": "number",
+                        "default": 25.06,
                         "description": "Latitude (-90 to 90)",
                         "name": "latitude",
                         "in": "query",
@@ -973,6 +1066,7 @@ const docTemplate = `{
                         "maximum": 180,
                         "minimum": -180,
                         "type": "number",
+                        "default": 56.67,
                         "description": "Longitude (-180 to 180)",
                         "name": "longitude",
                         "in": "query",
@@ -1391,6 +1485,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID (UUID format)",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -1452,6 +1547,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID (UUID format)",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -1525,6 +1621,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -1585,6 +1682,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -1671,6 +1769,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -1679,6 +1778,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "098e4567-e89b-12d3-a456-426614174000",
                         "description": "Schedule ID",
                         "name": "schedule_id",
                         "in": "path",
@@ -1746,6 +1846,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -1754,6 +1855,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "234e4567-e89b-12d3-a456-426614174000",
                         "description": "Schedule ID",
                         "name": "schedule_id",
                         "in": "path",
@@ -1832,6 +1934,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -1906,7 +2009,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -2014,6 +2117,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -2119,6 +2223,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -2307,6 +2412,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Schedule ID (UUID format)",
                         "name": "schedule_id",
                         "in": "path",
@@ -2374,6 +2480,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Schedule ID (UUID format)",
                         "name": "schedule_id",
                         "in": "path",
@@ -2450,6 +2557,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Schedule ID (UUID format)",
                         "name": "schedule_id",
                         "in": "path",
@@ -2645,7 +2753,7 @@ const docTemplate = `{
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
-                        "default": 10,
+                        "default": 20,
                         "description": "Records per page",
                         "name": "per_page",
                         "in": "query"
@@ -2730,6 +2838,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "User ID",
                         "name": "user_id",
                         "in": "formData",
@@ -2738,6 +2847,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e2345-e89b-12d3-a456-426614174000",
                         "description": "Uploader ID (for diagnostic centres)",
                         "name": "uploader_id",
                         "in": "formData"
@@ -2745,6 +2855,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "673e9876-e89b-12d3-a456-426614174000",
                         "description": "Associated Schedule ID",
                         "name": "schedule_id",
                         "in": "formData"
@@ -2875,6 +2986,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -2961,6 +3073,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Medical Record ID",
                         "name": "record_id",
                         "in": "path",
@@ -3028,6 +3141,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "987e4567-e89b-12d3-a456-426614174000",
                         "description": "Medical Record ID",
                         "name": "record_id",
                         "in": "path",
@@ -3103,6 +3217,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "123e4567-e89b-12d3-a456-426614174000",
                         "description": "Medical Record ID",
                         "name": "record_id",
                         "in": "path",
@@ -3111,6 +3226,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
+                        "default": "675e4567-e89b-12d3-a456-426614174000",
                         "description": "Diagnostic Centre ID",
                         "name": "diagnostic_centre_id",
                         "in": "path",
@@ -3865,10 +3981,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "deativate01234"
                 },
                 "reason": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "On Personal grounds. Thank you."
                 }
             }
         },
@@ -3933,23 +4051,28 @@ const docTemplate = `{
                 "confirm_password": {
                     "type": "string",
                     "maxLength": 20,
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "Diagnoxix12345"
                 },
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "example@diagnoxix.com"
                 },
                 "first_name": {
                     "type": "string",
-                    "minLength": 3
+                    "minLength": 3,
+                    "example": "FirstName"
                 },
                 "last_name": {
                     "type": "string",
-                    "minLength": 3
+                    "minLength": 3,
+                    "example": "LastName"
                 },
                 "password": {
                     "type": "string",
                     "maxLength": 20,
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "Diagnoxix12345"
                 },
                 "user_type": {
                     "enum": [
@@ -3960,7 +4083,8 @@ const docTemplate = `{
                         {
                             "$ref": "#/definitions/db.UserEnum"
                         }
-                    ]
+                    ],
+                    "example": "PATIENT"
                 }
             }
         },
@@ -3971,7 +4095,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "resetpassword@diagnoxix.com"
                 }
             }
         },
@@ -4010,7 +4135,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "resendpasswordverification@diagnoxix.com"
                 }
             }
         },
@@ -4024,18 +4150,22 @@ const docTemplate = `{
             ],
             "properties": {
                 "confirm_password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "NewPAssword12345"
                 },
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "example@diagnoxix.com"
                 },
                 "new_password": {
                     "type": "string",
                     "maxLength": 20,
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "NewPAssword12345"
                 },
                 "token": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "1234556664uuuyy33uu3u4i4i4ooo3u3i"
                 }
             }
         },
@@ -4053,7 +4183,8 @@ const docTemplate = `{
                 "break_time": {
                     "description": "minutes",
                     "type": "integer",
-                    "minimum": 0
+                    "minimum": 0,
+                    "example": 10
                 },
                 "day_of_week": {
                     "type": "string",
@@ -4065,22 +4196,27 @@ const docTemplate = `{
                         "friday",
                         "saturday",
                         "sunday"
-                    ]
+                    ],
+                    "example": "monday"
                 },
                 "end_time": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2025-08-27T17:00:00.000Z"
                 },
                 "max_appointments": {
                     "type": "integer",
-                    "minimum": 0
+                    "minimum": 0,
+                    "example": 20
                 },
                 "slot_duration": {
                     "description": "minutes",
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 1,
+                    "example": 30
                 },
                 "start_time": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2025-08-27T09:00:00.000Z"
                 }
             }
         },
@@ -4498,18 +4634,22 @@ const docTemplate = `{
             "properties": {
                 "first_name": {
                     "type": "string",
-                    "minLength": 3
+                    "minLength": 3,
+                    "example": "FirstName"
                 },
                 "last_name": {
                     "type": "string",
-                    "minLength": 3
+                    "minLength": 3,
+                    "example": "LastName"
                 },
                 "nin": {
                     "type": "string",
-                    "minLength": 11
+                    "minLength": 11,
+                    "example": "1234567891011"
                 },
                 "phone_number": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+23470311787767"
                 }
             }
         },
@@ -4521,12 +4661,14 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "example@diagnoxix.com"
                 },
                 "password": {
                     "type": "string",
                     "maxLength": 20,
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "Diagnoxix12345"
                 }
             }
         },
@@ -4975,7 +5117,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "diagnoxix.onrender.com",
+	Host:             "127.0.0.1:7556",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Diagnoxix",

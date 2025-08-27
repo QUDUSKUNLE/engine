@@ -10,12 +10,12 @@ import (
 
 type (
 	Slots struct {
-		DayOfWeek       string    `json:"day_of_week" validate:"required,oneof=monday tuesday wednesday thursday friday saturday sunday"`
-		StartTime       time.Time `json:"start_time" validate:"required"`
-		EndTime         time.Time `json:"end_time" validate:"required,gtfield=StartTime"`
-		MaxAppointments int32     `json:"max_appointments" validate:"required,min=0"`
-		SlotDuration    int32     `json:"slot_duration" validate:"required,min=1"` // minutes
-		BreakTime       int32     `json:"break_time" validate:"required,min=0"`    // minutes
+		DayOfWeek       string    `json:"day_of_week" validate:"required,oneof=monday tuesday wednesday thursday friday saturday sunday" example:"monday"`
+		StartTime       time.Time `json:"start_time" validate:"required" example:"2025-08-27T09:00:00.000Z"`
+		EndTime         time.Time `json:"end_time" validate:"required,gtfield=StartTime" example:"2025-08-27T17:00:00.000Z"`
+		MaxAppointments int32     `json:"max_appointments" validate:"required,min=0" example:"20"`
+		SlotDuration    int32     `json:"slot_duration" validate:"required,min=1" example:"30"` // minutes
+		BreakTime       int32     `json:"break_time" validate:"required,min=0" example:"10"`    // minutes
 	}
 	AvailabilitySlot struct {
 		ID                 string `json:"id"`

@@ -40,6 +40,13 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			description: "Reset password",
 		},
 		{
+			method:      http.MethodPost,
+			path:        "/resend_verification",
+			handler:     handler.ResendVerification,
+			factory:     func() interface{} { return &domain.ResendVerificationDTO{} },
+			description: "Resend verification",
+		},
+		{
 			method:  http.MethodGet,
 			path:    "/verify_email",
 			handler: handler.VerifyEmail,

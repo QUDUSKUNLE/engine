@@ -28,7 +28,9 @@ func (h *HTTPHandler) CreateAppointment(c echo.Context) error {
 // @Tags Appointments
 // @Accept json
 // @Produce json
-// @Param appointment_id path string true "Appointment ID"
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} handlers.AppointmentSwagger "SUCCESS_RESPONSE"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
@@ -45,12 +47,14 @@ func (h *HTTPHandler) GetAppointment(c echo.Context) error {
 // @Tags Appointments
 // @Accept json
 // @Produce json
-// @Param diagnostic_centre_id query string false "Filter by diagnostic centre ID"
-// @Param status query string false "Filter by status (pending, confirmed, in_progress, completed, cancelled, rescheduled)"
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param diagnostic_centre_id query string false "Filter by diagnostic centre ID" default(123e4567-e89b-12d3-a456-426614174000)
+// @Param status query string false "Filter by status" Enums(pending, confirmed, in_progress, completed, cancelled, rescheduled)
 // @Param from_date query string false "Start date (RFC3339)"
 // @Param to_date query string false "End date (RFC3339)"
-// @Param page query int false "Page number"
-// @Param page_size query int false "Items per page"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Items per page" default(50)
 // @Success 200 {array} handlers.AppointmentSwagger "SUCCESS_RESPONSE"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
@@ -66,7 +70,9 @@ func (h *HTTPHandler) ListAppointments(c echo.Context) error {
 // @Tags Appointments
 // @Accept json
 // @Produce json
-// @Param appointment_id path string true "Appointment ID"
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param appointment body domain.UpdateAppointmentDTO true "Updated appointment details"
 // @Success 200 {object} handlers.AppointmentSwagger "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -85,7 +91,7 @@ func (h *HTTPHandler) UpdateAppointment(c echo.Context) error {
 // @Tags Appointments
 // @Accept json
 // @Produce json
-// @Param appointment_id path string true "Appointment ID"
+// @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param cancellation body domain.CancelAppointmentDTO true "Cancellation details"
 // @Success 200 {object} map[string]string "Cancellation success message"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -104,7 +110,9 @@ func (h *HTTPHandler) CancelAppointment(c echo.Context) error {
 // @Tags Appointments
 // @Accept json
 // @Produce json
-// @Param appointment_id path string true "Appointment ID"
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param reschedule body domain.RescheduleAppointmentDTO true "Rescheduling details"
 // @Success 200 {object} handlers.AppointmentSwagger "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -123,7 +131,9 @@ func (h *HTTPHandler) RescheduleAppointment(c echo.Context) error {
 // @Tags Appointments
 // @Accept json
 // @Produce json
-// @Param appointment_id path string true "Appointment ID"
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} map[string]string "Appointment confirmed successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"

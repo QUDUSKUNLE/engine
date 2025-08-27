@@ -12,9 +12,9 @@ import (
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param user_id formData string true "User ID" format(uuid)
-// @Param uploader_id formData string false "Uploader ID (for diagnostic centres)" format(uuid)
-// @Param schedule_id formData string false "Associated Schedule ID" format(uuid)
+// @Param user_id formData string true "User ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
+// @Param uploader_id formData string false "Uploader ID (for diagnostic centres)" format(uuid) default(123e2345-e89b-12d3-a456-426614174000)
+// @Param schedule_id formData string false "Associated Schedule ID" format(uuid) default(673e9876-e89b-12d3-a456-426614174000)
 // @Param title formData string true "Record title"
 // @Param document_type formData string true "Type of medical document" Enums(LAB_REPORT, PRESCRIPTION, DISCHARGE_SUMMARY, IMAGING, VACCINATION, ALLERGY, SURGERY, CHRONIC_CONDITION, FAMILY_HISTORY, OTHER)
 // @Param document_date formData string true "Date of the document" format(date)
@@ -40,7 +40,7 @@ func (handler *HTTPHandler) CreateMedicalRecord(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param record_id path string true "Medical Record ID" format(uuid)
+// @Param record_id path string true "Medical Record ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} handlers.MedicalRecordSwagger "Medical record details"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -59,7 +59,7 @@ func (handler *HTTPHandler) GetMedicalRecord(context echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param page query integer false "Page number" minimum(1) default(1)
-// @Param per_page query integer false "Records per page" minimum(1) maximum(100) default(10)
+// @Param per_page query integer false "Records per page" minimum(1) maximum(100) default(20)
 // @Param document_type query string false "Filter by document type" Enums(LAB_REPORT, PRESCRIPTION, IMAGING, DISCHARGE_SUMMARY, OTHER)
 // @Param from_date query string false "Filter by date from (YYYY-MM-DD)" format(date)
 // @Param to_date query string false "Filter by date to (YYYY-MM-DD)" format(date)
@@ -78,8 +78,8 @@ func (handler *HTTPHandler) GetMedicalRecords(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param record_id path string true "Medical Record ID" format(uuid)
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param record_id path string true "Medical Record ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(675e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} handlers.MedicalRecordSwagger "Medical record details"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -97,7 +97,7 @@ func (handler *HTTPHandler) GetUploaderMedicalRecord(context echo.Context) error
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Param page query integer false "Page number" minimum(1) default(1)
 // @Param per_page query integer false "Records per page" minimum(1) maximum(100) default(10)
 // @Success 200 {array} handlers.MedicalRecordSwagger "List of medical records"
@@ -118,7 +118,7 @@ func (handler *HTTPHandler) GetUploaderMedicalRecords(context echo.Context) erro
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param record_id path string true "Medical Record ID" format(uuid)
+// @Param record_id path string true "Medical Record ID" format(uuid) default(987e4567-e89b-12d3-a456-426614174000)
 // @Param record body domain.UpdateMedicalRecordDTO true "Updated record details"
 // @Success 200 {object} handlers.MedicalRecordSwagger "Record updated successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"

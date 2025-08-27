@@ -29,7 +29,7 @@ func (handler *HTTPHandler) CreateSchedule(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid)
+// @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} handlers.ScheduleSwagger "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -65,7 +65,7 @@ func (handler *HTTPHandler) GetSchedules(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid)
+// @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Param schedule body domain.UpdateScheduleDTO true "Updated schedule details"
 // @Success 200 {object} handlers.ScheduleSwagger "Schedule updated successfully"
 // @Success 204 {object} nil "Schedule updated successfully with no content to return"
@@ -85,7 +85,7 @@ func (handler *HTTPHandler) UpdateSchedule(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid)
+// @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Success 204 {object} nil "Schedule deleted successfully"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
@@ -102,8 +102,8 @@ func (handler *HTTPHandler) DeleteDiagnosticSchedule(context echo.Context) error
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
-// @Param schedule_id path string true "Schedule ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
+// @Param schedule_id path string true "Schedule ID" format(uuid) default(098e4567-e89b-12d3-a456-426614174000)
 // @Success 200 {object} handlers.ScheduleSwagger "Schedule details"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -121,7 +121,7 @@ func (handler *HTTPHandler) GetDiagnosticScheduleByCentre(context echo.Context) 
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
 // @Param limit query integer false "Number of records to return" minimum(1) maximum(100) default(10)
 // @Param offset query integer false "Number of records to skip" minimum(0) default(0)
 // @Success 200 {array} handlers.ScheduleSwagger "SUCCESS_RESPONSE"
@@ -142,8 +142,8 @@ func (handler *HTTPHandler) GetDiagnosticSchedulesByCentre(context echo.Context)
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid)
-// @Param schedule_id path string true "Schedule ID" format(uuid)
+// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
+// @Param schedule_id path string true "Schedule ID" format(uuid) default(234e4567-e89b-12d3-a456-426614174000)
 // @Param schedule body domain.UpdateDiagnosticScheduleByCentreDTO true "Updated schedule status"
 // @Success 200 {object} handlers.ScheduleSwagger "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
