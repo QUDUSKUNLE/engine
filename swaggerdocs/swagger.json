@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "127.0.0.1:7556",
+    "host": "diagnoxix.onrender.com",
     "basePath": "/",
     "paths": {
         "/v1/account": {
