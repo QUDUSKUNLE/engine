@@ -29,7 +29,7 @@ func MedicalRecordRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodGet,
 			path:        "/medical_records",
 			handler:     handler.GetMedicalRecords,
-			factory:     func() interface{} { return &domain.GetMedicalRecordsParamQueryDTO{} },
+			factory:     func() interface{} { return &domain.PaginationQueryDTO{} },
 			description: "Get all medical records",
 		},
 		{

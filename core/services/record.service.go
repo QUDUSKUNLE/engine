@@ -166,9 +166,9 @@ func (service *ServicesHandler) GetMedicalRecords(cont echo.Context) error {
 	}
 
 	// This validated at the middleware level
-	query, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.GetMedicalRecordsParamQueryDTO)
+	query, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.PaginationQueryDTO)
 
-	query = SetDefaultPagination(query).(*domain.GetMedicalRecordsParamQueryDTO)
+	query = SetDefaultPagination(query).(*domain.PaginationQueryDTO)
 
 	response, err := service.recordPort.GetMedicalRecords(cont.Request().Context(), db.GetMedicalRecordsParams{
 		UserID: user.UserID.String(),

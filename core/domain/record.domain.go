@@ -33,18 +33,13 @@ type (
 		RecordID uuid.UUID `json:"record_id" validate:"required,uuid" param:"record_id"`
 		UserID   uuid.UUID
 	}
-	GetMedicalRecordsParamQueryDTO struct {
-		Limit  int32 `query:"limit" validate:"omitempty,gte=0"`
-		Offset int32 `query:"offset" validate:"omitempty,gte=0"`
-	}
 	GetUploaderMedicalRecordParamsDTO struct {
 		RecordID           uuid.UUID `param:"record_id" validate:"required,uuid"`
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id" validate:"required,uuid"`
 	}
 	GetUploaderMedicalRecordsParamQueryDTO struct {
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id" validate:"required,uuid"`
-		Limit              int32     `query:"limit" validate:"omitempty,gte=0"`
-		Offset             int32     `query:"offset" validate:"omitempty,gte=0"`
+		PaginationQueryDTO
 	}
 	UpdateMedicalRecordDTO struct {
 		RecordID        uuid.UUID       `json:"record_id" validate:"required,uuid"`
@@ -64,42 +59,3 @@ type (
 	}
 )
 
-// GetLimit returns the limit value
-func (q *GetMedicalRecordsParamQueryDTO) GetLimit() int32 {
-	return q.Limit
-}
-
-// GetOffset returns the offset value
-func (q *GetMedicalRecordsParamQueryDTO) GetOffset() int32 {
-	return q.Offset
-}
-
-// SetLimit sets the limit value
-func (q *GetMedicalRecordsParamQueryDTO) SetLimit(limit int32) {
-	q.Limit = limit
-}
-
-// SetOffset sets the offset value
-func (q *GetMedicalRecordsParamQueryDTO) SetOffset(offset int32) {
-	q.Offset = offset
-}
-
-// GetLimit returns the limit value for uploader records
-func (q *GetUploaderMedicalRecordsParamQueryDTO) GetLimit() int32 {
-	return q.Limit
-}
-
-// GetOffset returns the offset value for uploader records
-func (q *GetUploaderMedicalRecordsParamQueryDTO) GetOffset() int32 {
-	return q.Offset
-}
-
-// SetLimit sets the limit value for uploader records
-func (q *GetUploaderMedicalRecordsParamQueryDTO) SetLimit(limit int32) {
-	q.Limit = limit
-}
-
-// SetOffset sets the offset value for uploader records
-func (q *GetUploaderMedicalRecordsParamQueryDTO) SetOffset(offset int32) {
-	q.Offset = offset
-}

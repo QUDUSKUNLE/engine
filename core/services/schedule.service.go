@@ -75,12 +75,9 @@ func (service *ServicesHandler) GetDiagnosticSchedules(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	query, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticSchedulesQueryDTO)
-	if !ok || query == nil {
-		query = &domain.GetDiagnosticSchedulesQueryDTO{}
-	}
+	query, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.PaginationQueryDTO)
 
-	query = SetDefaultPagination(query).(*domain.GetDiagnosticSchedulesQueryDTO)
+	query = SetDefaultPagination(query).(*domain.PaginationQueryDTO)
 
 	req := db.Get_Diagnostic_SchedulesParams{
 		UserID: currentUser.UserID.String(),

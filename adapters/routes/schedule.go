@@ -36,7 +36,7 @@ func ScheduleRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodGet,
 			path:        "/diagnostic_schedules",
 			handler:     handler.GetSchedules,
-			factory:     func() interface{} { return &domain.GetDiagnosticSchedulesQueryDTO{} },
+			factory:     func() interface{} { return &domain.PaginationQueryDTO{} },
 			description: "Get all schedules",
 		},
 	}

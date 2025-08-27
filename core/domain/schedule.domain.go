@@ -29,17 +29,12 @@ type (
 	GetDiagnosticScheduleParamDTO struct {
 		ScheduleID uuid.UUID `param:"schedule_id" validate:"uuid,required"`
 	}
-	GetDiagnosticSchedulesQueryDTO struct {
-		Limit  int32 `query:"limit" validate:"omitempty,gte=0"`
-		Offset int32 `query:"offset" validate:"omitempty,gte=0"`
-	}
 	GetDiagnosticSchedulesByCentreParamDTO struct {
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id" validate:"uuid,required"`
 		StartDate          time.Time `query:"start_date" validate:"omitempty" time_format:"2006-01-02"`
 		EndDate            time.Time `query:"end_date" validate:"omitempty" time_format:"2006-01-02"`
 		Status             string    `query:"status" validate:"omitempty,oneof=PENDING ACCEPTED REJECTED"`
-		Limit              int32     `query:"limit" validate:"omitempty,gte=0"`
-		Offset             int32     `query:"offset" validate:"omitempty,gte=0"`
+		PaginationQueryDTO
 	}
 	GetDiagnosticScheduleByCentreParamDTO struct {
 		ScheduleID         uuid.UUID `param:"schedule_id" validate:"uuid,required"`
@@ -50,42 +45,3 @@ type (
 	}
 )
 
-// GetLimit returns the limit value
-func (q *GetDiagnosticSchedulesQueryDTO) GetLimit() int32 {
-	return q.Limit
-}
-
-// GetOffset returns the offset value
-func (q *GetDiagnosticSchedulesQueryDTO) GetOffset() int32 {
-	return q.Offset
-}
-
-// SetLimit sets the Limit field.
-func (dto *GetDiagnosticSchedulesQueryDTO) SetLimit(limit int32) {
-	dto.Limit = limit
-}
-
-// SetOffset sets the Offset field.
-func (dto *GetDiagnosticSchedulesQueryDTO) SetOffset(offset int32) {
-	dto.Offset = offset
-}
-
-// GetLimit returns the limit value
-func (q *GetDiagnosticSchedulesByCentreParamDTO) GetLimit() int32 {
-	return q.Limit
-}
-
-// GetOffset returns the offset value
-func (q *GetDiagnosticSchedulesByCentreParamDTO) GetOffset() int32 {
-	return q.Offset
-}
-
-// SetLimit sets the Limit field.
-func (dto *GetDiagnosticSchedulesByCentreParamDTO) SetLimit(limit int32) {
-	dto.Limit = limit
-}
-
-// SetOffset sets the Offset field.
-func (dto *GetDiagnosticSchedulesByCentreParamDTO) SetOffset(offset int32) {
-	dto.Offset = offset
-}

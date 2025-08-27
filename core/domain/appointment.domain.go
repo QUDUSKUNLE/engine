@@ -49,8 +49,6 @@ type (
 		FromDate           time.Time         `query:"from_date" validate:"omitempty"`
 		ToDate             time.Time         `query:"to_date" validate:"omitempty,gtefield=FromDate"`
 		PaginationQueryDTO
-		Page               int               `query:"page" validate:"min=1"`
-		PageSize           int               `query:"page_size" validate:"min=1,max=100"`
 	}
 	// UpdateAppointmentDTO represents the request body for updating an appointment
 	UpdateAppointmentDTO struct {

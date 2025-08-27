@@ -384,14 +384,16 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 		statuses = append(statuses, db.AppointmentStatus(dto.Status))
 	}
 
+	param, _ := SetDefaultPagination(&dto.PaginationQueryDTO).(*domain.PaginationQueryDTO)
+
 	// Get appointments
 	params := db.GetCentreAppointmentsParams{
 		DiagnosticCentreID: dto.DiagnosticCentreID,
 		Column2:            statuses, // Status array
 		AppointmentDate:    toTimestamptz(dto.FromDate),
 		AppointmentDate_2:  toTimestamptz(dto.ToDate),
-		Limit:              int32(dto.PageSize),
-		Offset:             int32((dto.Page - 1) * dto.PageSize),
+		Limit:              param.GetLimit(),
+		Offset:             param.GetOffset(),
 	}
 
 	appointments, err := service.appointmentPort.ListAppointments(context.Request().Context(), params)

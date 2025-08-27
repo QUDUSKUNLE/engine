@@ -414,10 +414,11 @@ func (s *ServicesHandler) GetPayment(ctx echo.Context) error {
 func (s *ServicesHandler) ListPayments(ctx echo.Context) error {
 
 	dto := ctx.Get(utils.ValidatedQueryParamDTO).(*domain.ListPaymentsDTO)
+
+	param, _ := SetDefaultPagination(&dto.PaginationQueryDTO).(*domain.PaginationQueryDTO)
 	var params db.List_PaymentsParams
-	offset := (dto.Page - 1) * dto.PageSize
-	params.Limit = int32(dto.PageSize)
-	params.Offset = int32(offset)
+	params.Limit = param.GetLimit()
+	params.Offset = param.GetOffset()
 
 	// Handle diagnostic centre ID
 	if dto.DiagnosticCentreID != "" {

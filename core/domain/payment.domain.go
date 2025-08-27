@@ -47,8 +47,7 @@ type (
 		Status             db.PaymentStatus `query:"status" validate:"omitempty,oneof=pending success failed refunded cancelled"`
 		FromDate           time.Time        `query:"from_date" validate:"omitempty"`
 		ToDate             time.Time        `query:"to_date" validate:"omitempty,gtefield=FromDate"`
-		Page               int              `query:"page" validate:"min=1"`
-		PageSize           int              `query:"page_size" validate:"min=1,max=100"`
+		PaginationQueryDTO
 	}
 	// RefundPaymentDTO represents the request body for refunding a payment
 	RefundPaymentDTO struct {
