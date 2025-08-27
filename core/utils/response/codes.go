@@ -5,18 +5,18 @@ import "net/http"
 // Standard error codes
 const (
 	// Generic error codes
+	CodeNotFound        = "NOT_FOUND"
+	CodeForbidden       = "FORBIDDEN"
 	CodeBadRequest      = "BAD_REQUEST"
 	CodeUnauthorized    = "UNAUTHORIZED"
-	CodeForbidden       = "FORBIDDEN"
-	CodeNotFound        = "NOT_FOUND"
 	CodeInternalError   = "INTERNAL_ERROR"
-	CodeValidationError = "VALIDATION_ERROR"
 	CodeDuplicateError  = "DUPLICATE_ERROR"
+	CodeValidationError = "VALIDATION_ERROR"
 
 	// Authentication error codes
-	CodeInvalidCredentials = "INVALID_CREDENTIALS"
-	CodeTokenExpired       = "TOKEN_EXPIRED"
 	CodeInvalidToken       = "INVALID_TOKEN"
+	CodeTokenExpired       = "TOKEN_EXPIRED"
+	CodeInvalidCredentials = "INVALID_CREDENTIALS"
 
 	// Resource error codes
 	CodeResourceNotFound = "RESOURCE_NOT_FOUND"
@@ -29,40 +29,40 @@ const (
 
 // Error messages
 const (
-	MsgBadRequest         = "Invalid request"
-	MsgUnauthorized       = "Authentication required"
-	MsgForbidden          = "Permission denied"
 	MsgNotFound           = "Resource not found"
-	MsgInternalError      = "Internal server error"
-	MsgValidationError    = "Validation failed"
-	MsgInvalidCredentials = "Invalid email or password"
+	MsgForbidden          = "Permission denied"
+	MsgBadRequest         = "Invalid request"
 	MsgTokenExpired       = "Token has expired"
 	MsgInvalidToken       = "Invalid or malformed token"
-	MsgDuplicateError     = "Resource already exists"
+	MsgUnauthorized       = "Authentication required"
+	MsgInternalError      = "Internal server error"
 	MsgDatabaseError      = "Database operation failed"
+	MsgDuplicateError     = "Resource already exists"
+	MsgValidationError    = "Validation failed"
+	MsgInvalidCredentials = "Invalid email or password"
 )
 
 // HTTP status code to error code mapping
 var StatusToCode = map[int]string{
+	http.StatusNotFound:            CodeNotFound,
+	http.StatusConflict:            CodeDuplicateError,
+	http.StatusForbidden:           CodeForbidden,
 	http.StatusBadRequest:          CodeBadRequest,
 	http.StatusUnauthorized:        CodeUnauthorized,
-	http.StatusForbidden:           CodeForbidden,
-	http.StatusNotFound:            CodeNotFound,
 	http.StatusInternalServerError: CodeInternalError,
-	http.StatusConflict:            CodeDuplicateError,
 }
 
 // Error code to default message mapping
 var CodeToMessage = map[string]string{
-	CodeBadRequest:         MsgBadRequest,
-	CodeUnauthorized:       MsgUnauthorized,
-	CodeForbidden:          MsgForbidden,
 	CodeNotFound:           MsgNotFound,
-	CodeInternalError:      MsgInternalError,
-	CodeValidationError:    MsgValidationError,
-	CodeInvalidCredentials: MsgInvalidCredentials,
+	CodeForbidden:          MsgForbidden,
+	CodeBadRequest:         MsgBadRequest,
 	CodeTokenExpired:       MsgTokenExpired,
 	CodeInvalidToken:       MsgInvalidToken,
-	CodeDuplicateError:     MsgDuplicateError,
+	CodeUnauthorized:       MsgUnauthorized,
+	CodeInternalError:      MsgInternalError,
 	CodeDatabaseError:      MsgDatabaseError,
+	CodeDuplicateError:     MsgDuplicateError,
+	CodeValidationError:    MsgValidationError,
+	CodeInvalidCredentials: MsgInvalidCredentials,
 }

@@ -620,7 +620,7 @@ GROUP BY
   dc.created_at, dc.updated_at
 
 ORDER BY distance_km ASC
-LIMIT 10
+LIMIT $6 OFFSET $7
 `
 
 type Get_Nearest_Diagnostic_CentresParams struct {
@@ -629,6 +629,8 @@ type Get_Nearest_Diagnostic_CentresParams struct {
 	Doctors   []string    `db:"doctors" json:"doctors"`
 	Column4   interface{} `db:"column_4" json:"column_4"`
 	Column5   interface{} `db:"column_5" json:"column_5"`
+	Limit     int32       `db:"limit" json:"limit"`
+	Offset    int32       `db:"offset" json:"offset"`
 }
 
 type Get_Nearest_Diagnostic_CentresRow struct {
@@ -655,6 +657,8 @@ func (q *Queries) Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Ne
 		arg.Doctors,
 		arg.Column4,
 		arg.Column5,
+		arg.Limit,
+		arg.Offset,
 	)
 	if err != nil {
 		return nil, err

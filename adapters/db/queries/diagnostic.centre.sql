@@ -342,7 +342,7 @@ GROUP BY
   dc.created_at, dc.updated_at
 
 ORDER BY distance_km ASC
-LIMIT 10;
+LIMIT $6 OFFSET $7;
 
 
 -- name: Find_Nearest_Diagnostic_Centres_WhenRejected :many

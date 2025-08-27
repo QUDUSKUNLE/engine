@@ -58,6 +58,7 @@ type (
 		Offset    int32   `query:"offset" validate:"omitempty,gte=0"`
 		// Get Availability
 		DayOfWeek string `query:"day_of_week" validate:"oneof=monday tuesday wednesday thursday friday saturday sunday"`
+		PaginationQueryDTO
 	}
 	UpdateDiagnosticParamDTO struct {
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id"`
@@ -73,10 +74,6 @@ type (
 		CreatedBy            uuid.UUID `json:"created_by"`
 		ADMINID              uuid.UUID `json:"admin_id" validate:"uuid,required"`
 	}
-	PaginationQueryDTO struct {
-		Page    int32 `query:"page" validate:"omitempty,min=1" json:"page"`
-		PerPage int32 `query:"per_page" validate:"omitempty,min=1,max=50" json:"per_page"`
-	}
 	UpdateDiagnosticManagerDTO struct {
 		ManagerID string `json:"manager_id" validate:"required,uuid"`
 	}
@@ -86,6 +83,10 @@ type (
 		EndDate            time.Time `query:"end_date" validate:"omitempty" time_format:"2006-01-02"`
 		DocumentType       string    `query:"document_type" validate:"omitempty,oneof=LAB_REPORT PRESCRIPTION IMAGING DISCHARGE_SUMMARY OTHER"`
 		PaginationQueryDTO
+	}
+	PaginationQueryDTO struct {
+		Page    int32 `query:"page" validate:"omitempty,min=1" json:"page"`
+		PerPage int32 `query:"per_page" validate:"omitempty,min=1,max=50" json:"per_page"`
 	}
 )
 
@@ -107,7 +108,7 @@ func (p *PaginationQueryDTO) SetOffset(offset int32) {
 // GetLimit returns the limit for pagination
 func (p *PaginationQueryDTO) GetLimit() int32 {
 	if p.PerPage == 0 {
-		return 10 // default limit
+		return 20 // default limit
 	}
 	return p.PerPage
 }

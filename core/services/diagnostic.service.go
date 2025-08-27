@@ -191,12 +191,16 @@ func (service *ServicesHandler) SearchDiagnosticCentre(context echo.Context) err
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid coordinates")
 	}
 
+	param, _ := SetDefaultPagination(&query.PaginationQueryDTO).(*domain.PaginationQueryDTO)
+
 	// Build search parameters
 	params := db.Get_Nearest_Diagnostic_CentresParams{
 		Radians:   query.Latitude,
 		Radians_2: query.Longitude,
 		Column4:   query.DayOfWeek,
 		Column5:   query.Test, // Empty string will match all days in SQL query
+		Limit:     param.GetLimit(),
+		Offset:    param.GetOffset(),
 	}
 
 	hasFilters := false

@@ -48,6 +48,7 @@ type (
 		Status             AppointmentStatus `query:"status" validate:"omitempty,oneof=pending confirmed in_progress completed cancelled rescheduled"`
 		FromDate           time.Time         `query:"from_date" validate:"omitempty"`
 		ToDate             time.Time         `query:"to_date" validate:"omitempty,gtefield=FromDate"`
+		PaginationQueryDTO
 		Page               int               `query:"page" validate:"min=1"`
 		PageSize           int               `query:"page_size" validate:"min=1,max=100"`
 	}
