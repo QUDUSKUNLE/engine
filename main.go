@@ -114,6 +114,7 @@ func main() {
 	routes.RoutesAdaptor(v1, httpHandler)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.HEAD("/swagger/*", echoSwagger.WrapHandler)
 	e.HTTPErrorHandler = utils.CustomHTTPErrorHandler
 
 	// Update health check endpoint
