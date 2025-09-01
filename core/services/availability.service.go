@@ -18,6 +18,102 @@ const (
 	errInvalidBreakTime    = "invalid break time format"
 )
 
+// CreateAvailability creates new availability slots for a diagnostic centre
+func (s *ServicesHandler) CreateAvailability(ctx echo.Context) error {
+	dto, err := s.validateCreateAvailabilityInput(ctx)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, ctx)
+	}
+
+	params, err := s.convertSlotToArrays(dto)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
+	}
+
+	slot, err := s.availabilityPort.CreateAvailability(ctx.Request().Context(), *params)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
+	}
+
+	return ctx.JSON(http.StatusCreated, slot)
+}
+
+// UpdateAvailability updates an existing availability slot
+func (s *ServicesHandler) UpdateAvailability(ctx echo.Context) error {
+	params, err := s.validateUpdateAvailabilityInput(ctx)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, ctx)
+	}
+
+	slot, err := s.availabilityPort.UpdateAvailability(ctx.Request().Context(), *params)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, slot)
+}
+
+// UpdateManyAvailability updates multiple availability slots in bulk
+func (s *ServicesHandler) UpdateManyAvailability(ctx echo.Context) error {
+	dto, err := s.validateUpdateManyAvailabilityInput(ctx)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, ctx)
+	}
+
+	params, err := s.convertUpdateManySlotToArrays(dto)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
+	}
+
+	slots, err := s.availabilityPort.UpdateManyAvailability(ctx.Request().Context(), params)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, slots)
+}
+
+// GetAvailability retrieves availability slots for a diagnostic centre
+func (s *ServicesHandler) GetAvailability(ctx echo.Context) error {
+	params, err := s.validateGetAvailabilityInput(ctx)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
+	}
+	var slots []*db.DiagnosticCentreAvailability
+	if params.Column2 == "" {
+		slots, err = s.availabilityPort.GetDiagnosticAvailability(ctx.Request().Context(), params.DiagnosticCentreID)
+		if err != nil {
+			return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
+		}
+	} else {
+		slots, err = s.availabilityPort.GetAvailability(ctx.Request().Context(), *params)
+		if err != nil {
+			return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
+		}
+	}
+	if len(slots) == 0 {
+		return utils.ResponseMessage(http.StatusOK, []*domain.AvailabilitySlot{}, ctx)
+	}
+
+	result := make([]*domain.AvailabilitySlot, len(slots))
+	for i, slot := range slots {
+		result[i] = &domain.AvailabilitySlot{
+			ID:                 slot.ID,
+			DiagnosticCentreID: slot.DiagnosticCentreID,
+			DayOfWeek:          slot.DayOfWeek,
+			StartTime:          fmt.Sprintf("%02d:%02d:%02d", slot.StartTime.Microseconds/3600000000, (slot.StartTime.Microseconds%3600000000)/60000000, ((slot.StartTime.Microseconds%3600000000)%60000000)/1000000),
+			EndTime:            fmt.Sprintf("%02d:%02d:%02d", slot.EndTime.Microseconds/3600000000, (slot.EndTime.Microseconds%3600000000)/60000000, ((slot.EndTime.Microseconds%3600000000)%60000000)/1000000),
+			SlotDuration:       fmt.Sprintf("%d mins", slot.SlotDuration),
+			CreatedAt:          slot.CreatedAt.Time.String(),
+			UpdatedAt:          slot.UpdatedAt.Time.String(),
+			BreakTime:          fmt.Sprintf("%d mins", slot.BreakTime.Int32),
+			MaxAppointments:    slot.MaxAppointments.Int32,
+		}
+	}
+
+	return utils.ResponseMessage(http.StatusOK, result, ctx)
+}
+
 // convertSlotToArrays converts a slice of availability slots to arrays of individual fields
 func (s *ServicesHandler) convertSlotToArrays(dto *domain.CreateAvailabilityDTO) (*db.Create_AvailabilityParams, error) {
 	diagnosticCentreIDs := make([]string, len(dto.Slots))
@@ -83,26 +179,6 @@ func (s *ServicesHandler) validateCreateAvailabilityInput(ctx echo.Context) (*do
 	return dto, nil
 }
 
-// CreateAvailability creates new availability slots for a diagnostic centre
-func (s *ServicesHandler) CreateAvailability(ctx echo.Context) error {
-	dto, err := s.validateCreateAvailabilityInput(ctx)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, ctx)
-	}
-
-	params, err := s.convertSlotToArrays(dto)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
-	}
-
-	slot, err := s.availabilityPort.CreateAvailability(ctx.Request().Context(), *params)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
-	}
-
-	return ctx.JSON(http.StatusCreated, slot)
-}
-
 // validateUpdateAvailabilityInput validates and converts the input for updating availability slots
 func (s *ServicesHandler) validateUpdateAvailabilityInput(ctx echo.Context) (*db.Update_AvailabilityParams, error) {
 	// Authenticate and authorize user
@@ -158,19 +234,28 @@ func (s *ServicesHandler) validateUpdateAvailabilityInput(ctx echo.Context) (*db
 	}, nil
 }
 
-// UpdateAvailability updates an existing availability slot
-func (s *ServicesHandler) UpdateAvailability(ctx echo.Context) error {
-	params, err := s.validateUpdateAvailabilityInput(ctx)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, ctx)
+// validateGetAvailabilityInput validates the input for getting availability slots
+func (s *ServicesHandler) validateGetAvailabilityInput(ctx echo.Context) (*db.Get_AvailabilityParams, error) {
+	diagnosticCentreID := ctx.Param("diagnostic_centre_id")
+	if diagnosticCentreID == "" {
+		return nil, fmt.Errorf("diagnostic_centre_id is required")
 	}
-
-	slot, err := s.availabilityPort.UpdateAvailability(ctx.Request().Context(), *params)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
+	// Day of week is optional in query params
+	dayOfWeek := ctx.QueryParam("day_of_week")
+	if dayOfWeek != "" {
+		// Validate day_of_week if provided
+		validDays := map[string]bool{
+			"monday": true, "tuesday": true, "wednesday": true,
+			"thursday": true, "friday": true, "saturday": true, "sunday": true,
+		}
+		if !validDays[dayOfWeek] {
+			return nil, fmt.Errorf("invalid day of week")
+		}
 	}
-
-	return ctx.JSON(http.StatusOK, slot)
+	return &db.Get_AvailabilityParams{
+		DiagnosticCentreID: diagnosticCentreID,
+		Column2:            dayOfWeek,
+	}, nil
 }
 
 // validateUpdateManyAvailabilityInput validates the input for updating multiple availability slots
@@ -241,89 +326,4 @@ func (s *ServicesHandler) convertUpdateManySlotToArrays(dto *domain.UpdateManyAv
 		Column6: slotDurations,
 		Column7: breakTimes,
 	}, nil
-}
-
-// UpdateManyAvailability updates multiple availability slots in bulk
-func (s *ServicesHandler) UpdateManyAvailability(ctx echo.Context) error {
-	dto, err := s.validateUpdateManyAvailabilityInput(ctx)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, ctx)
-	}
-
-	params, err := s.convertUpdateManySlotToArrays(dto)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
-	}
-
-	slots, err := s.availabilityPort.UpdateManyAvailability(ctx.Request().Context(), params)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
-	}
-
-	return ctx.JSON(http.StatusOK, slots)
-}
-
-// validateGetAvailabilityInput validates the input for getting availability slots
-func (s *ServicesHandler) validateGetAvailabilityInput(ctx echo.Context) (*db.Get_AvailabilityParams, error) {
-	diagnosticCentreID := ctx.Param("diagnostic_centre_id")
-	if diagnosticCentreID == "" {
-		return nil, fmt.Errorf("diagnostic_centre_id is required")
-	}
-	// Day of week is optional in query params
-	dayOfWeek := ctx.QueryParam("day_of_week")
-	if dayOfWeek != "" {
-		// Validate day_of_week if provided
-		validDays := map[string]bool{
-			"monday": true, "tuesday": true, "wednesday": true,
-			"thursday": true, "friday": true, "saturday": true, "sunday": true,
-		}
-		if !validDays[dayOfWeek] {
-			return nil, fmt.Errorf("invalid day of week")
-		}
-	}
-	return &db.Get_AvailabilityParams{
-		DiagnosticCentreID: diagnosticCentreID,
-		Column2:            dayOfWeek,
-	}, nil
-}
-
-// GetAvailability retrieves availability slots for a diagnostic centre
-func (s *ServicesHandler) GetAvailability(ctx echo.Context) error {
-	params, err := s.validateGetAvailabilityInput(ctx)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
-	}
-	var slots []*db.DiagnosticCentreAvailability
-	if params.Column2 == "" {
-		slots, err = s.availabilityPort.GetDiagnosticAvailability(ctx.Request().Context(), params.DiagnosticCentreID)
-		if err != nil {
-			return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
-		}
-	} else {
-		slots, err = s.availabilityPort.GetAvailability(ctx.Request().Context(), *params)
-		if err != nil {
-			return utils.ErrorResponse(http.StatusInternalServerError, err, ctx)
-		}
-	}
-	if len(slots) == 0 {
-		return utils.ResponseMessage(http.StatusOK, []*domain.AvailabilitySlot{}, ctx)
-	}
-
-	result := make([]*domain.AvailabilitySlot, len(slots))
-	for i, slot := range slots {
-		result[i] = &domain.AvailabilitySlot{
-			ID:                 slot.ID,
-			DiagnosticCentreID: slot.DiagnosticCentreID,
-			DayOfWeek:          slot.DayOfWeek,
-			StartTime:          fmt.Sprintf("%02d:%02d:%02d", slot.StartTime.Microseconds/3600000000, (slot.StartTime.Microseconds%3600000000)/60000000, ((slot.StartTime.Microseconds%3600000000)%60000000)/1000000),
-			EndTime:            fmt.Sprintf("%02d:%02d:%02d", slot.EndTime.Microseconds/3600000000, (slot.EndTime.Microseconds%3600000000)/60000000, ((slot.EndTime.Microseconds%3600000000)%60000000)/1000000),
-			SlotDuration:       fmt.Sprintf("%d mins", slot.SlotDuration),
-			CreatedAt:          slot.CreatedAt.Time.String(),
-			UpdatedAt:          slot.UpdatedAt.Time.String(),
-			BreakTime:          fmt.Sprintf("%d mins", slot.BreakTime.Int32),
-			MaxAppointments:    slot.MaxAppointments.Int32,
-		}
-	}
-
-	return utils.ResponseMessage(http.StatusOK, result, ctx)
 }

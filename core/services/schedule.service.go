@@ -88,6 +88,11 @@ func (service *ServicesHandler) GetDiagnosticSchedules(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
+
+	if len(response) == 0 {
+		return utils.ResponseMessage(http.StatusOK, []interface{}{}, context)
+	}
+
 	return utils.ResponseMessage(http.StatusOK, response, context)
 }
 

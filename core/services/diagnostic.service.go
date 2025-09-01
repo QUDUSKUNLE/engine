@@ -546,6 +546,10 @@ func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Contex
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
+	if len(schedules) == 0 {
+		return utils.ResponseMessage(http.StatusOK, []interface{}{}, context)
+	}
+
 	return utils.ResponseMessage(http.StatusOK, schedules, context)
 }
 
