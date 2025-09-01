@@ -48,7 +48,7 @@ func RateLimiter() echo.MiddlewareFunc {
 		),
 		DenyHandler: func(c echo.Context, identifier string, err error) error {
 			return c.JSON(http.StatusTooManyRequests, map[string]string{
-				"error": "rate limit exceeded",
+				"error": "Rate limit exceeded",
 			})
 		},
 	})

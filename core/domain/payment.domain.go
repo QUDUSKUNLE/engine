@@ -23,7 +23,6 @@ const (
 type (
 	// PaymentProvider represents the payment provider
 	PaymentProvider string
-
 	// PaymentMethod represents the payment method
 	PaymentMethod string
 	// CreatePaymentDTO represents the request body for creating a payment

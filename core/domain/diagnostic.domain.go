@@ -15,12 +15,10 @@ type (
 		SetLimit(limit int32)
 		SetPage(page int32)
 	}
-
 	GetManagerDTO struct {
 		Assigned bool `query:"assigned" validate:"omitempty" json:"assigned"`
 		PaginationQueryDTO
 	}
-
 	Address struct {
 		Street  string `json:"street" validate:"max=250,required"`
 		City    string `json:"city" validate:"max=50,required"`

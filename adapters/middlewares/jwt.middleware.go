@@ -13,11 +13,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const (
-	tokenExpiration = 72 * time.Hour
-	authScheme      = "Bearer"
-)
-
 // JWTConfig returns an enhanced JWT configuration for Echo middleware
 func jWTConfig(secret string) echojwt.Config {
 	return echojwt.Config{

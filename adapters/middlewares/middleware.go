@@ -17,16 +17,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const (
-	maxFileSize       = 32 << 20 // 32MB
-	validatedBodyKey  = "validatedBodyDTO"
-	validatedQueryKey = "validatedQueryParamDTO"
-)
-
-// Custom validator
-type CustomValidator struct {
-	validator *validator.Validate
-}
 
 // Validate handles struct validation with detailed error messages
 func (c *CustomValidator) Validate(inter interface{}) error {

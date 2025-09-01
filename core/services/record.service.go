@@ -187,7 +187,7 @@ func (service *ServicesHandler) GetMedicalRecords(cont echo.Context) error {
 
 // GetUploaderMedicalRecord retrieves a single medical record uploaded by a specific uploader.
 func (service *ServicesHandler) GetUploaderMedicalRecord(cont echo.Context) error {
-	uploader, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	manager, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, cont)
 	}
@@ -197,7 +197,7 @@ func (service *ServicesHandler) GetUploaderMedicalRecord(cont echo.Context) erro
 	response, err := service.recordPort.GetUploaderMedicalRecord(cont.Request().Context(), db.GetUploaderMedicalRecordParams{
 		ID:              query.RecordID.String(),
 		UploaderID:      query.DiagnosticCentreID.String(),
-		UploaderAdminID: pgtype.UUID{Bytes: uploader.UserID, Valid: true},
+		UploaderAdminID: pgtype.UUID{Bytes: manager.UserID, Valid: true},
 	})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, cont)
@@ -238,7 +238,7 @@ func (service *ServicesHandler) UpdateMedicalRecord(cont echo.Context) error {
 	ctx := cont.Request().Context()
 
 	// Authentication & Authorization
-	uploader, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	manager, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
 	}
@@ -250,7 +250,7 @@ func (service *ServicesHandler) UpdateMedicalRecord(cont echo.Context) error {
 	}
 
 	// Set uploader admin ID from the authenticated user
-	dto.UploaderAdminID = uploader.UserID
+	dto.UploaderAdminID = manager.UserID
 
 	// Parse SharedUntil string to time.Time if provided
 	var sharedUntilTime pgtype.Timestamp
