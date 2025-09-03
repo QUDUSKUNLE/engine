@@ -71,7 +71,7 @@ func (j *ReminderJob) SendReminderEmail(appointment *db.Appointment) error {
 	// Get centre details
 	centre, err := j.diagnosticRepo.GetDiagnosticCentre(
 		context.Background(),
-		db.Get_Diagnostic_CentreParams{ID: appointment.DiagnosticCentreID},
+		appointment.DiagnosticCentreID,
 	)
 	if err != nil {
 		return err

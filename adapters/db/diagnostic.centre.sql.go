@@ -185,7 +185,7 @@ FROM diagnostic_centres dc
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
 LEFT JOIN LATERAL (
   SELECT jsonb_agg(
-    jsonb_build_object(
+    json_build_object(
       'test_type', dctp.test_type,
       'price', dctp.price
     )
@@ -349,14 +349,9 @@ LEFT JOIN LATERAL (
   FROM diagnostic_centre_test_prices dctp
   WHERE dctp.diagnostic_centre_id = dc.id
 ) prices ON true
-WHERE dc.id = $1 AND dc.admin_id = $2
+WHERE dc.id = $1
 GROUP BY dc.id, prices.test_prices
 `
-
-type Get_Diagnostic_CentreParams struct {
-	ID      string      `db:"id" json:"id"`
-	AdminID pgtype.UUID `db:"admin_id" json:"admin_id"`
-}
 
 type Get_Diagnostic_CentreRow struct {
 	ID                   string             `db:"id" json:"id"`
@@ -381,8 +376,8 @@ type Get_Diagnostic_CentreRow struct {
 }
 
 // Retrieves a single diagnostic record by its ID and admin.
-func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, arg Get_Diagnostic_CentreParams) (*Get_Diagnostic_CentreRow, error) {
-	row := q.db.QueryRow(ctx, get_Diagnostic_Centre, arg.ID, arg.AdminID)
+func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, id string) (*Get_Diagnostic_CentreRow, error) {
+	row := q.db.QueryRow(ctx, get_Diagnostic_Centre, id)
 	var i Get_Diagnostic_CentreRow
 	err := row.Scan(
 		&i.ID,
@@ -506,9 +501,16 @@ SELECT
       'break_time', dca.break_time
     )
   ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
-  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices,
+  json_build_object(
+    'id', u.id,
+    'email', u.email,
+    'fullname', u.fullname,
+    'phone_number', u.phone_number
+  ) as manager_details
 FROM diagnostic_centres dc
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN users u ON dc.admin_id = u.id
 LEFT JOIN LATERAL (
   SELECT jsonb_agg(
     jsonb_build_object(
@@ -520,7 +522,7 @@ LEFT JOIN LATERAL (
   WHERE dctp.diagnostic_centre_id = dc.id
 ) prices ON true
 WHERE dc.id = $1 AND dc.created_by = $2
-GROUP BY dc.id, prices.test_prices
+GROUP BY dc.id, prices.test_prices, u.id, u.email, u.fullname, u.phone_number
 `
 
 type Get_Diagnostic_Centre_ByOwnerParams struct {
@@ -548,6 +550,7 @@ type Get_Diagnostic_Centre_ByOwnerRow struct {
 	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
+	ManagerDetails       []byte             `db:"manager_details" json:"manager_details"`
 }
 
 // GetADiagnosticCentreByOwner :one
@@ -574,6 +577,7 @@ func (q *Queries) Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Dia
 		&i.AdminStatus,
 		&i.Availability,
 		&i.TestPrices,
+		&i.ManagerDetails,
 	)
 	return &i, err
 }
@@ -591,9 +595,16 @@ SELECT
       'break_time', dca.break_time
     )
   ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
-  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices,
+  json_build_object(
+    'id', u.id,
+    'email', u.email,
+    'fullname', u.fullname,
+    'phone_number', u.phone_number
+  ) as manager_details
 FROM diagnostic_centres dc
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN users u ON dc.admin_id = u.id
 LEFT JOIN LATERAL (
   SELECT jsonb_agg(
     jsonb_build_object(
@@ -605,7 +616,7 @@ LEFT JOIN LATERAL (
   WHERE dctp.diagnostic_centre_id = dc.id
 ) prices ON true
 WHERE dc.id = $1 AND dc.created_by = $2
-GROUP BY dc.id, prices.test_prices
+GROUP BY dc.id, prices.test_prices, u.id, u.email, u.fullname, u.phone_number
 `
 
 type Get_Diagnostic_Centre_By_OwnerParams struct {
@@ -633,6 +644,7 @@ type Get_Diagnostic_Centre_By_OwnerRow struct {
 	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
+	ManagerDetails       []byte             `db:"manager_details" json:"manager_details"`
 }
 
 // Retrieves a single diagnostic record by its ID and Owner.
@@ -659,6 +671,7 @@ func (q *Queries) Get_Diagnostic_Centre_By_Owner(ctx context.Context, arg Get_Di
 		&i.AdminStatus,
 		&i.Availability,
 		&i.TestPrices,
+		&i.ManagerDetails,
 	)
 	return &i, err
 }

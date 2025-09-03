@@ -276,7 +276,6 @@ definitions:
         type: number
     required:
     - address
-    - admin_id
     - available_tests
     - contact
     - diagnostic_centre_name
@@ -660,14 +659,15 @@ definitions:
         type: number
       longitude:
         type: number
-    required:
-    - admin_id
     type: object
   domain.UpdateDiagnosticManagerDTO:
     properties:
+      diagnostic_centre_id:
+        type: string
       manager_id:
         type: string
     required:
+    - diagnostic_centre_id
     - manager_id
     type: object
   domain.UpdateDiagnosticScheduleByCentreDTO:
@@ -1874,6 +1874,46 @@ paths:
       summary: Update availability for a diagnostic centre
       tags:
       - Availability
+  /v1/diagnostic_centre/assign:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Assign Manager to a diagnostic centre
+        in: body
+        name: diagnostic_centre
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateDiagnosticManagerDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Manager assigned successfully
+          schema:
+            $ref: '#/definitions/handlers.ManagerSwagger'
+        "400":
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/handlers.BAD_REQUEST'
+        "401":
+          description: UNAUTHORIZED_ERROR
+          schema:
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
+      summary: Assign manager to a centre
+      tags:
+      - DiagnosticCentre
   /v1/diagnostic_centres:
     get:
       description: Search for diagnostic centres based on location, available doctors,

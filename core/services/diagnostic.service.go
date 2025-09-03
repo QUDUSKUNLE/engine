@@ -2,11 +2,12 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/diagnoxix/adapters/db"
-	// "github.com/diagnoxix/adapters/ex/templates/emails"
+	"github.com/diagnoxix/adapters/ex/templates/emails"
 	"github.com/diagnoxix/adapters/metrics"
 	"github.com/diagnoxix/core/domain"
 	"github.com/diagnoxix/core/utils"
@@ -112,38 +113,26 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit transaction"), context)
 	}
-	// Send Notification email
-	// address := fmt.Sprintf("%s %s %s %s", dto.Address.Street, dto.Address.City, dto.Address.State, dto.Address.Country)
-	// emailData := &emails.DiagnosticCentreManagement{
-	// 	// Name:          admin.Fullname.String,
-	// 	CentreName:    diagnostic_centre.DiagnosticCentreName,
-	// 	CentreAddress: address,
-	// }
-	// go service.emailGoroutine(
-	// 	emailData,
-	// 	admin.Email.String,
-	// 	emails.SubjectDiagnosticCentreManagement,
-	// 	emails.TemplateDiagnosticCentreManagement,
-	// )
 
 	return utils.ResponseMessage(http.StatusCreated, res, context)
 }
 
 func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error {
-	// Authentication & Authorization
-	user, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
-	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, utils.ErrUnauthorized, context)
+	// Get validated params
+	params, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticParamDTO)
+	if !ok {
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid query parameters"), context)
 	}
-	// This validated at the middleware level
-	params, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticParamDTO)
 
-	// Get diagnostic centre
-	response, err := service.diagnosticPort.GetDiagnosticCentre(context.Request().Context(), db.Get_Diagnostic_CentreParams{ID: params.DiagnosticCentreID, AdminID: pgtype.UUID{Bytes: user.UserID, Valid: true}})
+	ctx := context.Request().Context()
+	diagnosticCentre, err := service.diagnosticPort.GetDiagnosticCentre(ctx, params.DiagnosticCentreID)
+	// Handle errors
 	if err != nil {
 		utils.Error("Failed to get diagnostic centre",
 			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "diagnostic_centre_id", Value: params.DiagnosticCentreID})
+			utils.LogField{Key: "diagnostic_centre_id", Value: params.DiagnosticCentreID},
+		)
+
 		switch {
 		case errors.Is(err, utils.ErrNotFound):
 			return echo.NewHTTPError(http.StatusNotFound, "Diagnostic centre not found")
@@ -153,25 +142,148 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve diagnostic centre")
 		}
 	}
+
+	// Convert response to common format
 	centreRow := &db.List_Diagnostic_Centres_ByOwnerRow{
-		ID:                   response.ID,
-		DiagnosticCentreName: response.DiagnosticCentreName,
-		Latitude:             response.Latitude,
-		Longitude:            response.Longitude,
-		Address:              response.Address,
-		Contact:              response.Contact,
-		Doctors:              response.Doctors,
-		AvailableTests:       response.AvailableTests,
-		CreatedAt:            response.CreatedAt,
-		UpdatedAt:            response.UpdatedAt,
-		Availability:         response.Availability,
-		TestPrices:           response.TestPrices,
-		AdminID:              response.AdminID,
+		ID:                   diagnosticCentre.ID,
+		DiagnosticCentreName: diagnosticCentre.DiagnosticCentreName,
+		Latitude:             diagnosticCentre.Latitude,
+		Longitude:            diagnosticCentre.Longitude,
+		Address:              diagnosticCentre.Address,
+		Contact:              diagnosticCentre.Contact,
+		Doctors:              diagnosticCentre.Doctors,
+		AvailableTests:       diagnosticCentre.AvailableTests,
+		CreatedAt:            diagnosticCentre.CreatedAt,
+		UpdatedAt:            diagnosticCentre.UpdatedAt,
+		Availability:         diagnosticCentre.Availability,
+		TestPrices:           diagnosticCentre.TestPrices,
+		AdminID:              diagnosticCentre.AdminID,
+		AdminAssignedAt:      diagnosticCentre.AdminAssignedAt,
+		AdminAssignedBy:      diagnosticCentre.AdminAssignedBy,
+		AdminStatus:          diagnosticCentre.AdminStatus,
 	}
+
+	// Build response
 	res, err := buildDiagnosticCentreResponseFromRow(centreRow)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
+
+	return utils.ResponseMessage(http.StatusOK, res, context)
+}
+
+func (service *ServicesHandler) GetDiagnosticCentreByManagerOrOwner(context echo.Context) error {
+	// Authentication & Authorization
+	user, err := PrivateMiddlewareContext(context, []db.UserEnum{
+		db.UserEnumDIAGNOSTICCENTREMANAGER,
+		db.UserEnumDIAGNOSTICCENTREOWNER,
+	})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+
+	// Get validated params
+	params, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetDiagnosticParamDTO)
+	if !ok {
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid query parameters"), context)
+	}
+
+	ctx := context.Request().Context()
+	var diagnosticCentre interface{}
+
+	// Handle different user types
+	switch user.UserType {
+	case db.UserEnumDIAGNOSTICCENTREMANAGER:
+		diagnosticCentre, err = service.diagnosticPort.GetDiagnosticCentreByManager(ctx, db.Get_Diagnostic_Centre_ByManagerParams{
+			ID:      params.DiagnosticCentreID,
+			AdminID: pgtype.UUID{Bytes: user.UserID, Valid: true},
+		})
+	case db.UserEnumDIAGNOSTICCENTREOWNER:
+		diagnosticCentre, err = service.diagnosticPort.GetDiagnosticCentreByOwner(ctx, db.Get_Diagnostic_Centre_ByOwnerParams{
+			ID:        params.DiagnosticCentreID,
+			CreatedBy: user.UserID.String(),
+		})
+	default:
+		return utils.ErrorResponse(
+			http.StatusForbidden,
+			errors.New("user type not authorized to perform this action"),
+			context,
+		)
+	}
+
+	// Handle errors
+	if err != nil {
+		utils.Error("Failed to get diagnostic centre",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "user_id", Value: user.UserID.String()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: params.DiagnosticCentreID},
+			utils.LogField{Key: "user_type", Value: user.UserType},
+		)
+
+		switch {
+		case errors.Is(err, utils.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, "Diagnostic centre not found")
+		case errors.Is(err, utils.ErrDatabaseError):
+			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
+		default:
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve diagnostic centre")
+		}
+	}
+
+	// Convert response to common format
+	var centreRow *db.List_Diagnostic_Centres_ByOwnerRow
+
+	switch v := diagnosticCentre.(type) {
+	case *db.Get_Diagnostic_CentreRow:
+		centreRow = &db.List_Diagnostic_Centres_ByOwnerRow{
+			ID:                   v.ID,
+			DiagnosticCentreName: v.DiagnosticCentreName,
+			Latitude:             v.Latitude,
+			Longitude:            v.Longitude,
+			Address:              v.Address,
+			Contact:              v.Contact,
+			Doctors:              v.Doctors,
+			AvailableTests:       v.AvailableTests,
+			CreatedAt:            v.CreatedAt,
+			UpdatedAt:            v.UpdatedAt,
+			Availability:         v.Availability,
+			TestPrices:           v.TestPrices,
+			AdminID:              v.AdminID,
+			AdminAssignedAt:      v.AdminAssignedAt,
+			AdminAssignedBy:      v.AdminAssignedBy,
+			AdminStatus:          v.AdminStatus,
+		}
+	case *db.DiagnosticCentre:
+		centreRow = &db.List_Diagnostic_Centres_ByOwnerRow{
+			ID:                   v.ID,
+			DiagnosticCentreName: v.DiagnosticCentreName,
+			Latitude:             v.Latitude,
+			Longitude:            v.Longitude,
+			Address:              v.Address,
+			Contact:              v.Contact,
+			Doctors:              v.Doctors,
+			AvailableTests:       v.AvailableTests,
+			CreatedAt:            v.CreatedAt,
+			UpdatedAt:            v.UpdatedAt,
+			AdminID:              v.AdminID,
+			AdminAssignedAt:      v.AdminAssignedAt,
+			AdminAssignedBy:      v.AdminAssignedBy,
+			AdminStatus:          v.AdminStatus,
+		}
+	default:
+		return utils.ErrorResponse(
+			http.StatusInternalServerError,
+			errors.New("invalid diagnostic centre data type"),
+			context,
+		)
+	}
+
+	// Build response
+	res, err := buildDiagnosticCentreResponseFromRow(centreRow)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
 	return utils.ResponseMessage(http.StatusOK, res, context)
 }
 
@@ -387,7 +499,7 @@ func (service *ServicesHandler) GetDiagnosticCentreStats(context echo.Context) e
 	// Get diagnostic centre ID
 	centre_id := context.Param(utils.DiagnosticCentreID)
 
-	centre, err := service.diagnosticPort.GetDiagnosticCentre(context.Request().Context(), db.Get_Diagnostic_CentreParams{
+	centre, err := service.diagnosticPort.GetDiagnosticCentreByManager(context.Request().Context(), db.Get_Diagnostic_Centre_ByManagerParams{
 		ID:      centre_id,
 		AdminID: pgtype.UUID{Bytes: admin.UserID, Valid: true},
 	})
@@ -476,16 +588,10 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found or not owned by user"), context)
 	}
 
-	// Update manager
-	managerUUID, err := uuid.Parse(managerDetails.ManagerID)
-	if err != nil {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid manager ID format"), context)
-	}
-
 	updateParams := db.Update_Diagnostic_Centre_ByOwnerParams{
 		ID:        centreID,
 		CreatedBy: currentUser.UserID.String(),
-		AdminID:   pgtype.UUID{Bytes: managerUUID, Valid: true},
+		AdminID:   pgtype.UUID{Bytes: managerDetails.ManagerID, Valid: true},
 	}
 
 	response, err := service.diagnosticPort.UpdateDiagnosticCentreByOwner(context.Request().Context(), updateParams)
@@ -532,7 +638,7 @@ func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Contex
 	params = SetDefaultPagination(params).(*domain.GetDiagnosticSchedulesByCentreParamDTO)
 
 	// Verify centre exists
-	if _, err := service.diagnosticPort.GetDiagnosticCentre(context.Request().Context(), db.Get_Diagnostic_CentreParams{ID: centreID, AdminID: pgtype.UUID{
+	if _, err := service.diagnosticPort.GetDiagnosticCentreByManager(context.Request().Context(), db.Get_Diagnostic_Centre_ByManagerParams{ID: centreID, AdminID: pgtype.UUID{
 		Bytes: admin.UserID,
 		Valid: true}}); err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
@@ -595,11 +701,94 @@ func (service *ServicesHandler) GetDiagnosticCentreRecords(context echo.Context)
 }
 
 func (service *ServicesHandler) AssignAdmin(context echo.Context) error {
-	_, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
-	return nil
+	// Get diagnostic centre ID and manager details
+	manager, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticManagerDTO)
+
+	ctx := context.Request().Context()
+	// Verify ownership
+	diagnostic_centre, err := service.diagnosticPort.GetDiagnosticCentreByOwner(ctx, db.Get_Diagnostic_Centre_ByOwnerParams{
+		ID:        manager.ID.String(),
+		CreatedBy: currentUser.UserID.String(),
+	})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found or not owned by owner"), context)
+	}
+
+	assignedAdmin, err := service.diagnosticPort.AssignAdmin(ctx, db.AssignAdminParams{
+		ID:      manager.ID.String(),
+		AdminID: pgtype.UUID{Bytes: manager.ManagerID, Valid: true}, AdminAssignedBy: pgtype.UUID{Bytes: currentUser.UserID, Valid: true},
+	})
+	if err != nil {
+		utils.Error("Failed to assign manager to centre",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: manager.ID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	var address domain.Address
+	if err := utils.UnmarshalJSONField(diagnostic_centre.Address, &address); err != nil {
+		utils.Error("Error unmarshal diagnostic centre address",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: manager.ID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	var managerDetails domain.ManagerDetails
+	if err := utils.UnmarshalJSONField(diagnostic_centre.ManagerDetails, &managerDetails); err != nil {
+		utils.Error("Error unmarshal diagnostic manager details",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: manager.ID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+	// Send Notification email
+	add := fmt.Sprintf("%s %s %s %s", address.Street, address.City, address.State, address.Country)
+	emailData := &emails.DiagnosticCentreManagement{
+		Name:          managerDetails.FullName,
+		CentreName:    diagnostic_centre.DiagnosticCentreName,
+		CentreAddress: add,
+	}
+	go service.emailGoroutine(
+		emailData,
+		managerDetails.Email,
+		emails.SubjectDiagnosticCentreManagement,
+		emails.TemplateDiagnosticCentreManagement,
+	)
+	return utils.ResponseMessage(http.StatusOK, assignedAdmin, context)
+}
+
+func (service *ServicesHandler) UnAssignAdmin(context echo.Context) error {
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+	}
+	// Get diagnostic centre ID and manager details
+	centre, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UnAssignDiagnosticManagerDTO)
+
+	ctx := context.Request().Context()
+	// Verify ownership
+	_, err = service.diagnosticPort.GetDiagnosticCentreByOwner(ctx, db.Get_Diagnostic_Centre_ByOwnerParams{
+		ID:        centre.ID.String(),
+		CreatedBy: currentUser.UserID.String(),
+	})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found or not owned by user"), context)
+	}
+
+	assignedAdmin, err := service.diagnosticPort.UnAssignAdmin(ctx, db.UnassignAdminParams{
+		ID:                centre.ID.String(),
+		AdminUnassignedBy: pgtype.UUID{Bytes: currentUser.UserID, Valid: true},
+	})
+	if err != nil {
+		utils.Error("Failed to unassign manager to centre",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "diagnostic_centre_id", Value: centre.ID})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+	return utils.ResponseMessage(http.StatusOK, assignedAdmin, context)
 }
 
 // buildDiagnosticCentre converts a database row to a domain diagnostic centre

@@ -122,6 +122,12 @@ type (
 		Passport      string `json:"passport" validate:"at_least_one"`
 		DriverLicence string `json:"driver_licence" validate:"at_least_one"`
 	}
+	ManagerDetails struct {
+		ID          uuid.UUID `json:"id" validate:"required" example:"7512431d-5dad-4f37-8873-3e8ea8264e1c"`
+		Email       string    `json:"email"`
+		FullName    string    `json:"fullname"`
+		PhoneNumber []string  `json:"phone_number"`
+	}
 )
 
 func BuildNewUser(user UserRegisterDTO) (db.CreateUserParams, error) {

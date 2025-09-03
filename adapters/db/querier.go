@@ -61,7 +61,7 @@ type Querier interface {
 	Get_Availability(ctx context.Context, arg Get_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
 	Get_Diagnostic_Availability(ctx context.Context, diagnosticCentreID string) ([]*DiagnosticCentreAvailability, error)
 	// Retrieves a single diagnostic record by its ID and admin.
-	Get_Diagnostic_Centre(ctx context.Context, arg Get_Diagnostic_CentreParams) (*Get_Diagnostic_CentreRow, error)
+	Get_Diagnostic_Centre(ctx context.Context, id string) (*Get_Diagnostic_CentreRow, error)
 	// GetDiagnosticCentreByManager
 	Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*Get_Diagnostic_Centre_ByManagerRow, error)
 	// GetADiagnosticCentreByOwner :one

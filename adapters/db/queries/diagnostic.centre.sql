@@ -41,7 +41,7 @@ LEFT JOIN LATERAL (
   FROM diagnostic_centre_test_prices dctp
   WHERE dctp.diagnostic_centre_id = dc.id
 ) prices ON true
-WHERE dc.id = $1 AND dc.admin_id = $2
+WHERE dc.id = $1
 GROUP BY dc.id, prices.test_prices;
 
 -- Retrieves a single diagnostic record by its ID and Owner.
@@ -58,9 +58,16 @@ SELECT
       'break_time', dca.break_time
     )
   ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
-  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices,
+  json_build_object(
+    'id', u.id,
+    'email', u.email,
+    'fullname', u.fullname,
+    'phone_number', u.phone_number
+  ) as manager_details
 FROM diagnostic_centres dc
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN users u ON dc.admin_id = u.id
 LEFT JOIN LATERAL (
   SELECT jsonb_agg(
     jsonb_build_object(
@@ -72,7 +79,7 @@ LEFT JOIN LATERAL (
   WHERE dctp.diagnostic_centre_id = dc.id
 ) prices ON true
 WHERE dc.id = $1 AND dc.created_by = $2
-GROUP BY dc.id, prices.test_prices;
+GROUP BY dc.id, prices.test_prices, u.id, u.email, u.fullname, u.phone_number;
 
 -- Retrieves all diagnostic records with pagination.
 -- name: Retrieve_Diagnostic_Centres :many
@@ -214,9 +221,16 @@ SELECT
       'break_time', dca.break_time
     )
   ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
-  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices,
+  json_build_object(
+    'id', u.id,
+    'email', u.email,
+    'fullname', u.fullname,
+    'phone_number', u.phone_number
+  ) as manager_details
 FROM diagnostic_centres dc
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN users u ON dc.admin_id = u.id
 LEFT JOIN LATERAL (
   SELECT jsonb_agg(
     jsonb_build_object(
@@ -228,7 +242,7 @@ LEFT JOIN LATERAL (
   WHERE dctp.diagnostic_centre_id = dc.id
 ) prices ON true
 WHERE dc.id = $1 AND dc.created_by = $2
-GROUP BY dc.id, prices.test_prices;
+GROUP BY dc.id, prices.test_prices, u.id, u.email, u.fullname, u.phone_number;
 
 -- GetDiagnosticCentreByManager
 -- name: Get_Diagnostic_Centre_ByManager :one
@@ -416,7 +430,7 @@ FROM diagnostic_centres dc
 LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
 LEFT JOIN LATERAL (
   SELECT jsonb_agg(
-    jsonb_build_object(
+    json_build_object(
       'test_type', dctp.test_type,
       'price', dctp.price
     )

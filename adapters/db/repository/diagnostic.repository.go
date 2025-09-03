@@ -34,7 +34,7 @@ func (repo *Repository) UpdateDiagnosticCentreByOwner(
 
 func (repo *Repository) GetDiagnosticCentre(
 	ctx context.Context,
-	arg db.Get_Diagnostic_CentreParams,
+	arg string,
 ) (*db.Get_Diagnostic_CentreRow, error) {
 	return repo.database.Get_Diagnostic_Centre(ctx, arg)
 }

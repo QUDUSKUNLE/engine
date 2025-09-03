@@ -234,7 +234,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreManagers(context echo.Context) er
 	return nil
 }
 
-// ListManagersByAdmin godoc
+// AssignManagerByOwner godoc
 // @Summary List managers by admin
 // @Tags DiagnosticCentre
 // @Produce json
@@ -246,6 +246,27 @@ func (handler *HTTPHandler) GetDiagnosticCentreManagers(context echo.Context) er
 // @Router /v1/managers [get]
 func (handler *HTTPHandler) ListManagersByAdmin(context echo.Context) error {
 	return handler.service.ListManagers(context)
+}
+
+// ListManagersByAdmin godoc
+// @Summary Assign manager to a centre
+// @Tags DiagnosticCentre
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param diagnostic_centre body domain.UpdateDiagnosticManagerDTO true "Assign Manager to a diagnostic centre"
+// @Success 200 {object} handlers.ManagerSwagger "Manager assigned successfully"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
+// @Router /v1/diagnostic_centre/assign [post]
+func (handler *HTTPHandler) AssignManager(context echo.Context) error {
+	return handler.service.AssignAdmin(context)
+}
+
+func (handler *HTTPHandler) UnAssignManager(context echo.Context) error {
+	return nil
 }
 
 func (handler *HTTPHandler) SubmitKYC(context echo.Context) error {

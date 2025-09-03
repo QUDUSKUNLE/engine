@@ -1041,6 +1041,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/diagnostic_centre/assign": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DiagnosticCentre"
+                ],
+                "summary": "Assign manager to a centre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Assign Manager to a diagnostic centre",
+                        "name": "diagnostic_centre",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateDiagnosticManagerDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Manager assigned successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ManagerSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "BAD_REQUEST",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/diagnostic_centres": {
             "get": {
                 "description": "Search for diagnostic centres based on location, available doctors, and test types",
@@ -3827,7 +3890,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "address",
-                "admin_id",
                 "available_tests",
                 "contact",
                 "diagnostic_centre_name",
@@ -4341,9 +4403,6 @@ const docTemplate = `{
         },
         "domain.UpdateDiagnosticBodyDTO": {
             "type": "object",
-            "required": [
-                "admin_id"
-            ],
             "properties": {
                 "address": {
                     "$ref": "#/definitions/domain.Address"
@@ -4383,9 +4442,13 @@ const docTemplate = `{
         "domain.UpdateDiagnosticManagerDTO": {
             "type": "object",
             "required": [
+                "diagnostic_centre_id",
                 "manager_id"
             ],
             "properties": {
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
                 "manager_id": {
                     "type": "string"
                 }

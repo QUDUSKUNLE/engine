@@ -74,7 +74,11 @@ type (
 		ADMINID              uuid.UUID `json:"admin_id"`
 	}
 	UpdateDiagnosticManagerDTO struct {
-		ManagerID string `json:"manager_id" validate:"required,uuid"`
+		ID   uuid.UUID `json:"diagnostic_centre_id" validate:"uuid,required"`
+		ManagerID uuid.UUID `json:"manager_id" validate:"required,uuid"`
+	}
+	UnAssignDiagnosticManagerDTO struct {
+		ID   uuid.UUID `json:"diagnostic_centre_id" validate:"uuid,required"`
 	}
 	GetDiagnosticRecordsParamDTO struct {
 		DiagnosticCentreID string    `param:"diagnostic_centre_id" validate:"required,uuid"`

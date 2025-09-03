@@ -20,7 +20,7 @@ type DiagnosticRepository interface {
 
 	GetDiagnosticCentre(
 		ctx context.Context,
-		id db.Get_Diagnostic_CentreParams,
+		id string,
 	) (*db.Get_Diagnostic_CentreRow, error)
 
 	UpdateDiagnosticCentreByOwner(

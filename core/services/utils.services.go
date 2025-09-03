@@ -390,6 +390,7 @@ func GenerateRandomToken() string {
 // CurrentUser extracts the current user from the JWT token in the context
 func CurrentUser(c echo.Context) (*domain.CurrentUserDTO, error) {
 	userToken, ok := c.Get("user").(*jwt.Token)
+	fmt.Println(userToken, ok, "***********")
 	if !ok || userToken == nil {
 		utils.Error("missing or invalid user token")
 		return nil, ErrInvalidToken
