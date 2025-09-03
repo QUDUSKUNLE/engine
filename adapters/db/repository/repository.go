@@ -3,12 +3,26 @@ package repository
 import (
 	"github.com/diagnoxix/adapters/db"
 	"github.com/diagnoxix/core/ports"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Repository provides access to the database
 type Repository struct {
 	database *db.Queries
-	conn     *pgxpool.Pool
+	conn     *pgx.Conn
+	pool     *pgxpool.Pool
+}
+
+// NewRepository creates a new repository instance
+func NewRepository(
+	database *db.Queries,
+	pool *pgxpool.Pool,
+) *Repository {
+	return &Repository{
+		database: database,
+		pool:     pool,
+	}
 }
 
 func NewUserRepository(
@@ -43,21 +57,21 @@ func NewTestPriceRepository(
 
 func NewPaymentRepository(
 	store *db.Queries,
-	conn *pgxpool.Pool,
+	pool *pgxpool.Pool,
 ) ports.PaymentRepository {
-	return &Repository{database: store, conn: conn}
+	return &Repository{database: store, pool: pool}
 }
 
 func NewAppointmentRepository(
 	store *db.Queries,
-	conn *pgxpool.Pool,
+	pool *pgxpool.Pool,
 ) ports.AppointmentRepository {
-	return &Repository{database: store, conn: conn}
+	return &Repository{database: store, pool: pool}
 }
 
 func NewDiagnosticCentreRepository(
 	store *db.Queries,
-	conn *pgxpool.Pool,
+	pool *pgxpool.Pool,
 ) ports.DiagnosticRepository {
-	return &Repository{database: store, conn: conn}
+	return &Repository{database: store, pool: pool}
 }

@@ -14,7 +14,7 @@ INSERT INTO diagnostic_centres (
   $1, $2, $3, $4, $5, $6, $7, $8, $9
 ) RETURNING *;
 
--- Retrieves a single diagnostic record by its ID.
+-- Retrieves a single diagnostic record by its ID and admin.
 -- name: Get_Diagnostic_Centre :one
 SELECT 
   dc.*,
@@ -41,7 +41,37 @@ LEFT JOIN LATERAL (
   FROM diagnostic_centre_test_prices dctp
   WHERE dctp.diagnostic_centre_id = dc.id
 ) prices ON true
-WHERE dc.id = $1
+WHERE dc.id = $1 AND dc.admin_id = $2
+GROUP BY dc.id, prices.test_prices;
+
+-- Retrieves a single diagnostic record by its ID and Owner.
+-- name: Get_Diagnostic_Centre_By_Owner :one
+SELECT 
+  dc.*,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN LATERAL (
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'test_type', dctp.test_type,
+      'price', dctp.price
+    )
+  ) AS test_prices
+  FROM diagnostic_centre_test_prices dctp
+  WHERE dctp.diagnostic_centre_id = dc.id
+) prices ON true
+WHERE dc.id = $1 AND dc.created_by = $2
 GROUP BY dc.id, prices.test_prices;
 
 -- Retrieves all diagnostic records with pagination.
@@ -86,7 +116,14 @@ SET
   contact = COALESCE($7, contact),
   doctors = COALESCE($8, doctors),
   available_tests = COALESCE($9, available_tests),
-  admin_id = COALESCE($10, admin_id),
+  admin_id = CASE 
+    WHEN $10 IS NULL THEN NULL 
+    ELSE COALESCE($10, admin_id)
+  END,
+  admin_assigned_by = CASE
+    WHEN $10 IS NULL THEN NULL -- If admin_id is null, also null the assigned_by
+    ELSE COALESCE($11, admin_assigned_by)
+  END,
   updated_at = NOW()
 WHERE id = $1 AND created_by = $2
 RETURNING *;
@@ -441,3 +478,36 @@ GROUP BY
   dc.id, prices.test_prices
 ORDER BY dc.created_at DESC
 LIMIT $2 OFFSET $3;
+
+
+-- name: UnassignAdmin :one
+UPDATE diagnostic_centres
+SET 
+  admin_id = NULL,
+  admin_unassigned_by = $2,
+  updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: AssignAdmin :one
+UPDATE diagnostic_centres
+SET 
+  admin_id = $2,
+  admin_assigned_by = $3,
+  updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: GetAdminHistory :many
+SELECT 
+  dc.id,
+  dc.diagnostic_centre_name,
+  dc.admin_id,
+  u.fullname as admin_name,
+  dc.admin_assigned_at,
+  dc.admin_unassigned_at,
+  dc.admin_status
+FROM diagnostic_centres dc
+LEFT JOIN users u ON u.id = dc.admin_id
+WHERE dc.id = $1
+ORDER BY dc.admin_assigned_at DESC;

@@ -3,8 +3,6 @@ package jobs
 import (
 	"context"
 
-	// "time"
-
 	"github.com/diagnoxix/adapters/db"
 	"github.com/diagnoxix/adapters/ex/templates/emails"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -73,7 +71,7 @@ func (j *ReminderJob) SendReminderEmail(appointment *db.Appointment) error {
 	// Get centre details
 	centre, err := j.diagnosticRepo.GetDiagnosticCentre(
 		context.Background(),
-		appointment.DiagnosticCentreID,
+		db.Get_Diagnostic_CentreParams{ID: appointment.DiagnosticCentreID},
 	)
 	if err != nil {
 		return err

@@ -11,6 +11,47 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const assignAdmin = `-- name: AssignAdmin :one
+UPDATE diagnostic_centres
+SET 
+  admin_id = $2,
+  admin_assigned_by = $3,
+  updated_at = NOW()
+WHERE id = $1
+RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at, admin_assigned_at, admin_assigned_by, admin_unassigned_at, admin_unassigned_by, admin_status
+`
+
+type AssignAdminParams struct {
+	ID              string      `db:"id" json:"id"`
+	AdminID         pgtype.UUID `db:"admin_id" json:"admin_id"`
+	AdminAssignedBy pgtype.UUID `db:"admin_assigned_by" json:"admin_assigned_by"`
+}
+
+func (q *Queries) AssignAdmin(ctx context.Context, arg AssignAdminParams) (*DiagnosticCentre, error) {
+	row := q.db.QueryRow(ctx, assignAdmin, arg.ID, arg.AdminID, arg.AdminAssignedBy)
+	var i DiagnosticCentre
+	err := row.Scan(
+		&i.ID,
+		&i.DiagnosticCentreName,
+		&i.Latitude,
+		&i.Longitude,
+		&i.Address,
+		&i.Contact,
+		&i.Doctors,
+		&i.AvailableTests,
+		&i.CreatedBy,
+		&i.AdminID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
+	)
+	return &i, err
+}
+
 const create_Diagnostic_Centre = `-- name: Create_Diagnostic_Centre :one
 INSERT INTO diagnostic_centres (
   diagnostic_centre_name,
@@ -24,7 +65,7 @@ INSERT INTO diagnostic_centres (
   admin_id
 ) VALUES  (
   $1, $2, $3, $4, $5, $6, $7, $8, $9
-) RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at
+) RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at, admin_assigned_at, admin_assigned_by, admin_unassigned_at, admin_unassigned_by, admin_status
 `
 
 type Create_Diagnostic_CentreParams struct {
@@ -36,7 +77,7 @@ type Create_Diagnostic_CentreParams struct {
 	Doctors              []string      `db:"doctors" json:"doctors"`
 	AvailableTests       []string      `db:"available_tests" json:"available_tests"`
 	CreatedBy            string        `db:"created_by" json:"created_by"`
-	AdminID              string        `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID   `db:"admin_id" json:"admin_id"`
 }
 
 // Inserts a new diagnostic record into the diagnostic_centres table.
@@ -66,12 +107,17 @@ func (q *Queries) Create_Diagnostic_Centre(ctx context.Context, arg Create_Diagn
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
 	)
 	return &i, err
 }
 
 const delete_Diagnostic_Centre_ByOwner = `-- name: Delete_Diagnostic_Centre_ByOwner :one
-DELETE FROM diagnostic_centres WHERE id = $1 AND created_by = $2 RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at
+DELETE FROM diagnostic_centres WHERE id = $1 AND created_by = $2 RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at, admin_assigned_at, admin_assigned_by, admin_unassigned_at, admin_unassigned_by, admin_status
 `
 
 type Delete_Diagnostic_Centre_ByOwnerParams struct {
@@ -96,6 +142,11 @@ func (q *Queries) Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Dele
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
 	)
 	return &i, err
 }
@@ -219,9 +270,62 @@ func (q *Queries) Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Conte
 	return items, nil
 }
 
+const getAdminHistory = `-- name: GetAdminHistory :many
+SELECT 
+  dc.id,
+  dc.diagnostic_centre_name,
+  dc.admin_id,
+  u.fullname as admin_name,
+  dc.admin_assigned_at,
+  dc.admin_unassigned_at,
+  dc.admin_status
+FROM diagnostic_centres dc
+LEFT JOIN users u ON u.id = dc.admin_id
+WHERE dc.id = $1
+ORDER BY dc.admin_assigned_at DESC
+`
+
+type GetAdminHistoryRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
+	AdminName            pgtype.Text        `db:"admin_name" json:"admin_name"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
+}
+
+func (q *Queries) GetAdminHistory(ctx context.Context, id string) ([]*GetAdminHistoryRow, error) {
+	rows, err := q.db.Query(ctx, getAdminHistory, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetAdminHistoryRow
+	for rows.Next() {
+		var i GetAdminHistoryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.DiagnosticCentreName,
+			&i.AdminID,
+			&i.AdminName,
+			&i.AdminAssignedAt,
+			&i.AdminUnassignedAt,
+			&i.AdminStatus,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const get_Diagnostic_Centre = `-- name: Get_Diagnostic_Centre :one
 SELECT 
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
   ARRAY_AGG(
     json_build_object(
       'day_of_week', dca.day_of_week,
@@ -245,9 +349,14 @@ LEFT JOIN LATERAL (
   FROM diagnostic_centre_test_prices dctp
   WHERE dctp.diagnostic_centre_id = dc.id
 ) prices ON true
-WHERE dc.id = $1
+WHERE dc.id = $1 AND dc.admin_id = $2
 GROUP BY dc.id, prices.test_prices
 `
+
+type Get_Diagnostic_CentreParams struct {
+	ID      string      `db:"id" json:"id"`
+	AdminID pgtype.UUID `db:"admin_id" json:"admin_id"`
+}
 
 type Get_Diagnostic_CentreRow struct {
 	ID                   string             `db:"id" json:"id"`
@@ -259,16 +368,21 @@ type Get_Diagnostic_CentreRow struct {
 	Doctors              []string           `db:"doctors" json:"doctors"`
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
-	AdminID              string             `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
 }
 
-// Retrieves a single diagnostic record by its ID.
-func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, id string) (*Get_Diagnostic_CentreRow, error) {
-	row := q.db.QueryRow(ctx, get_Diagnostic_Centre, id)
+// Retrieves a single diagnostic record by its ID and admin.
+func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, arg Get_Diagnostic_CentreParams) (*Get_Diagnostic_CentreRow, error) {
+	row := q.db.QueryRow(ctx, get_Diagnostic_Centre, arg.ID, arg.AdminID)
 	var i Get_Diagnostic_CentreRow
 	err := row.Scan(
 		&i.ID,
@@ -283,6 +397,11 @@ func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, id string) (*Get_Di
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
 		&i.Availability,
 		&i.TestPrices,
 	)
@@ -291,7 +410,7 @@ func (q *Queries) Get_Diagnostic_Centre(ctx context.Context, id string) (*Get_Di
 
 const get_Diagnostic_Centre_ByManager = `-- name: Get_Diagnostic_Centre_ByManager :one
 SELECT 
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
   ARRAY_AGG(
     json_build_object(
       'day_of_week', dca.day_of_week,
@@ -320,8 +439,8 @@ GROUP BY dc.id, prices.test_prices
 `
 
 type Get_Diagnostic_Centre_ByManagerParams struct {
-	ID      string `db:"id" json:"id"`
-	AdminID string `db:"admin_id" json:"admin_id"`
+	ID      string      `db:"id" json:"id"`
+	AdminID pgtype.UUID `db:"admin_id" json:"admin_id"`
 }
 
 type Get_Diagnostic_Centre_ByManagerRow struct {
@@ -334,9 +453,14 @@ type Get_Diagnostic_Centre_ByManagerRow struct {
 	Doctors              []string           `db:"doctors" json:"doctors"`
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
-	AdminID              string             `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
 }
@@ -358,6 +482,11 @@ func (q *Queries) Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_D
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
 		&i.Availability,
 		&i.TestPrices,
 	)
@@ -366,7 +495,7 @@ func (q *Queries) Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_D
 
 const get_Diagnostic_Centre_ByOwner = `-- name: Get_Diagnostic_Centre_ByOwner :one
 SELECT 
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
   ARRAY_AGG(
     json_build_object(
       'day_of_week', dca.day_of_week,
@@ -409,9 +538,14 @@ type Get_Diagnostic_Centre_ByOwnerRow struct {
 	Doctors              []string           `db:"doctors" json:"doctors"`
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
-	AdminID              string             `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
 }
@@ -433,6 +567,96 @@ func (q *Queries) Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Dia
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
+		&i.Availability,
+		&i.TestPrices,
+	)
+	return &i, err
+}
+
+const get_Diagnostic_Centre_By_Owner = `-- name: Get_Diagnostic_Centre_By_Owner :one
+SELECT 
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
+  ARRAY_AGG(
+    json_build_object(
+      'day_of_week', dca.day_of_week,
+      'start_time', dca.start_time,
+      'end_time', dca.end_time,
+      'max_appointments', dca.max_appointments,
+      'slot_duration', dca.slot_duration,
+      'break_time', dca.break_time
+    )
+  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
+LEFT JOIN LATERAL (
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'test_type', dctp.test_type,
+      'price', dctp.price
+    )
+  ) AS test_prices
+  FROM diagnostic_centre_test_prices dctp
+  WHERE dctp.diagnostic_centre_id = dc.id
+) prices ON true
+WHERE dc.id = $1 AND dc.created_by = $2
+GROUP BY dc.id, prices.test_prices
+`
+
+type Get_Diagnostic_Centre_By_OwnerParams struct {
+	ID        string `db:"id" json:"id"`
+	CreatedBy string `db:"created_by" json:"created_by"`
+}
+
+type Get_Diagnostic_Centre_By_OwnerRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []string           `db:"doctors" json:"doctors"`
+	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
+	Availability         interface{}        `db:"availability" json:"availability"`
+	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
+}
+
+// Retrieves a single diagnostic record by its ID and Owner.
+func (q *Queries) Get_Diagnostic_Centre_By_Owner(ctx context.Context, arg Get_Diagnostic_Centre_By_OwnerParams) (*Get_Diagnostic_Centre_By_OwnerRow, error) {
+	row := q.db.QueryRow(ctx, get_Diagnostic_Centre_By_Owner, arg.ID, arg.CreatedBy)
+	var i Get_Diagnostic_Centre_By_OwnerRow
+	err := row.Scan(
+		&i.ID,
+		&i.DiagnosticCentreName,
+		&i.Latitude,
+		&i.Longitude,
+		&i.Address,
+		&i.Contact,
+		&i.Doctors,
+		&i.AvailableTests,
+		&i.CreatedBy,
+		&i.AdminID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
 		&i.Availability,
 		&i.TestPrices,
 	)
@@ -483,9 +707,9 @@ LIMIT $2 OFFSET $3
 `
 
 type Get_Diagnostic_Centre_ManagersParams struct {
-	AdminID string `db:"admin_id" json:"admin_id"`
-	Limit   int32  `db:"limit" json:"limit"`
-	Offset  int32  `db:"offset" json:"offset"`
+	AdminID pgtype.UUID `db:"admin_id" json:"admin_id"`
+	Limit   int32       `db:"limit" json:"limit"`
+	Offset  int32       `db:"offset" json:"offset"`
 }
 
 type Get_Diagnostic_Centre_ManagersRow struct {
@@ -694,7 +918,7 @@ func (q *Queries) Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Ne
 
 const list_Diagnostic_Centres_ByOwner = `-- name: List_Diagnostic_Centres_ByOwner :many
 SELECT 
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
   ARRAY_AGG(
     json_build_object(
       'day_of_week', dca.day_of_week,
@@ -740,9 +964,14 @@ type List_Diagnostic_Centres_ByOwnerRow struct {
 	Doctors              []string           `db:"doctors" json:"doctors"`
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
-	AdminID              string             `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
 }
@@ -770,6 +999,11 @@ func (q *Queries) List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_
 			&i.AdminID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AdminAssignedAt,
+			&i.AdminAssignedBy,
+			&i.AdminUnassignedAt,
+			&i.AdminUnassignedBy,
+			&i.AdminStatus,
 			&i.Availability,
 			&i.TestPrices,
 		); err != nil {
@@ -785,7 +1019,7 @@ func (q *Queries) List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_
 
 const retrieve_Diagnostic_Centres = `-- name: Retrieve_Diagnostic_Centres :many
 SELECT 
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
   ARRAY_AGG(
     json_build_object(
       'day_of_week', dca.day_of_week,
@@ -829,9 +1063,14 @@ type Retrieve_Diagnostic_CentresRow struct {
 	Doctors              []string           `db:"doctors" json:"doctors"`
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
-	AdminID              string             `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
 }
@@ -859,6 +1098,11 @@ func (q *Queries) Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_
 			&i.AdminID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AdminAssignedAt,
+			&i.AdminAssignedBy,
+			&i.AdminUnassignedAt,
+			&i.AdminUnassignedBy,
+			&i.AdminStatus,
 			&i.Availability,
 			&i.TestPrices,
 		); err != nil {
@@ -874,7 +1118,7 @@ func (q *Queries) Retrieve_Diagnostic_Centres(ctx context.Context, arg Retrieve_
 
 const search_Diagnostic_Centres = `-- name: Search_Diagnostic_Centres :many
 SELECT 
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
   ARRAY_AGG(
     json_build_object(
       'day_of_week', dca.day_of_week,
@@ -925,9 +1169,14 @@ type Search_Diagnostic_CentresRow struct {
 	Doctors              []string           `db:"doctors" json:"doctors"`
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
-	AdminID              string             `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
 }
@@ -961,6 +1210,11 @@ func (q *Queries) Search_Diagnostic_Centres(ctx context.Context, arg Search_Diag
 			&i.AdminID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AdminAssignedAt,
+			&i.AdminAssignedBy,
+			&i.AdminUnassignedAt,
+			&i.AdminUnassignedBy,
+			&i.AdminStatus,
 			&i.Availability,
 			&i.TestPrices,
 		); err != nil {
@@ -976,7 +1230,7 @@ func (q *Queries) Search_Diagnostic_Centres(ctx context.Context, arg Search_Diag
 
 const search_Diagnostic_Centres_ByDoctor = `-- name: Search_Diagnostic_Centres_ByDoctor :many
 SELECT 
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at,
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
   ARRAY_AGG(
     json_build_object(
       'day_of_week', dca.day_of_week,
@@ -1025,9 +1279,14 @@ type Search_Diagnostic_Centres_ByDoctorRow struct {
 	Doctors              []string           `db:"doctors" json:"doctors"`
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
-	AdminID              string             `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
 }
@@ -1060,6 +1319,11 @@ func (q *Queries) Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Se
 			&i.AdminID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AdminAssignedAt,
+			&i.AdminAssignedBy,
+			&i.AdminUnassignedAt,
+			&i.AdminUnassignedBy,
+			&i.AdminStatus,
 			&i.Availability,
 			&i.TestPrices,
 		); err != nil {
@@ -1073,6 +1337,46 @@ func (q *Queries) Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Se
 	return items, nil
 }
 
+const unassignAdmin = `-- name: UnassignAdmin :one
+UPDATE diagnostic_centres
+SET 
+  admin_id = NULL,
+  admin_unassigned_by = $2,
+  updated_at = NOW()
+WHERE id = $1
+RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at, admin_assigned_at, admin_assigned_by, admin_unassigned_at, admin_unassigned_by, admin_status
+`
+
+type UnassignAdminParams struct {
+	ID                string      `db:"id" json:"id"`
+	AdminUnassignedBy pgtype.UUID `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+}
+
+func (q *Queries) UnassignAdmin(ctx context.Context, arg UnassignAdminParams) (*DiagnosticCentre, error) {
+	row := q.db.QueryRow(ctx, unassignAdmin, arg.ID, arg.AdminUnassignedBy)
+	var i DiagnosticCentre
+	err := row.Scan(
+		&i.ID,
+		&i.DiagnosticCentreName,
+		&i.Latitude,
+		&i.Longitude,
+		&i.Address,
+		&i.Contact,
+		&i.Doctors,
+		&i.AvailableTests,
+		&i.CreatedBy,
+		&i.AdminID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
+	)
+	return &i, err
+}
+
 const update_Diagnostic_Centre_ByOwner = `-- name: Update_Diagnostic_Centre_ByOwner :one
 UPDATE diagnostic_centres
 SET
@@ -1083,10 +1387,17 @@ SET
   contact = COALESCE($7, contact),
   doctors = COALESCE($8, doctors),
   available_tests = COALESCE($9, available_tests),
-  admin_id = COALESCE($10, admin_id),
+  admin_id = CASE 
+    WHEN $10 IS NULL THEN NULL 
+    ELSE COALESCE($10, admin_id)
+  END,
+  admin_assigned_by = CASE
+    WHEN $10 IS NULL THEN NULL -- If admin_id is null, also null the assigned_by
+    ELSE COALESCE($11, admin_assigned_by)
+  END,
   updated_at = NOW()
 WHERE id = $1 AND created_by = $2
-RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at
+RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at, admin_assigned_at, admin_assigned_by, admin_unassigned_at, admin_unassigned_by, admin_status
 `
 
 type Update_Diagnostic_Centre_ByOwnerParams struct {
@@ -1099,7 +1410,8 @@ type Update_Diagnostic_Centre_ByOwnerParams struct {
 	Contact              []byte        `db:"contact" json:"contact"`
 	Doctors              []string      `db:"doctors" json:"doctors"`
 	AvailableTests       []string      `db:"available_tests" json:"available_tests"`
-	AdminID              string        `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID   `db:"admin_id" json:"admin_id"`
+	AdminAssignedBy      pgtype.UUID   `db:"admin_assigned_by" json:"admin_assigned_by"`
 }
 
 // Updates a diagnostic centre by the owner.
@@ -1115,6 +1427,7 @@ func (q *Queries) Update_Diagnostic_Centre_ByOwner(ctx context.Context, arg Upda
 		arg.Doctors,
 		arg.AvailableTests,
 		arg.AdminID,
+		arg.AdminAssignedBy,
 	)
 	var i DiagnosticCentre
 	err := row.Scan(
@@ -1130,6 +1443,11 @@ func (q *Queries) Update_Diagnostic_Centre_ByOwner(ctx context.Context, arg Upda
 		&i.AdminID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
 	)
 	return &i, err
 }

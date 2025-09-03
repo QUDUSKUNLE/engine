@@ -40,7 +40,7 @@ func (service *ServicesHandler) CreateMedicalRecord(cont echo.Context) error {
 	// Validate uploader_admin_id and uploader_id before uploading data to cloud
 	params := db.Get_Diagnostic_Centre_ByManagerParams{
 		ID:      dto.DiagnosticCentreID.String(),
-		AdminID: uploader.UserID.String(),
+		AdminID: pgtype.UUID{Bytes: uploader.UserID, Valid: true},
 	}
 	_, err = service.diagnosticPort.GetDiagnosticCentreByManager(ctx, params)
 	if err != nil {

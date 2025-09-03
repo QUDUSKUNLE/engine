@@ -911,9 +911,14 @@ type DiagnosticCentre struct {
 	Doctors              []string           `db:"doctors" json:"doctors"`
 	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
 	CreatedBy            string             `db:"created_by" json:"created_by"`
-	AdminID              string             `db:"admin_id" json:"admin_id"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
 	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 }
 
 type DiagnosticCentreAvailability struct {

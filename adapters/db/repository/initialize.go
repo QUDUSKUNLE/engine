@@ -25,8 +25,9 @@ func InitializeRepositories(store *db.Queries, conn *pgxpool.Pool) *Repositories
 		Schedule:     NewScheduleRepository(store),
 		TestPrice:    NewTestPriceRepository(store),
 		Availability: NewAvailabilityRepository(store),
-		Payment:      NewPaymentRepository(store, conn),
-		Appointment:  NewAppointmentRepository(store, conn),
-		Diagnostic:   NewDiagnosticCentreRepository(store, conn),
+
+		Payment:     NewPaymentRepository(store, conn),
+		Appointment: NewAppointmentRepository(store, conn),
+		Diagnostic:  NewDiagnosticCentreRepository(store, conn),
 	}
 }

@@ -87,7 +87,7 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 }
 
 // Helper to unmarshal address and contact, and build response
-func buildDiagnosticCentreResponseFromRow(row *db.Get_Nearest_Diagnostic_CentresRow) (map[string]interface{}, error) {
+func buildDiagnosticCentreResponseFromRow(row *db.List_Diagnostic_Centres_ByOwnerRow) (map[string]interface{}, error) {
 	var address domain.Address
 	if err := utils.UnmarshalJSONField(row.Address, &address); err != nil {
 		utils.Error("Failed to unmarshal address",
@@ -183,7 +183,6 @@ func buildCreateDiagnosticCentreParams(value *domain.CreateDiagnosticDTO) (*db.C
 		Contact:              contactBytes,
 		Doctors:              doctors,
 		AvailableTests:       availableTests,
-		AdminID:              value.AdminId.String(),
 	}
 
 	utils.Info("Built diagnostic centre parameters",
@@ -214,6 +213,11 @@ func buildUpdateDiagnosticCentreByOwnerParams(value *domain.UpdateDiagnosticBody
 	availableTests := make([]string, len(value.AvailableTests))
 	copy(availableTests, value.AvailableTests)
 
+	var adminID pgtype.UUID
+	if value.ADMINID != uuid.Nil {
+		adminID = pgtype.UUID{Bytes: value.ADMINID, Valid: true}
+	}
+
 	params := &db.Update_Diagnostic_Centre_ByOwnerParams{
 		DiagnosticCentreName: value.DiagnosticCentreName,
 		Latitude:             pgtype.Float8{Float64: value.Latitude, Valid: true},
@@ -222,7 +226,7 @@ func buildUpdateDiagnosticCentreByOwnerParams(value *domain.UpdateDiagnosticBody
 		Contact:              contactBytes,
 		Doctors:              doctors,
 		AvailableTests:       availableTests,
-		AdminID:              value.ADMINID.String(),
+		AdminID:              adminID,
 	}
 
 	utils.Info("Built update diagnostic centre parameters",
@@ -233,7 +237,7 @@ func buildUpdateDiagnosticCentreByOwnerParams(value *domain.UpdateDiagnosticBody
 }
 
 // Helper to build diagnostic centre response
-func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRow, address domain.Address, contact domain.Contact, price []domain.TestPrices) map[string]interface{} {
+func buildDiagnosticCentreResponse(response *db.List_Diagnostic_Centres_ByOwnerRow, address domain.Address, contact domain.Contact, price []domain.TestPrices) map[string]interface{} {
 	return map[string]interface{}{
 		"diagnostic_centre_id":   response.ID,
 		"diagnostic_centre_name": response.DiagnosticCentreName,
@@ -246,6 +250,7 @@ func buildDiagnosticCentreResponse(response *db.Get_Nearest_Diagnostic_CentresRo
 		"updated_at":             response.UpdatedAt,
 		"availability":           response.Availability,
 		"test_prices":            price,
+		"admin_id":               response.AdminID,
 	}
 }
 

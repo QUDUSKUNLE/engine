@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	AssignAdmin(ctx context.Context, arg AssignAdminParams) (*DiagnosticCentre, error)
 	CancelAppointment(ctx context.Context, arg CancelAppointmentParams) (*Appointment, error)
 	CreateAppointment(ctx context.Context, arg CreateAppointmentParams) (*Appointment, error)
 	CreateEmailVerificationToken(ctx context.Context, arg CreateEmailVerificationTokenParams) (*EmailVerificationToken, error)
@@ -32,6 +33,7 @@ type Querier interface {
 	Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Delete_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 	Delete_Diagnostic_Schedule(ctx context.Context, arg Delete_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
+	GetAdminHistory(ctx context.Context, id string) ([]*GetAdminHistoryRow, error)
 	GetAppointment(ctx context.Context, id string) (*Appointment, error)
 	GetCentreAppointments(ctx context.Context, arg GetCentreAppointmentsParams) ([]*Appointment, error)
 	GetEmailVerificationToken(ctx context.Context, token string) (*EmailVerificationToken, error)
@@ -58,12 +60,14 @@ type Querier interface {
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, error)
 	Get_Availability(ctx context.Context, arg Get_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
 	Get_Diagnostic_Availability(ctx context.Context, diagnosticCentreID string) ([]*DiagnosticCentreAvailability, error)
-	// Retrieves a single diagnostic record by its ID.
-	Get_Diagnostic_Centre(ctx context.Context, id string) (*Get_Diagnostic_CentreRow, error)
+	// Retrieves a single diagnostic record by its ID and admin.
+	Get_Diagnostic_Centre(ctx context.Context, arg Get_Diagnostic_CentreParams) (*Get_Diagnostic_CentreRow, error)
 	// GetDiagnosticCentreByManager
 	Get_Diagnostic_Centre_ByManager(ctx context.Context, arg Get_Diagnostic_Centre_ByManagerParams) (*Get_Diagnostic_Centre_ByManagerRow, error)
 	// GetADiagnosticCentreByOwner :one
 	Get_Diagnostic_Centre_ByOwner(ctx context.Context, arg Get_Diagnostic_Centre_ByOwnerParams) (*Get_Diagnostic_Centre_ByOwnerRow, error)
+	// Retrieves a single diagnostic record by its ID and Owner.
+	Get_Diagnostic_Centre_By_Owner(ctx context.Context, arg Get_Diagnostic_Centre_By_OwnerParams) (*Get_Diagnostic_Centre_By_OwnerRow, error)
 	Get_Diagnostic_Centre_Managers(ctx context.Context, arg Get_Diagnostic_Centre_ManagersParams) ([]*Get_Diagnostic_Centre_ManagersRow, error)
 	// Get Diagnostic Schedule
 	Get_Diagnostic_Schedule(ctx context.Context, arg Get_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
@@ -89,6 +93,7 @@ type Querier interface {
 	Search_Diagnostic_Centres(ctx context.Context, arg Search_Diagnostic_CentresParams) ([]*Search_Diagnostic_CentresRow, error)
 	// SearchDiagnosticWith Doctor type
 	Search_Diagnostic_Centres_ByDoctor(ctx context.Context, arg Search_Diagnostic_Centres_ByDoctorParams) ([]*Search_Diagnostic_Centres_ByDoctorRow, error)
+	UnassignAdmin(ctx context.Context, arg UnassignAdminParams) (*DiagnosticCentre, error)
 	UpdateAppointmentPayment(ctx context.Context, arg UpdateAppointmentPaymentParams) (*Appointment, error)
 	UpdateAppointmentStatus(ctx context.Context, arg UpdateAppointmentStatusParams) (*Appointment, error)
 	UpdateFilePath(ctx context.Context, arg UpdateFilePathParams) (*MedicalRecord, error)

@@ -606,7 +606,8 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	// Get centre details
 	_, err = service.diagnosticPort.GetDiagnosticCentre(
 		context.Background(),
-		appointment.DiagnosticCentreID,
+		db.Get_Diagnostic_CentreParams{
+			ID: appointment.DiagnosticCentreID },
 	)
 	if err != nil {
 		utils.Error("Failed to get centre details for confirmation email",
@@ -672,7 +673,8 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 	// Get centre details
 	centre, err := service.diagnosticPort.GetDiagnosticCentre(
 		context.Background(),
-		appointment.DiagnosticCentreID,
+		db.Get_Diagnostic_CentreParams{ID: 
+		appointment.DiagnosticCentreID},
 	)
 	if err != nil {
 		utils.Error("Failed to get centre details for cancellation email",
@@ -717,7 +719,8 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 	// Get centre details
 	centre, err := service.diagnosticPort.GetDiagnosticCentre(
 		context.Background(),
-		appointment.DiagnosticCentreID,
+		db.Get_Diagnostic_CentreParams{ID:
+		appointment.DiagnosticCentreID},
 	)
 	if err != nil {
 		utils.Error("Failed to get centre details for reschedule email",

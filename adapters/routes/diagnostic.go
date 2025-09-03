@@ -46,6 +46,15 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			description: "Get diagnostic centre by diagnostic_centre_id",
 		},
 		{
+			method:  http.MethodGet,
+			path:    "/diagnostic_centres/owner",
+			handler: handler.GetDiagnosticCentresByOwner,
+			factory: func() interface{} {
+				return &domain.PaginationQueryDTO{}
+			},
+			description: "Get Owner diagnostic centres",
+		},
+		{
 			method:      http.MethodPut,
 			path:        "/diagnostic_centres/:diagnostic_centre_id",
 			handler:     handler.UpdateDiagnosticCentre,
