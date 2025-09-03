@@ -28,6 +28,24 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			description: "Create a diagnostic centre manager",
 		},
 		{
+			method:  http.MethodPost,
+			path:    "/diagnostic_centres/assign",
+			handler: handler.AssignManager,
+			factory: func() interface{} {
+				return &domain.UpdateDiagnosticManagerDTO{}
+			},
+			description: "Assign a manager to a centre manager",
+		},
+		{
+			method:  http.MethodPost,
+			path:    "/diagnostic_centres/unassign",
+			handler: handler.UnAssignManager,
+			factory: func() interface{} {
+				return &domain.UnAssignDiagnosticManagerDTO{}
+			},
+			description: "Un assign a manager to a centre manager",
+		},
+		{
 			method:  http.MethodGet,
 			path:    "/diagnostic_centres",
 			handler: handler.SearchDiagnosticCentre,

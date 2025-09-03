@@ -234,7 +234,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreManagers(context echo.Context) er
 	return nil
 }
 
-// AssignManagerByOwner godoc
+// ListManagersByAdmin godoc
 // @Summary List managers by admin
 // @Tags DiagnosticCentre
 // @Produce json
@@ -248,7 +248,7 @@ func (handler *HTTPHandler) ListManagersByAdmin(context echo.Context) error {
 	return handler.service.ListManagers(context)
 }
 
-// ListManagersByAdmin godoc
+// AssignManagerByOwner godoc
 // @Summary Assign manager to a centre
 // @Tags DiagnosticCentre
 // @Accept json
@@ -260,13 +260,26 @@ func (handler *HTTPHandler) ListManagersByAdmin(context echo.Context) error {
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
-// @Router /v1/diagnostic_centre/assign [post]
+// @Router /v1/diagnostic_centres/assign [post]
 func (handler *HTTPHandler) AssignManager(context echo.Context) error {
 	return handler.service.AssignAdmin(context)
 }
 
+// UnAssignManagerByOwner godoc
+// @Summary Unassign manager to a centre
+// @Tags DiagnosticCentre
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param diagnostic_centre body domain.UnAssignDiagnosticManagerDTO true "Un Assign Manager to a diagnostic centre"
+// @Success 200 {object} handlers.ManagerSwagger "Manager unassigned successfully"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
+// @Router /v1/diagnostic_centres/unassign [post]
 func (handler *HTTPHandler) UnAssignManager(context echo.Context) error {
-	return nil
+	return handler.service.UnAssignAdmin(context)
 }
 
 func (handler *HTTPHandler) SubmitKYC(context echo.Context) error {

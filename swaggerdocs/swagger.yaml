@@ -596,6 +596,13 @@ definitions:
     - price
     - test_type
     type: object
+  domain.UnAssignDiagnosticManagerDTO:
+    properties:
+      diagnostic_centre_id:
+        type: string
+    required:
+    - diagnostic_centre_id
+    type: object
   domain.UpdateAppointmentDTO:
     properties:
       appointmentID:
@@ -1874,46 +1881,6 @@ paths:
       summary: Update availability for a diagnostic centre
       tags:
       - Availability
-  /v1/diagnostic_centre/assign:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: Assign Manager to a diagnostic centre
-        in: body
-        name: diagnostic_centre
-        required: true
-        schema:
-          $ref: '#/definitions/domain.UpdateDiagnosticManagerDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Manager assigned successfully
-          schema:
-            $ref: '#/definitions/handlers.ManagerSwagger'
-        "400":
-          description: BAD_REQUEST
-          schema:
-            $ref: '#/definitions/handlers.BAD_REQUEST'
-        "401":
-          description: UNAUTHORIZED_ERROR
-          schema:
-            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
-        "500":
-          description: INTERNAL_SERVER_ERROR
-          schema:
-            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
-      security:
-      - BearerAuth: []
-      summary: Assign manager to a centre
-      tags:
-      - DiagnosticCentre
   /v1/diagnostic_centres:
     get:
       description: Search for diagnostic centres based on location, available doctors,
@@ -2612,6 +2579,46 @@ paths:
       summary: Get diagnostic centre statistics
       tags:
       - DiagnosticCentre
+  /v1/diagnostic_centres/assign:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Assign Manager to a diagnostic centre
+        in: body
+        name: diagnostic_centre
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateDiagnosticManagerDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Manager assigned successfully
+          schema:
+            $ref: '#/definitions/handlers.ManagerSwagger'
+        "400":
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/handlers.BAD_REQUEST'
+        "401":
+          description: UNAUTHORIZED_ERROR
+          schema:
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
+      summary: Assign manager to a centre
+      tags:
+      - DiagnosticCentre
   /v1/diagnostic_centres/manager:
     get:
       description: Get all diagnostic centres managed by the authenticated diagnostic
@@ -2754,6 +2761,46 @@ paths:
       security:
       - BearerAuth: []
       summary: List owner's diagnostic centres
+      tags:
+      - DiagnosticCentre
+  /v1/diagnostic_centres/unassign:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Un Assign Manager to a diagnostic centre
+        in: body
+        name: diagnostic_centre
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UnAssignDiagnosticManagerDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Manager unassigned successfully
+          schema:
+            $ref: '#/definitions/handlers.ManagerSwagger'
+        "400":
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/handlers.BAD_REQUEST'
+        "401":
+          description: UNAUTHORIZED_ERROR
+          schema:
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
+      summary: Unassign manager to a centre
       tags:
       - DiagnosticCentre
   /v1/diagnostic_schedules:
