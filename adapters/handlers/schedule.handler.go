@@ -4,24 +4,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// CreateSchedule godoc
-// @Summary Create a new diagnostic schedule
-// @Description Schedule a diagnostic test at a diagnostic centre. Requires user authentication.
-// @Tags Schedule
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param Authorization header string true "Bearer token"
-// @Param schedule body domain.CreateScheduleDTO true "Schedule details"
-// @Success 201 {object} handlers.ScheduleSwagger "SUCCESS_RESPONSE"
-// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
-// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
-// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
-// @Router /v1/diagnostic_schedules [post]
-func (handler *HTTPHandler) CreateSchedule(context echo.Context) error {
-	return handler.service.CreateSchedule(context)
-}
-
 // GetSchedule godoc
 // @Summary Get a specific diagnostic schedule
 // @Description Retrieve details of a specific diagnostic schedule by ID. Only accessible by the schedule owner.

@@ -12,46 +12,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (service *ServicesHandler) CreateSchedule(context echo.Context) error {
-	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
-	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
-	}
-	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateScheduleDTO)
-	// Convert dto.ScheduleTime (string) to pgtype.Timestamptz
-	var scheduleTime pgtype.Timestamptz
-	err = scheduleTime.Scan(dto.ScheduleTime)
-	if err != nil {
-		// Try parsing as RFC3339 with or without milliseconds
-		parsed, parseErr := time.Parse(time.RFC3339Nano, dto.ScheduleTime)
-		if parseErr != nil {
-			return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.ErrScheduleTimeFormatRFC3339), context)
-		}
-		err = scheduleTime.Scan(parsed)
-		if err != nil {
-			return utils.ErrorResponse(http.StatusBadRequest, errors.New(utils.ErrScheduleTimeFormatParsing), context)
-		}
-	}
-	params := db.Create_Diagnostic_ScheduleParams{
-		UserID:             currentUser.UserID.String(),
-		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
-		ScheduleTime:       scheduleTime,
-		TestType:           dto.TestType,
-		AcceptanceStatus:   db.ScheduleAcceptanceStatusPENDING,
-		Doctor:             string(dto.Doctor),
-		Notes:              pgtype.Text{String: dto.Notes},
-	}
-	response, err := service.schedulePort.CreateDiagnosticSchedule(context.Request().Context(), params)
-	if err != nil {
-		utils.Error("Failed to create diagnostic schedule",
-			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "user_id", Value: params.UserID},
-			utils.LogField{Key: "diagnostic_centre_id", Value: params.DiagnosticCentreID})
-		return utils.ErrorResponse(http.StatusBadRequest, err, context)
-	}
-	return utils.ResponseMessage(http.StatusCreated, response, context)
-}
-
 func (service *ServicesHandler) GetDiagnosticSchedule(context echo.Context) error {
 	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {

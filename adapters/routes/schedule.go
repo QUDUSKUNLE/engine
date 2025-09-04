@@ -12,13 +12,6 @@ import (
 func ScheduleRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 	scheduleGroup := []routeConfig{
 		{
-			method:      http.MethodPost,
-			path:        "/diagnostic_schedules",
-			handler:     handler.CreateSchedule,
-			factory:     func() interface{} { return &domain.CreateScheduleDTO{} },
-			description: "Create schedule",
-		},
-		{
 			method:      http.MethodGet,
 			path:        "/diagnostic_schedules/:schedule_id",
 			handler:     handler.GetSchedule,

@@ -35,6 +35,27 @@ var (
 		[]string{"operation", "table"},
 	)
 
+	DBConnectionTime = promauto.NewHistogram(prometheus.HistogramOpts{
+		Name:    "db_connection_duration_seconds",
+		Help:    "Time taken to establish database connection",
+		Buckets: prometheus.DefBuckets,
+	})
+
+	DBConnectionErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "db_connection_errors_total",
+		Help: "Total number of database connection errors",
+	})
+
+	DBPoolActiveConnections = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "db_pool_active_connections",
+		Help: "Number of active connections in the pool",
+	})
+
+	DBPoolIdleConnections = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "db_pool_idle_connections",
+		Help: "Number of idle connections in the pool",
+	})
+
 	// Diagnostic centre metrics
 	DiagnosticSearches = promauto.NewCounterVec(
 		prometheus.CounterOpts{

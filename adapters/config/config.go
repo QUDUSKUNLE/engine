@@ -3,7 +3,9 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/diagnoxix/adapters/db"
 	"github.com/diagnoxix/core/utils"
 	"github.com/joho/godotenv"
 )
@@ -16,16 +18,27 @@ func LoadEnvironmentVariable() error {
 	return nil
 }
 
+func DBConfig() db.DBConfig {
+	return db.DBConfig{
+		MaxConns:          20, // Increased for production load
+		MinConns:          5,  // Increased minimum connections
+		ConnTimeout:       15 * time.Second,
+		MaxConnLifetime:   30 * time.Minute,
+		MaxConnIdleTime:   5 * time.Minute,
+		HealthCheckPeriod: time.Minute,
+	}
+}
+
 type EnvConfiguration struct {
-	PORT         string
-	DB_URL       string
+	PORT          string
+	DB_URL        string
 	JWT_KEY       string
 	ALLOW_ORIGINS string
 	APP_URL       string
 	// Google OAuth Configuration
 	GOOGLE_CLIENT_ID     string
 	GOOGLE_CLIENT_SECRET string
-	GOOGLE_REDIRECT_URL string
+	GOOGLE_REDIRECT_URL  string
 
 	// Generated token
 	TOKEN_EXPIRED string

@@ -33,9 +33,9 @@ import (
 func main() {
 	// Initialize logger with custom configuration
 	logConfig := utils.LogConfig{
-		Level:       "debug", // Set to debug in development, info in production
+		Level:       "info", // Set to debug in development, info in production
 		OutputPath:  "logs/medivue.log",
-		Development: true, // Set to false in production
+		Development: false, // Set to false in production
 	}
 	if err := utils.InitLogger(logConfig); err != nil {
 		panic(err)
@@ -51,11 +51,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
-	// Initialize DB connection
-	store, conn, err := db.DatabaseConnection(context.Background(), cfg.DB_URL)
+
+	// Initialize database with custom configuration
+	dbConfig := config.DBConfig()
+
+	store, conn, err := db.DatabaseConnection(context.Background(), cfg.DB_URL, dbConfig)
 	if err != nil {
-		log.Fatalf("Error connecting to the database: %v", err)
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
+	defer conn.Close()
+
+	// Start connection health monitoring
+	db.MonitorConnectionHealth(conn, time.Minute)
 
 	// Create a new echo instance
 	e := echo.New()
@@ -121,7 +128,7 @@ func main() {
 	e.GET("/health", handlers.Health)
 	e.GET("", handlers.Home)
 
-	// Get port from environment (Railway and most PaaS set PORT)
+	// Get port from environment
 	port := cfg.PORT
 	if port == "" {
 		port = "8080"

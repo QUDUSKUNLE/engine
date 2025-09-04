@@ -3,14 +3,12 @@ package repository
 import (
 	"github.com/diagnoxix/adapters/db"
 	"github.com/diagnoxix/core/ports"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Repository provides access to the database
 type Repository struct {
 	database *db.Queries
-	conn     *pgx.Conn
 	pool     *pgxpool.Pool
 }
 

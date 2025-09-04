@@ -9,6 +9,7 @@ import (
 // AppointmentRepository defines the interface for appointment data operations
 type AppointmentRepository interface {
 	BeginTx(ctx context.Context) (AppointmentTx, error)
+	// CommitTx(tx AppointmentTx) error
 	CreateAppointment(ctx context.Context, appointment db.CreateAppointmentParams) (*db.Appointment, error)
 	GetAppointment(ctx context.Context, id string) (*db.Appointment, error)
 	ListAppointments(ctx context.Context, params db.GetCentreAppointmentsParams) ([]*db.Appointment, error)

@@ -23,6 +23,7 @@ var (
 	// JWT related errors
 	ErrMissingSecretKey = errors.New("missing JWT secret key")
 	ErrInvalidToken     = errors.New("invalid or expired token")
+	ErrInvalidClaims    = errors.New("invalid claims")
 	ErrUnauthorized     = errors.New("unauthorized to perform this operation")
 	// Minimum password length for security
 	MinPasswordLength = 12
@@ -390,7 +391,6 @@ func GenerateRandomToken() string {
 // CurrentUser extracts the current user from the JWT token in the context
 func CurrentUser(c echo.Context) (*domain.CurrentUserDTO, error) {
 	userToken, ok := c.Get("user").(*jwt.Token)
-	fmt.Println(userToken, ok, "***********")
 	if !ok || userToken == nil {
 		utils.Error("missing or invalid user token")
 		return nil, ErrInvalidToken
@@ -399,7 +399,7 @@ func CurrentUser(c echo.Context) (*domain.CurrentUserDTO, error) {
 	claims, ok := userToken.Claims.(*domain.JwtCustomClaimsDTO)
 	if !ok {
 		utils.Error("invalid token claims")
-		return nil, ErrInvalidToken
+		return nil, ErrInvalidClaims
 	}
 
 	utils.Debug("user extracted from token",

@@ -113,11 +113,11 @@ func (repo *Repository) UnAssignAdmin(
 func (r *Repository) BeginDiagnostic(
 	ctx context.Context,
 ) (ports.DiagnosticTx, error) {
-	if r.conn == nil {
+	if r.pool == nil {
 		return nil, fmt.Errorf("database connection is not initialized")
 	}
 
-	tx, err := r.conn.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}

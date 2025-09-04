@@ -60,5 +60,5 @@ func (repo *Repository) GetPaymentByReference(
 func (repo *Repository) BeginWith(
 	ctx context.Context,
 ) (ports.DBTX, error) {
-	return repo.conn.BeginTx(ctx, pgx.TxOptions{})
+	return repo.pool.BeginTx(ctx, pgx.TxOptions{})
 }

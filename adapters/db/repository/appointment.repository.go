@@ -97,11 +97,11 @@ func (repo *Repository) RescheduleAppointment(
 func (r *Repository) BeginTx(
 	ctx context.Context,
 ) (ports.AppointmentTx, error) {
-	if r.conn == nil {
+	if r.pool == nil {
 		return nil, fmt.Errorf("database connection is not initialized")
 	}
 
-	tx, err := r.conn.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
