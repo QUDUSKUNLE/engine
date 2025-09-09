@@ -12,7 +12,7 @@ import (
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre body domain.CreateDiagnosticDTO true "Diagnostic centre details"
+// @Param RequestBody body domain.CreateDiagnosticDTO true "Diagnostic centre details"
 // @Success 201 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre created successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -30,7 +30,7 @@ func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param manager body domain.DiagnosticCentreManagerRegisterDTO true "Manager details"
+// @Param RequestBody body domain.DiagnosticCentreManagerRegisterDTO true "Manager details"
 // @Success 201 {object} handlers.ManagerSwagger "Manager account created successfully"
 // @Success 202 {object} map[string]string "Manager invite sent successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -87,7 +87,7 @@ func (handler *HTTPHandler) SearchDiagnosticCentre(context echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID (UUID format)" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
-// @Param diagnostic_centre body domain.UpdateDiagnosticBodyDTO true "Updated diagnostic centre details"
+// @Param RequestBody body domain.UpdateDiagnosticBodyDTO true "Updated diagnostic centre details"
 // @Success 200 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre updated successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -175,7 +175,7 @@ func (handler *HTTPHandler) GetDiagnosticCentresByManager(context echo.Context) 
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
-// @Param manager_details body domain.UpdateDiagnosticManagerDTO true "Manager details"
+// @Param RequestBody body domain.UpdateDiagnosticManagerDTO true "Manager details"
 // @Success 200 {object} handlers.DiagnosticCentreSwagger "Manager updated successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -272,7 +272,7 @@ func (handler *HTTPHandler) AssignManager(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre body domain.UnAssignDiagnosticManagerDTO true "Un Assign Manager to a diagnostic centre"
+// @Param RequestBody body domain.UnAssignDiagnosticManagerDTO true "Un Assign Manager to a diagnostic centre"
 // @Success 200 {object} handlers.ManagerSwagger "Manager unassigned successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"

@@ -15,6 +15,7 @@ type Repositories struct {
 	Payment      ports.PaymentRepository
 	Appointment  ports.AppointmentRepository
 	TestPrice    ports.TestPriceRepository
+	Notification ports.NotificationRepository
 }
 
 // InitializeRepositories creates and returns all repositories
@@ -25,6 +26,7 @@ func InitializeRepositories(store *db.Queries, conn *pgxpool.Pool) *Repositories
 		Schedule:     NewScheduleRepository(store),
 		TestPrice:    NewTestPriceRepository(store),
 		Availability: NewAvailabilityRepository(store),
+		Notification: NewNotificationRepository(store),
 
 		Payment:     NewPaymentRepository(store, conn),
 		Appointment: NewAppointmentRepository(store, conn),

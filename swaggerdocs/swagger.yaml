@@ -256,8 +256,6 @@ definitions:
         type: array
       contact:
         $ref: '#/definitions/domain.Contact'
-      created_by:
-        type: string
       diagnostic_centre_name:
         maxLength: 250
         minLength: 10
@@ -694,6 +692,20 @@ definitions:
     - diagnostic_centre_id
     - record_id
     - title
+    type: object
+  domain.UpdatePasswordDTO:
+    properties:
+      confirm_password:
+        example: NewPAssword12345
+        type: string
+      new_password:
+        example: NewPAssword12345
+        maxLength: 20
+        minLength: 6
+        type: string
+    required:
+    - confirm_password
+    - new_password
     type: object
   domain.UpdateScheduleDTO:
     properties:
@@ -1137,7 +1149,7 @@ paths:
         type: string
       - description: Account deactivation details
         in: body
-        name: deactivate
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.DeactivateAccountDTO'
@@ -1212,7 +1224,7 @@ paths:
         type: string
       - description: Profile update details
         in: body
-        name: profile
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UpdateUserProfileDTO'
@@ -1314,7 +1326,7 @@ paths:
       parameters:
       - description: Appointment details
         in: body
-        name: appointment
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.CreateAppointmentDTO'
@@ -1403,7 +1415,7 @@ paths:
         type: string
       - description: Updated appointment details
         in: body
-        name: appointment
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UpdateAppointmentDTO'
@@ -1449,7 +1461,7 @@ paths:
         type: string
       - description: Cancellation details
         in: body
-        name: cancellation
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.CancelAppointmentDTO'
@@ -1543,7 +1555,7 @@ paths:
         type: string
       - description: Rescheduling details
         in: body
-        name: reschedule
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.RescheduleAppointmentDTO'
@@ -1588,7 +1600,7 @@ paths:
         type: string
       - description: Availability information
         in: body
-        name: availability
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.CreateAvailabilityDTO'
@@ -1686,7 +1698,7 @@ paths:
         type: string
       - description: Updated availability information
         in: body
-        name: availability
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UpdateManyAvailabilityDTO'
@@ -1773,7 +1785,7 @@ paths:
         type: string
       - description: Updated availability information
         in: body
-        name: availability
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UpdateAvailabilityDTO'
@@ -1940,7 +1952,7 @@ paths:
         type: string
       - description: Diagnostic centre details
         in: body
-        name: diagnostic_centre
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.CreateDiagnosticDTO'
@@ -2059,7 +2071,7 @@ paths:
         type: string
       - description: Updated diagnostic centre details
         in: body
-        name: diagnostic_centre
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UpdateDiagnosticBodyDTO'
@@ -2281,7 +2293,7 @@ paths:
         type: string
       - description: Manager details
         in: body
-        name: manager_details
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UpdateDiagnosticManagerDTO'
@@ -2599,7 +2611,7 @@ paths:
         type: string
       - description: Manager details
         in: body
-        name: manager
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.DiagnosticCentreManagerRegisterDTO'
@@ -2697,7 +2709,7 @@ paths:
         type: string
       - description: Un Assign Manager to a diagnostic centre
         in: body
-        name: diagnostic_centre
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UnAssignDiagnosticManagerDTO'
@@ -2929,7 +2941,7 @@ paths:
       parameters:
       - description: User credentials
         in: body
-        name: credentials
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UserSignInDTO'
@@ -3224,7 +3236,7 @@ paths:
         type: string
       - description: Updated record details
         in: body
-        name: record
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.UpdateMedicalRecordDTO'
@@ -3375,7 +3387,7 @@ paths:
       parameters:
       - description: User registration details
         in: body
-        name: user
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.RegisterationDTO'
@@ -3409,7 +3421,7 @@ paths:
       parameters:
       - description: Password reset request
         in: body
-        name: request
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.RequestPasswordResetDTO'
@@ -3439,7 +3451,7 @@ paths:
       parameters:
       - description: Email address
         in: body
-        name: email
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.ResendVerificationDTO'
@@ -3473,7 +3485,7 @@ paths:
       parameters:
       - description: Password reset details
         in: body
-        name: reset
+        name: RequestBody
         required: true
         schema:
           $ref: '#/definitions/domain.ResetPasswordDTO'
@@ -3497,6 +3509,47 @@ paths:
           schema:
             $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       summary: Reset password
+      tags:
+      - User
+  /v1/update_password:
+    put:
+      consumes:
+      - application/json
+      description: User's update password while being logged in
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Password update details
+        in: body
+        name: RequestBody
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdatePasswordDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SUCCESS_RESPONSE
+          schema:
+            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
+        "400":
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/handlers.BAD_REQUEST'
+        "422":
+          description: UNPROCESSED_ERROR
+          schema:
+            $ref: '#/definitions/handlers.UNPROCESSED_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
+      summary: Update password
       tags:
       - User
   /v1/verify_email:

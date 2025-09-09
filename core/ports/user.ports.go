@@ -60,6 +60,11 @@ type UserRepository interface {
 		arg db.UpdateUserPasswordParams,
 	) error
 
+	UpdatePassword(
+		ctx context.Context,
+		arg db.UpdatePasswordParams,
+	) error
+
 	CreateEmailVerificationToken(
 		ctx context.Context,
 		arg db.CreateEmailVerificationTokenParams,

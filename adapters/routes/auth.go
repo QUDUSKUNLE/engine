@@ -33,6 +33,13 @@ func AuthRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			description: "Request password reset",
 		},
 		{
+			method:      http.MethodPut,
+			path:        "/update_password",
+			handler:     handler.UpdatePassword,
+			factory:     func() interface{} { return &domain.UpdatePasswordDTO{} },
+			description: "Update password",
+		},
+		{
 			method:      http.MethodPost,
 			path:        "/reset_password",
 			handler:     handler.ResetPassword,

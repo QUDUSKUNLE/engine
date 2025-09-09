@@ -29,18 +29,19 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	// Parse appointment creation request
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateAppointmentDTO)
 
+	ctx := context.Request().Context()
 	// Start transaction
-	tx, err := service.appointmentPort.BeginTx(context.Request().Context())
+	tx, err := service.appointmentPort.BeginTx(ctx)
 	if err != nil {
 		utils.Error("Failed to start transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
-	defer tx.Rollback(context.Request().Context())
+	defer tx.Rollback(ctx)
 
 	// Normalize test type format
 	testType := strings.ToUpper(strings.ReplaceAll(string(dto.TestType), " ", "_"))
-	if !service.appointmentPort.IsValidTestType(context.Request().Context(), testType) {
+	if !service.appointmentPort.IsValidTestType(ctx, testType) {
 		utils.Error("Failed to validate test_type",
 			utils.LogField{Key: "error", Value: "Invalid test type"})
 		return utils.ErrorResponse(
@@ -60,7 +61,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		AcceptanceStatus:   db.ScheduleAcceptanceStatusACCEPTED, // Auto-accept the schedule since validation is done
 	}
 
-	schedule, err := tx.CreateSchedule(context.Request().Context(), scheduleParams)
+	schedule, err := tx.CreateSchedule(ctx, scheduleParams)
 	if err != nil {
 		utils.Error("Failed to create schedule",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -81,7 +82,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		Notes:  toText(dto.Notes),
 	}
 
-	appointment, err := tx.CreateAppointment(context.Request().Context(), appointmentParams)
+	appointment, err := tx.CreateAppointment(ctx, appointmentParams)
 	if err != nil {
 		utils.Error("Failed to create appointment",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -104,14 +105,15 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	paymentReference := fmt.Sprintf("MED-%s-%s", appointment.ID, time.Now().Format("20060102150405"))
 	// Initialize Paystack transaction
 	metadata := map[string]interface{}{
-		"appointment_id": appointment.ID,
-		"patient_id":     currentUser.UserID.String(),
-		"centre_id":      dto.DiagnosticCentreID.String(),
-		"test_type":      testType,
+		"appointment_id":       appointment.ID,
+		"patient_id":           currentUser.UserID.String(),
+		"diagnostic_centre_id": dto.DiagnosticCentreID.String(),
+		"test_type":            testType,
+		"scheduled_time":       schedule.ScheduleTime,
 	}
 
 	// Get User Email
-	user, err := service.userPort.GetUser(context.Request().Context(), currentUser.UserID.String())
+	user, err := service.userPort.GetUser(ctx, currentUser.UserID.String())
 
 	if err != nil {
 		utils.Error("Failed to get user email",
@@ -146,7 +148,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	payment, err := tx.CreatePayment(context.Request().Context(), db.Create_PaymentParams{
+	payment, err := tx.CreatePayment(ctx, db.Create_PaymentParams{
 		AppointmentID:      appointment.ID,
 		PatientID:          currentUser.UserID.String(),
 		DiagnosticCentreID: dto.DiagnosticCentreID.String(),
@@ -175,7 +177,28 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	_, err = tx.UpdateAppointment(context.Request().Context(), db.UpdateAppointmentPaymentParams{
+	metadataJSON, err := utils.MarshalJSONField(metadata)
+	if err != nil {
+		utils.Error("Failed to marshal notification metadata",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	_, err = tx.CreateNotification(ctx, db.CreateNotificationParams{
+		UserID:   currentUser.UserID.String(),
+		Type:     db.NotificationTypeAPPOINTMENTCREATED,
+		Title:    dto.TestType,
+		Message:  dto.TestType,
+		Metadata: metadataJSON,
+	})
+	if err != nil {
+		utils.Error("Failed to create appointment notification",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "appointment_id", Value: appointment.ID},
+		)
+	}
+
+	_, err = tx.UpdateAppointment(ctx, db.UpdateAppointmentPaymentParams{
 		ID:            appointment.ID,
 		PaymentID:     pgtype.UUID{Bytes: paymentUUID, Valid: true},
 		PaymentStatus: db.NullPaymentStatus{PaymentStatus: db.PaymentStatusPending, Valid: true},
@@ -191,7 +214,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	}
 
 	// Commit transaction
-	if err := tx.Commit(context.Request().Context()); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		utils.Error("Failed to commit appointment transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit appointment transaction"), context)
@@ -214,17 +237,19 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	// Get validated DTO
 	dto := context.Get(utils.ValidatedBodyDTO).(*domain.ConfirmAppointmentDTO)
 
+	ctx := context.Request().Context()
+
 	// Start transaction
-	tx, err := service.appointmentPort.BeginTx(context.Request().Context())
+	tx, err := service.appointmentPort.BeginTx(ctx)
 	if err != nil {
 		utils.Error("Failed to start transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
-	defer tx.Rollback(context.Request().Context())
+	defer tx.Rollback(ctx)
 
 	// Verify and update payment first
-	payment, err := service.verifyAndUpdatePayment(context.Request().Context(), dto.ProviderReference)
+	payment, err := service.verifyAndUpdatePayment(ctx, dto.ProviderReference)
 	if err != nil {
 		utils.Error("Payment verification failed",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -235,7 +260,7 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	// Get appointment with retries
 	var appointment *db.Appointment
 	for retries := 0; retries < 3; retries++ {
-		appointment, err = service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
+		appointment, err = service.appointmentPort.GetAppointment(ctx, dto.AppointmentID)
 		if err == nil {
 			break
 		}
@@ -293,7 +318,7 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	}
 
 	// Update appointment status
-	confirmedAppointment, err := tx.UpdateAppointment(context.Request().Context(), db.UpdateAppointmentPaymentParams{
+	confirmedAppointment, err := tx.UpdateAppointment(ctx, db.UpdateAppointmentPaymentParams{
 		ID:            appointment.ID,
 		PaymentID:     pgtype.UUID{Bytes: paymentUUID, Valid: true},
 		PaymentStatus: db.NullPaymentStatus{PaymentStatus: db.PaymentStatusSuccess, Valid: true},
@@ -307,8 +332,35 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
+	metadata := map[string]interface{}{
+		"appointment_id":       appointment.ID,
+		"patient_id":           currentUser.UserID.String(),
+		"diagnostic_centre_id": appointment.DiagnosticCentreID,
+	}
+
+	metadataJSON, err := utils.MarshalJSONField(metadata)
+	if err != nil {
+		utils.Error("Failed to marshal notification metadata",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	_, err = tx.CreateNotification(ctx, db.CreateNotificationParams{
+		UserID:   currentUser.UserID.String(),
+		Type:     db.NotificationTypeAPPOINTMENTCONFIRMED,
+		Title:    dto.PaymentMethod,
+		Message:  dto.ProviderReference,
+		Metadata: metadataJSON,
+	})
+	if err != nil {
+		utils.Error("Failed to create confirm notification",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "appointment_id", Value: appointment.ID},
+		)
+	}
+
 	// Commit transaction
-	if err := tx.Commit(context.Request().Context()); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		utils.Error("Failed to commit transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit transaction"), context)
@@ -418,8 +470,9 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 	// Get validated DTO
 	dto := context.Get(utils.ValidatedBodyDTO).(*domain.CancelAppointmentDTO)
 
+	ctx := context.Request().Context()
 	// Verify appointment exists and belongs to user
-	appointment, err := service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	appointment, err := service.appointmentPort.GetAppointment(ctx, dto.AppointmentID)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("appointment not found"), context)
 	}
@@ -441,17 +494,45 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 		CancellationFee:    toNumeric(0), // Fee could be configured based on business rules
 	}
 
-	err = service.appointmentPort.CancelAppointment(context.Request().Context(), dto.AppointmentID)
+	err = service.appointmentPort.CancelAppointment(ctx, dto.AppointmentID)
 	if err != nil {
 		return err
 	}
 
-	cancelledAppointment, err := service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	cancelledAppointment, err := service.appointmentPort.GetAppointment(ctx, dto.AppointmentID)
 	if err != nil {
 		utils.Error("Failed to cancel appointment",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "appointment_id", Value: dto.AppointmentID})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	metadata := map[string]interface{}{
+		"appointment_id":       appointment.ID,
+		"patient_id":           currentUser.UserID.String(),
+		"diagnostic_centre_id": appointment.DiagnosticCentreID,
+		"reason":               dto.Reason,
+	}
+
+	metadataJSON, err := utils.MarshalJSONField(metadata)
+	if err != nil {
+		utils.Error("Failed to marshal notification metadata",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	_, err = service.notificationRepo.CreateNotification(ctx, db.CreateNotificationParams{
+		UserID:   currentUser.UserID.String(),
+		Type:     db.NotificationTypeAPPOINTMENTCANCELLED,
+		Title:    dto.Reason,
+		Message:  dto.Reason,
+		Metadata: metadataJSON,
+	})
+	if err != nil {
+		utils.Error("Failed to create cancel notification",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "appointment_id", Value: appointment.ID},
+		)
 	}
 
 	// Send cancellation email asynchronously
@@ -671,7 +752,7 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 
 	// Get centre details
 	centre, err := service.diagnosticPort.GetDiagnosticCentre(
-		context.Background(), 
+		context.Background(),
 		appointment.DiagnosticCentreID,
 	)
 	if err != nil {

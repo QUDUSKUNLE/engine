@@ -20,6 +20,7 @@ func InitializeServices(repos *repository.Repositories, cfg *config.EnvConfigura
 		repos.Payment,
 		repos.Appointment,
 		repos.TestPrice,
+		repos.Notification,
 		*cfg,
 	)
 	return &Service{

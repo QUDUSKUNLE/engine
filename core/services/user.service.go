@@ -298,6 +298,41 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	}, context)
 }
 
+func (service *ServicesHandler) UpdatePassword(context echo.Context) error {
+	// Authentication & Authorization
+	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumPATIENT, db.UserEnumDIAGNOSTICCENTREMANAGER})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
+	}
+	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdatePasswordDTO)
+
+	// Hash new password
+	hashedPassword, err := domain.HashPassword(dto.NewPassword)
+	if err != nil {
+		utils.Error("Failed to hash new password",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	// Update password
+	if err := service.userPort.UpdatePassword(context.Request().Context(), db.UpdatePasswordParams{
+		ID:    currentUser.UserID.String(),
+		Password: hashedPassword,
+	}); err != nil {
+		utils.Error("Failed to update password",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+
+	utils.Info("Password updated successful",
+		utils.LogField{Key: "ID", Value: currentUser.UserID.String()})
+
+	return utils.ResponseMessage(http.StatusOK, map[string]string{
+		"message": "Password updated successful",
+	}, context)
+
+}
+
 func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.EmailVerificationDTO)
 

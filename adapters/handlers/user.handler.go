@@ -10,7 +10,7 @@ import (
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param user body domain.RegisterationDTO true "User registration details"
+// @Param RequestBody body domain.RegisterationDTO true "User registration details"
 // @Success 201 {object} handlers.UserSwagger "User created successfully"
 // @Failure 409 {object} handlers.DUPLICATE_ERROR "DUPLICATE_ERROR"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -26,7 +26,7 @@ func (handler *HTTPHandler) Register(context echo.Context) error {
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param credentials body domain.UserSignInDTO true "User credentials"
+// @Param RequestBody body domain.UserSignInDTO true "User credentials"
 // @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -43,7 +43,7 @@ func (handler *HTTPHandler) SignIn(context echo.Context) error {
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param request body domain.RequestPasswordResetDTO true "Password reset request"
+// @Param RequestBody body domain.RequestPasswordResetDTO true "Password reset request"
 // @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
@@ -58,7 +58,7 @@ func (handler *HTTPHandler) RequestPasswordReset(context echo.Context) error {
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param reset body domain.ResetPasswordDTO true "Password reset details"
+// @Param RequestBody body domain.ResetPasswordDTO true "Password reset details"
 // @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 422 {object} handlers.UNPROCESSED_ERROR "UNPROCESSED_ERROR"
@@ -66,6 +66,24 @@ func (handler *HTTPHandler) RequestPasswordReset(context echo.Context) error {
 // @Router /v1/reset_password [post]
 func (handler *HTTPHandler) ResetPassword(context echo.Context) error {
 	return handler.service.ResetPassword(context)
+}
+
+// UpdatePassword godoc
+// @Summary Update password
+// @Description User's update password while being logged in
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
+// @Param RequestBody body domain.UpdatePasswordDTO true "Password update details"
+// @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
+// @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
+// @Failure 422 {object} handlers.UNPROCESSED_ERROR "UNPROCESSED_ERROR"
+// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
+// @Router /v1/update_password [put]
+func (handler *HTTPHandler) UpdatePassword(context echo.Context) error {
+	return handler.service.UpdatePassword(context)
 }
 
 // GetProfile godoc
@@ -93,7 +111,7 @@ func (handler *HTTPHandler) GetProfile(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param profile body domain.UpdateUserProfileDTO true "Profile update details"
+// @Param RequestBody body domain.UpdateUserProfileDTO true "Profile update details"
 // @Success 200 {object} handlers.UserSwagger "Updated profile details"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -111,7 +129,7 @@ func (handler *HTTPHandler) UpdateProfile(context echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param deactivate body domain.DeactivateAccountDTO true "Account deactivation details"
+// @Param RequestBody body domain.DeactivateAccountDTO true "Account deactivation details"
 // @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "Authentication required/Invalid password"
@@ -143,7 +161,7 @@ func (handler *HTTPHandler) VerifyEmail(context echo.Context) error {
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param email body domain.ResendVerificationDTO true "Email address"
+// @Param RequestBody body domain.ResendVerificationDTO true "Email address"
 // @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"

@@ -119,7 +119,7 @@ func (handler *HTTPHandler) GetUploaderMedicalRecords(context echo.Context) erro
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param record_id path string true "Medical Record ID" format(uuid) default(987e4567-e89b-12d3-a456-426614174000)
-// @Param record body domain.UpdateMedicalRecordDTO true "Updated record details"
+// @Param RequestBody body domain.UpdateMedicalRecordDTO true "Updated record details"
 // @Success 200 {object} handlers.MedicalRecordSwagger "Record updated successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"

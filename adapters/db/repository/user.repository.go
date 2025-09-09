@@ -107,6 +107,13 @@ func (repo *Repository) UpdateUserPassword(
 	return repo.database.UpdateUserPassword(ctx, params)
 }
 
+func (repo *Repository) UpdatePassword(
+	ctx context.Context,
+	arg db.UpdatePasswordParams,
+) error {
+	return repo.database.UpdatePassword(ctx, arg)
+}
+
 func (repo *Repository) CreateEmailVerificationToken(
 	ctx context.Context,
 	arg db.CreateEmailVerificationTokenParams,

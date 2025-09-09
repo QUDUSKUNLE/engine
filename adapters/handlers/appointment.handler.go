@@ -10,7 +10,7 @@ import (
 // @Tags Appointments
 // @Accept json
 // @Produce json
-// @Param appointment body domain.CreateAppointmentDTO true "Appointment details"
+// @Param RequestBody body domain.CreateAppointmentDTO true "Appointment details"
 // @Success 201 {object} handlers.AppointmentSwagger "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -73,7 +73,7 @@ func (h *HTTPHandler) ListAppointments(c echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
-// @Param appointment body domain.UpdateAppointmentDTO true "Updated appointment details"
+// @Param RequestBody body domain.UpdateAppointmentDTO true "Updated appointment details"
 // @Success 200 {object} handlers.AppointmentSwagger "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -92,7 +92,7 @@ func (h *HTTPHandler) UpdateAppointment(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
-// @Param cancellation body domain.CancelAppointmentDTO true "Cancellation details"
+// @Param RequestBody body domain.CancelAppointmentDTO true "Cancellation details"
 // @Success 200 {object} map[string]string "Cancellation success message"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -113,7 +113,7 @@ func (h *HTTPHandler) CancelAppointment(c echo.Context) error {
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
 // @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
-// @Param reschedule body domain.RescheduleAppointmentDTO true "Rescheduling details"
+// @Param RequestBody body domain.RescheduleAppointmentDTO true "Rescheduling details"
 // @Success 200 {object} handlers.AppointmentSwagger "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"

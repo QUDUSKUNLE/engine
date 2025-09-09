@@ -26,5 +26,6 @@ type AppointmentTx interface {
 	CreateAppointment(ctx context.Context, appointment db.CreateAppointmentParams) (*db.Appointment, error)
 	CreateSchedule(ctx context.Context, schedule db.Create_Diagnostic_ScheduleParams) (*db.DiagnosticSchedule, error)
 	CreatePayment(ctx context.Context, payment db.Create_PaymentParams) (*db.Payment, error)
+	CreateNotification(ctx context.Context, arg db.CreateNotificationParams) (*db.Notification, error)
 	UpdateAppointment(ctx context.Context, update db.UpdateAppointmentPaymentParams) (*db.Appointment, error)
 }

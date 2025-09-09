@@ -43,7 +43,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Account deactivation details",
-                        "name": "deactivate",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -160,7 +160,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Profile update details",
-                        "name": "profile",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -309,7 +309,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Appointment details",
-                        "name": "appointment",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -448,7 +448,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Updated appointment details",
-                        "name": "appointment",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -514,7 +514,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Cancellation details",
-                        "name": "cancellation",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -661,7 +661,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Rescheduling details",
-                        "name": "reschedule",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -731,7 +731,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Availability information",
-                        "name": "availability",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -870,7 +870,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Updated availability information",
-                        "name": "availability",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -946,7 +946,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Updated availability information",
-                        "name": "availability",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1220,7 +1220,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Diagnostic centre details",
-                        "name": "diagnostic_centre",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1411,7 +1411,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Manager details",
-                        "name": "manager",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1561,7 +1561,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Un Assign Manager to a diagnostic centre",
-                        "name": "diagnostic_centre",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1681,7 +1681,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Updated diagnostic centre details",
-                        "name": "diagnostic_centre",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -2068,7 +2068,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Manager details",
-                        "name": "manager_details",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -2692,7 +2692,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "User credentials",
-                        "name": "credentials",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -3213,7 +3213,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Updated record details",
-                        "name": "record",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -3347,7 +3347,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "User registration details",
-                        "name": "user",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -3399,7 +3399,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Password reset request",
-                        "name": "request",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -3445,7 +3445,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Email address",
-                        "name": "email",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -3497,11 +3497,75 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Password reset details",
-                        "name": "reset",
+                        "name": "RequestBody",
                         "in": "body",
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/domain.ResetPasswordDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SUCCESS_RESPONSE",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
+                        }
+                    },
+                    "400": {
+                        "description": "BAD_REQUEST",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSED_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UNPROCESSED_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/update_password": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "User's update password while being logged in",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Password update details",
+                        "name": "RequestBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdatePasswordDTO"
                         }
                     }
                 ],
@@ -3913,9 +3977,6 @@ const docTemplate = `{
                 },
                 "contact": {
                     "$ref": "#/definitions/domain.Contact"
-                },
-                "created_by": {
-                    "type": "string"
                 },
                 "diagnostic_centre_name": {
                     "type": "string",
@@ -4509,6 +4570,25 @@ const docTemplate = `{
                 },
                 "uploader_admin_id": {
                     "type": "string"
+                }
+            }
+        },
+        "domain.UpdatePasswordDTO": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "new_password"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string",
+                    "example": "NewPAssword12345"
+                },
+                "new_password": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 6,
+                    "example": "NewPAssword12345"
                 }
             }
         },

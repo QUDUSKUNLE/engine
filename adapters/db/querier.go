@@ -17,6 +17,7 @@ type Querier interface {
 	CreateEmailVerificationToken(ctx context.Context, arg CreateEmailVerificationTokenParams) (*EmailVerificationToken, error)
 	// Create a Medical Record
 	CreateMedicalRecord(ctx context.Context, arg CreateMedicalRecordParams) (*MedicalRecord, error)
+	CreateNotification(ctx context.Context, arg CreateNotificationParams) (*Notification, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
 	Create_Availability(ctx context.Context, arg Create_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
@@ -49,6 +50,7 @@ type Querier interface {
 	GetSampleDoctor(ctx context.Context) (Doctor, error)
 	// This is just a helper query to make sqlc generate the Doctor type as array
 	GetSampleDoctorArray(ctx context.Context) ([]Doctor, error)
+	GetUnreadCount(ctx context.Context, userID string) (int64, error)
 	// Get an Uploader Medical Record
 	// Retrieves a medical record by its ID and uploader ID.
 	GetUploaderMedicalRecord(ctx context.Context, arg GetUploaderMedicalRecordParams) (*GetUploaderMedicalRecordRow, error)
@@ -57,6 +59,7 @@ type Querier interface {
 	GetUploaderMedicalRecords(ctx context.Context, arg GetUploaderMedicalRecordsParams) ([]*GetUploaderMedicalRecordsRow, error)
 	GetUser(ctx context.Context, id string) (*User, error)
 	GetUserByEmail(ctx context.Context, email pgtype.Text) (*User, error)
+	GetUserNotifications(ctx context.Context, arg GetUserNotificationsParams) ([]*Notification, error)
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]*User, error)
 	Get_Availability(ctx context.Context, arg Get_AvailabilityParams) ([]*DiagnosticCentreAvailability, error)
 	Get_Diagnostic_Availability(ctx context.Context, diagnosticCentreID string) ([]*DiagnosticCentreAvailability, error)
@@ -82,6 +85,8 @@ type Querier interface {
 	// Retrieves all diagnostic records for a specific owner.
 	List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*List_Diagnostic_Centres_ByOwnerRow, error)
 	List_Payments(ctx context.Context, arg List_PaymentsParams) ([]*Payment, error)
+	MarkAllAsRead(ctx context.Context, userID string) error
+	MarkAsRead(ctx context.Context, arg MarkAsReadParams) (*Notification, error)
 	MarkEmailAsVerified(ctx context.Context, email pgtype.Text) error
 	MarkEmailVerificationTokenUsed(ctx context.Context, id string) error
 	MarkResetTokenUsed(ctx context.Context, id string) error
@@ -100,6 +105,7 @@ type Querier interface {
 	// Uploader Update a Medical Record
 	// Updates a medical record by uploader, allowing partial updates to fields. Only the uploader can update their own records. Updates the 'updated_at' timestamp.
 	UpdateMedicalRecordByUploader(ctx context.Context, arg UpdateMedicalRecordByUploaderParams) (*MedicalRecord, error)
+	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 	UpdateReminderSent(ctx context.Context, id string) (*Appointment, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*UpdateUserRow, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error

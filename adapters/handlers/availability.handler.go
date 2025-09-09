@@ -11,7 +11,7 @@ import (
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param availability body domain.CreateAvailabilityDTO true "Availability information"
+// @Param RequestBody body domain.CreateAvailabilityDTO true "Availability information"
 // @Success 201 {object} domain.AvailabilitySlot
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -47,7 +47,7 @@ func (handler *HTTPHandler) GetAvailability(context echo.Context) error {
 // @Produce json
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param day_of_week path string true "Day of week (monday, tuesday, etc.)"
-// @Param availability body domain.UpdateAvailabilityDTO true "Updated availability information"
+// @Param RequestBody body domain.UpdateAvailabilityDTO true "Updated availability information"
 // @Success 200 {object} domain.AvailabilitySlot "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
@@ -64,7 +64,7 @@ func (h *HTTPHandler) UpdateAvailability(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
-// @Param availability body domain.UpdateManyAvailabilityDTO true "Updated availability information"
+// @Param RequestBody body domain.UpdateManyAvailabilityDTO true "Updated availability information"
 // @Success 200 {array} domain.AvailabilitySlot "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"

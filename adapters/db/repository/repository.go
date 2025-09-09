@@ -73,3 +73,9 @@ func NewDiagnosticCentreRepository(
 ) ports.DiagnosticRepository {
 	return &Repository{database: store, pool: pool}
 }
+
+func NewNotificationRepository(
+	store *db.Queries,
+) ports.NotificationRepository {
+	return &Repository{database: store}
+}

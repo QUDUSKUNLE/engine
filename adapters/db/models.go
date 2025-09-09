@@ -405,6 +405,73 @@ func AllDocumentTypeValues() []DocumentType {
 	}
 }
 
+type NotificationType string
+
+const (
+	NotificationTypeAPPOINTMENTCREATED     NotificationType = "APPOINTMENT_CREATED"
+	NotificationTypeAPPOINTMENTCONFIRMED   NotificationType = "APPOINTMENT_CONFIRMED"
+	NotificationTypeAPPOINTMENTRESCHEDULED NotificationType = "APPOINTMENT_RESCHEDULED"
+	NotificationTypeAPPOINTMENTCANCELLED   NotificationType = "APPOINTMENT_CANCELLED"
+	NotificationTypeAPPOINTMENTREMINDER    NotificationType = "APPOINTMENT_REMINDER"
+)
+
+func (e *NotificationType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = NotificationType(s)
+	case string:
+		*e = NotificationType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NotificationType: %T", src)
+	}
+	return nil
+}
+
+type NullNotificationType struct {
+	NotificationType NotificationType `json:"notification_type"`
+	Valid            bool             `json:"valid"` // Valid is true if NotificationType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullNotificationType) Scan(value interface{}) error {
+	if value == nil {
+		ns.NotificationType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.NotificationType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullNotificationType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.NotificationType), nil
+}
+
+func (e NotificationType) Valid() bool {
+	switch e {
+	case NotificationTypeAPPOINTMENTCREATED,
+		NotificationTypeAPPOINTMENTCONFIRMED,
+		NotificationTypeAPPOINTMENTRESCHEDULED,
+		NotificationTypeAPPOINTMENTCANCELLED,
+		NotificationTypeAPPOINTMENTREMINDER:
+		return true
+	}
+	return false
+}
+
+func AllNotificationTypeValues() []NotificationType {
+	return []NotificationType{
+		NotificationTypeAPPOINTMENTCREATED,
+		NotificationTypeAPPOINTMENTCONFIRMED,
+		NotificationTypeAPPOINTMENTRESCHEDULED,
+		NotificationTypeAPPOINTMENTCANCELLED,
+		NotificationTypeAPPOINTMENTREMINDER,
+	}
+}
+
 type PaymentMethod string
 
 const (
@@ -988,6 +1055,19 @@ type MedicalRecord struct {
 	CreatedAt       pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	UploaderAdminID pgtype.UUID        `db:"uploader_admin_id" json:"uploader_admin_id"`
+}
+
+type Notification struct {
+	ID        string             `db:"id" json:"id"`
+	UserID    string             `db:"user_id" json:"user_id"`
+	Type      NotificationType   `db:"type" json:"type"`
+	Title     string             `db:"title" json:"title"`
+	Message   string             `db:"message" json:"message"`
+	Read      bool               `db:"read" json:"read"`
+	ReadAt    pgtype.Timestamptz `db:"read_at" json:"read_at"`
+	Metadata  []byte             `db:"metadata" json:"metadata"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 type PasswordResetToken struct {

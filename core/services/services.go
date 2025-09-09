@@ -21,6 +21,7 @@ type ServicesHandler struct {
 	testPricePort    ports.TestPriceRepository
 	filePort         ports.FileService
 	notificationPort ports.NotificationService
+	notificationRepo ports.NotificationRepository
 	Config           config.EnvConfiguration
 	// Payment Gateway
 	paymentService ports.PaymentProviderService
@@ -37,6 +38,7 @@ func ServicesAdapter(
 	paymentPort ports.PaymentRepository,
 	appointmentPort ports.AppointmentRepository,
 	testPriceRepo ports.TestPriceRepository,
+	notificationRepo ports.NotificationRepository,
 	conn config.EnvConfiguration,
 ) *ServicesHandler {
 	return &ServicesHandler{
@@ -56,6 +58,7 @@ func ServicesAdapter(
 			From:      conn.EMAIL_FROM_ADDRESS,
 			EmailType: ex.EmailType(conn.EMAIL_TYPE),
 		}),
+		notificationRepo: notificationRepo,
 		paymentService: paystack.NewPaystackAdapter(&paystack.PaystackConfig{
 			SecretKey: conn.PAYSTACK_SECRET_KEY,
 			BaseURL:   conn.PAYSTACK_BASE_URL,

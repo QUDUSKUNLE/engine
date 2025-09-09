@@ -22,10 +22,10 @@ type (
 		DiagnosticCentreID uuid.UUID `json:"diagnostic_centre_id" validate:"required,uuid"`
 		TestType           string    `json:"test_type" validate:"required,oneof=BLOOD_TEST URINE_TEST X_RAY MRI CT_SCAN ULTRASOUND ECG EEG BIOPSY SKIN_TEST IMMUNOLOGY_TEST HORMONE_TEST VIRAL_TEST BACTERIAL_TEST PARASITIC_TEST FUNGAL_TEST MOLECULAR_TEST TOXICOLOGY_TEST ECHO COVID_19_TEST BLOOD_SUGAR_TEST LIPID_PROFILE HEMOGLOBIN_TEST THYROID_TEST LIVER_FUNCTION_TEST KIDNEY_FUNCTION_TEST URIC_ACID_TEST VITAMIN_D_TEST VITAMIN_B12_TEST HEMOGRAM COMPLETE_BLOOD_COUNT BLOOD_GROUPING HEPATITIS_B_TEST HEPATITIS_C_TEST HIV_TEST MALARIA_TEST DENGUE_TEST TYPHOID_TEST COVID_19_ANTIBODY_TEST COVID_19_RAPID_ANTIGEN_TEST COVID_19_RT_PCR_TEST PREGNANCY_TEST ALLERGY_TEST GENETIC_TEST OTHER"`
 		AppointmentDate    time.Time `json:"appointment_date" validate:"required"`
-		Amount          float64 `json:"amount" validate:"required"`
-		PreferredDoctor string  `json:"preferred_doctor" validate:"omitempty,oneof=Male Female"`
-		PaymentProvider string  `json:"payment_provider" validate:"oneof=PAYSTACK FLUTTERWAVE STRIPE MONNIFY"`
-		Notes           string  `json:"notes" validate:"max=500"`
+		Amount             float64   `json:"amount" validate:"required"`
+		PreferredDoctor    string    `json:"preferred_doctor" validate:"omitempty,oneof=Male Female"`
+		PaymentProvider    string    `json:"payment_provider" validate:"oneof=PAYSTACK FLUTTERWAVE STRIPE MONNIFY"`
+		Notes              string    `json:"notes" validate:"max=500"`
 	}
 	// CreatePaymentDTO represents the request body for creating a payment
 	ConfirmAppointmentDTO struct {
@@ -50,6 +50,7 @@ type (
 		ToDate             time.Time         `query:"to_date" validate:"omitempty,gtefield=FromDate"`
 		PaginationQueryDTO
 	}
+
 	// UpdateAppointmentDTO represents the request body for updating an appointment
 	UpdateAppointmentDTO struct {
 		AppointmentID string            `param:"appointment_id" validate:"required,uuid"`
@@ -70,5 +71,8 @@ type (
 		NewDate          time.Time `json:"new_date" validate:"required"`
 		NewTimeSlot      string    `json:"new_time_slot" validate:"required"`
 		RescheduleReason string    `json:"reschedule_reason" validate:"required,max=500"`
+	}
+	GetNotificationsDTO struct {
+		PaginationQueryDTO
 	}
 )
