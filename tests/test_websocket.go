@@ -1,4 +1,4 @@
-package main
+package api_check_suite
 
 import (
 	"fmt"
@@ -6,12 +6,13 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"testing"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
-
-func main() {
+func TestWebSocketConnection(t *testing.T) {
+	// WebSocket server URL
 	// WebSocket server URL
 	u := url.URL{Scheme: "ws", Host: "host:7556", Path: "/v1/ws/notifications"}
 	q := u.Query()
@@ -71,14 +72,14 @@ func main() {
 			}
 		case <-interrupt:
 			log.Println("Interrupt received, closing connection...")
-			
+
 			// Send close message
 			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
 				log.Println("Write close error:", err)
 				return
 			}
-			
+
 			select {
 			case <-done:
 			case <-time.After(time.Second):

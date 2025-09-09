@@ -1,4 +1,4 @@
-package main
+package api_check_suite
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main() {
+func TestEnhancedAIFeatures() {
 	// Load environment variables
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Printf("Warning: .env file not found: %v", err)
@@ -40,7 +40,7 @@ func main() {
 	testLabPackageAnalysis(aiService)
 
 	// Test 4: Automated Report Generation
-	fmt.Pln("\n=== Testing Automated Report Generation ===")
+	fmt.Println("\n=== Testing Automated Report Generation ===")
 	testAutomatedReportGeneration(aiService)
 }
 
