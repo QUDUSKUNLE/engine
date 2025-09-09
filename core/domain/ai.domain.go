@@ -20,7 +20,7 @@ type (
 	}
 	// MedicalImageAnalysisRequest represents a medical image analysis request
 	MedicalImageAnalysisRequest struct {
-		ImageURL      string `json:"imarl" validate:"required,url"`
+		ImageURL      string `json:"image_url" validate:"required,url"`
 		ImageType     string `json:"image_type" validate:"required,oneof=XRAY CT_SCAN MRI ULTRASOUND MAMMOGRAM"`
 		BodyPart      string `json:"body_part" validate:"required"`
 		PatientAge    int    `json:"patient_age" validate:"required,min=1,max=120"`

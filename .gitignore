@@ -20,3 +20,4 @@ kubernetes/secrets/
 *.crt
 .air_tmp
 *.sql
+diagnoxix
