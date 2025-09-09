@@ -24,6 +24,8 @@ require (
 	google.golang.org/api v0.237.0
 )
 
+require github.com/gorilla/websocket v1.5.3 // indirect
+
 require (
 	cloud.google.com/go/auth v0.16.2 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect

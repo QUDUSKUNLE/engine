@@ -8,6 +8,7 @@ import (
 	"github.com/diagnoxix/adapters/ex/ai"
 	"github.com/diagnoxix/adapters/ex/paystack"
 	"github.com/diagnoxix/core/ports"
+	"github.com/diagnoxix/core/services/websocket"
 )
 
 type ServicesHandler struct {
@@ -25,8 +26,11 @@ type ServicesHandler struct {
 	Config           config.EnvConfiguration
 	// Payment Gateway
 	paymentService ports.PaymentProviderService
-
+	// AI Services
 	aiPort *ai.AIAdaptor
+	AI     *AIService
+	// WebSocket Manager
+	WebSocketManager *websocket.WebSocketManager
 }
 
 func ServicesAdapter(
@@ -73,6 +77,8 @@ func ServicesAdapter(
 			ai.WithImageAnalyzer(ai.NewImageAnalysis()),
 			ai.WithPackageAnalyzer(ai.NewPackageAnalysis()),
 		),
-		filePort: ex.NewLocalFileService(),
+		AI:               NewAIService(conn.OPEN_API_KEY),
+		WebSocketManager: websocket.NewWebSocketManager(),
+		filePort:         ex.NewLocalFileService(),
 	}
 }

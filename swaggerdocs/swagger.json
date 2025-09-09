@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "diagnoxix.onrender.com",
+    "host": "127.0.0.1:7556",
     "basePath": "/",
     "paths": {
         "/v1/account": {
@@ -185,6 +185,370 @@
                         "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
                             "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/analyze-lab-package": {
+            "post": {
+                "description": "Provides holistic analysis of comprehensive lab test packages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Analyze lab package",
+                "parameters": [
+                    {
+                        "description": "Lab package analysis data",
+                        "name": "packageData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.LabPackageAnalysisRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lab package analysis results",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/analyze-medical-image": {
+            "post": {
+                "description": "Provides AI-powered analysis of medical images (X-rays, CT scans, MRIs, etc.)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Analyze medical images",
+                "parameters": [
+                    {
+                        "description": "Medical image analysis data",
+                        "name": "imageData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.MedicalImageAnalysisRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Medical image analysis results",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/analyze-symptoms": {
+            "post": {
+                "description": "Provides AI-powered preliminary analysis of patient symptoms",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Analyze patient symptoms",
+                "parameters": [
+                    {
+                        "description": "Symptom analysis request",
+                        "name": "symptoms",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.SymptomAnalysisRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Symptom analysis results",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/capabilities": {
+            "get": {
+                "description": "Returns list of available AI-powered features",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Get AI capabilities",
+                "responses": {
+                    "200": {
+                        "description": "AI capabilities",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/detect-anomalies": {
+            "post": {
+                "description": "Identifies unusual patterns in medical data that may require attention",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Detect anomalies in medical data",
+                "parameters": [
+                    {
+                        "description": "Anomaly detection data",
+                        "name": "anomalyData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AnomalyDetectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Anomaly detection results",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/generate-report": {
+            "post": {
+                "description": "Creates comprehensive, professional medical reports using AI",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Generate automated medical report",
+                "parameters": [
+                    {
+                        "description": "Report generation data",
+                        "name": "reportData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.AutomatedReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Generated medical report",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/interpret-lab": {
+            "post": {
+                "description": "Provides AI-powered analysis and interpretation of lab test results",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Interpret lab test results",
+                "parameters": [
+                    {
+                        "description": "Lab test data",
+                        "name": "labTest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.LabTest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lab interpretation results",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/summarize-report": {
+            "post": {
+                "description": "Creates patient-friendly or professional summaries of medical reports",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Generate medical report summary",
+                "parameters": [
+                    {
+                        "description": "Report summary request",
+                        "name": "report",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.ReportSummaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Report summary",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -3345,6 +3709,13 @@
                 "summary": "Get notifications",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "default": 1,
                         "description": "Page number",
@@ -3368,6 +3739,24 @@
                                 "$ref": "#/definitions/domain.Notification"
                             }
                         }
+                    },
+                    "400": {
+                        "description": "BAD_REQUEST",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
+                        }
                     }
                 }
             }
@@ -3387,8 +3776,15 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Notification ID",
-                        "name": "id",
+                        "name": "Notification_ID",
                         "in": "path",
                         "required": true
                     }
@@ -3398,6 +3794,24 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/domain.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "BAD_REQUEST",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.BAD_REQUEST"
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_SERVER_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
                         }
                     }
                 }
@@ -3705,6 +4119,109 @@
                         "description": "INTERNAL_SERVER_ERROR",
                         "schema": {
                             "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ws/notifications": {
+            "get": {
+                "description": "Upgrades HTTP connection to WebSocket for real-time notification delivery",
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "Establish WebSocket connection for real-time notifications",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID for the WebSocket connection",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols - WebSocket connection established",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - missing user_id",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ws/test-notification": {
+            "post": {
+                "description": "Sends a test notification to a specific user via WebSocket",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "Send test notification",
+                "parameters": [
+                    {
+                        "description": "Test notification data",
+                        "name": "notification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.TestNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification sent successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/vs": {
+            "get": {
+                "description": "Returns information about current WebSocket connections",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "Get WebSocket connection statistics",
+                "responses": {
+                    "200": {
+                        "description": "WebSocket statistics",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -4138,6 +4655,79 @@
                 }
             }
         },
+        "domain.LabTest": {
+            "type": "object",
+            "required": [
+                "diagnostic_centre_id",
+                "patient_id",
+                "reference_ranges",
+                "results",
+                "test_name"
+            ],
+            "properties": {
+                "diagnostic_centre_id": {
+                    "type": "string"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "reference_ranges": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "results": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "test_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.MedicalImageAnalysisRequest": {
+            "type": "object",
+            "required": [
+                "body_part",
+                "image_type",
+                "imarl",
+                "patient_age",
+                "patient_gender"
+            ],
+            "properties": {
+                "body_part": {
+                    "type": "string"
+                },
+                "image_type": {
+                    "type": "string",
+                    "enum": [
+                        "XRAY",
+                        "CT_SCAN",
+                        "MRI",
+                        "ULTRASOUND",
+                        "MAMMOGRAM"
+                    ]
+                },
+                "imarl": {
+                    "type": "string"
+                },
+                "patient_age": {
+                    "type": "integer",
+                    "maximum": 120,
+                    "minimum": 1
+                },
+                "patient_gender": {
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female"
+                    ]
+                }
+            }
+        },
         "domain.Notification": {
             "type": "object",
             "properties": {
@@ -4234,6 +4824,20 @@
                         }
                     ],
                     "example": "PATIENT"
+                }
+            }
+        },
+        "domain.ReportSummaryRequest": {
+            "type": "object",
+            "required": [
+                "medical_report"
+            ],
+            "properties": {
+                "medical_report": {
+                    "type": "string"
+                },
+                "patient_friendly": {
+                    "type": "boolean"
                 }
             }
         },
@@ -4366,6 +4970,36 @@
                 "start_time": {
                     "type": "string",
                     "example": "2025-08-27T09:00:00.000Z"
+                }
+            }
+        },
+        "domain.SymptomAnalysisRequest": {
+            "type": "object",
+            "required": [
+                "age",
+                "gender",
+                "symptoms"
+            ],
+            "properties": {
+                "age": {
+                    "type": "integer",
+                    "maximum": 120,
+                    "minimum": 1
+                },
+                "gender": {
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female",
+                        "other"
+                    ]
+                },
+                "symptoms": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -4852,6 +5486,29 @@
                 }
             }
         },
+        "handlers.AnomalyDetectionRequest": {
+            "type": "object",
+            "required": [
+                "data",
+                "data_type",
+                "patient_profile"
+            ],
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "data_type": {
+                    "type": "string"
+                },
+                "patient_profile": {
+                    "$ref": "#/definitions/services.PatientProfile"
+                }
+            }
+        },
         "handlers.AppointmentSwagger": {
             "description": "Appointment response for Swagger",
             "type": "object",
@@ -4884,6 +5541,17 @@
                 "updated_at": {
                     "type": "string",
                     "example": "2025-06-26T20:30:00Z"
+                }
+            }
+        },
+        "handlers.AutomatedReportRequest": {
+            "type": "object",
+            "required": [
+                "report_data"
+            ],
+            "properties": {
+                "report_data": {
+                    "$ref": "#/definitions/services.ReportGenerationData"
                 }
             }
         },
@@ -5054,6 +5722,17 @@
                 }
             }
         },
+        "handlers.LabPackageAnalysisRequest": {
+            "type": "object",
+            "required": [
+                "package_data"
+            ],
+            "properties": {
+                "package_data": {
+                    "$ref": "#/definitions/services.LabPackageData"
+                }
+            }
+        },
         "handlers.ManagerSwagger": {
             "type": "object",
             "properties": {
@@ -5198,6 +5877,29 @@
                 }
             }
         },
+        "handlers.TestNotificationRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "title",
+                "user_id"
+            ],
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "message": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.UNAUTHORIZED_ERROR": {
             "description": "UNAUTHORIZED_ERROR response for Swagger",
             "type": "object",
@@ -5288,6 +5990,106 @@
                 "success": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "services.LabPackageData": {
+            "type": "object",
+            "properties": {
+                "package_type": {
+                    "type": "string"
+                },
+                "patient_profile": {
+                    "$ref": "#/definitions/services.PatientProfile"
+                },
+                "reference_ranges": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "test_date": {
+                    "type": "string"
+                },
+                "test_results": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
+        "services.PatientProfile": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "allergies": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "medical_history": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "medications": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "services.ReportGenerationData": {
+            "type": "object",
+            "properties": {
+                "clinical_data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "patient_info": {
+                    "$ref": "#/definitions/services.PatientProfile"
+                },
+                "report_purpose": {
+                    "type": "string"
+                },
+                "report_type": {
+                    "type": "string"
+                },
+                "target_audience": {
+                    "type": "string"
+                },
+                "test_results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/services.TestResult"
+                    }
+                }
+            }
+        },
+        "services.TestResult": {
+            "type": "object",
+            "properties": {
+                "reference_range": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "test_name": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         }

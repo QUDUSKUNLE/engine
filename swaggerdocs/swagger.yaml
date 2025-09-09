@@ -324,6 +324,59 @@ definitions:
       fileSize:
         type: integer
     type: object
+  domain.LabTest:
+    properties:
+      diagnostic_centre_id:
+        type: string
+      patient_id:
+        type: string
+      reference_ranges:
+        additionalProperties:
+          type: string
+        type: object
+      results:
+        additionalProperties:
+          type: string
+        type: object
+      test_name:
+        type: string
+    required:
+    - diagnostic_centre_id
+    - patient_id
+    - reference_ranges
+    - results
+    - test_name
+    type: object
+  domain.MedicalImageAnalysisRequest:
+    properties:
+      body_part:
+        type: string
+      image_type:
+        enum:
+        - XRAY
+        - CT_SCAN
+        - MRI
+        - ULTRASOUND
+        - MAMMOGRAM
+        type: string
+      imarl:
+        type: string
+      patient_age:
+        maximum: 120
+        minimum: 1
+        type: integer
+      patient_gender:
+        enum:
+        - male
+        - female
+        type: string
+    required:
+    - body_part
+    - image_type
+    - imarl
+    - patient_age
+    - patient_gender
+    type: object
   domain.Notification:
     properties:
       created_at:
@@ -395,6 +448,15 @@ definitions:
     - email
     - password
     - user_type
+    type: object
+  domain.ReportSummaryRequest:
+    properties:
+      medical_report:
+        type: string
+      patient_friendly:
+        type: boolean
+    required:
+    - medical_report
     type: object
   domain.RequestPasswordResetDTO:
     properties:
@@ -494,6 +556,28 @@ definitions:
     - max_appointments
     - slot_duration
     - start_time
+    type: object
+  domain.SymptomAnalysisRequest:
+    properties:
+      age:
+        maximum: 120
+        minimum: 1
+        type: integer
+      gender:
+        enum:
+        - male
+        - female
+        - other
+        type: string
+      symptoms:
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - age
+    - gender
+    - symptoms
     type: object
   domain.TestPrices:
     properties:
@@ -851,6 +935,22 @@ definitions:
     - email
     - password
     type: object
+  handlers.AnomalyDetectionRequest:
+    properties:
+      data:
+        items:
+          type: number
+        minItems: 1
+        type: array
+      data_type:
+        type: string
+      patient_profile:
+        $ref: '#/definitions/services.PatientProfile'
+    required:
+    - data
+    - data_type
+    - patient_profile
+    type: object
   handlers.AppointmentSwagger:
     description: Appointment response for Swagger
     properties:
@@ -876,6 +976,13 @@ definitions:
       updated_at:
         example: "2025-06-26T20:30:00Z"
         type: string
+    type: object
+  handlers.AutomatedReportRequest:
+    properties:
+      report_data:
+        $ref: '#/definitions/services.ReportGenerationData'
+    required:
+    - report_data
     type: object
   handlers.BAD_REQUEST:
     description: BAD_REQUEST response for Swagger
@@ -995,6 +1102,13 @@ definitions:
         example: false
         type: boolean
     type: object
+  handlers.LabPackageAnalysisRequest:
+    properties:
+      package_data:
+        $ref: '#/definitions/services.LabPackageData'
+    required:
+    - package_data
+    type: object
   handlers.ManagerSwagger:
     properties:
       created_at:
@@ -1099,6 +1213,22 @@ definitions:
         example: user-001
         type: string
     type: object
+  handlers.TestNotificationRequest:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      message:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: string
+    required:
+    - message
+    - title
+    - user_id
+    type: object
   handlers.UNAUTHORIZED_ERROR:
     description: UNAUTHORIZED_ERROR response for Swagger
     properties:
@@ -1165,7 +1295,73 @@ definitions:
         example: true
         type: boolean
     type: object
-host: diagnoxix.onrender.com
+  services.LabPackageData:
+    properties:
+      package_type:
+        type: string
+      patient_profile:
+        $ref: '#/definitions/services.PatientProfile'
+      reference_ranges:
+        additionalProperties:
+          type: string
+        type: object
+      test_date:
+        type: string
+      test_results:
+        additionalProperties: true
+        type: object
+    type: object
+  services.PatientProfile:
+    properties:
+      age:
+        type: integer
+      allergies:
+        items:
+          type: string
+        type: array
+      gender:
+        type: string
+      medical_history:
+        items:
+          type: string
+        type: array
+      medications:
+        items:
+          type: string
+        type: array
+    type: object
+  services.ReportGenerationData:
+    properties:
+      clinical_data:
+        additionalProperties: true
+        type: object
+      patient_info:
+        $ref: '#/definitions/services.PatientProfile'
+      report_purpose:
+        type: string
+      report_type:
+        type: string
+      target_audience:
+        type: string
+      test_results:
+        items:
+          $ref: '#/definitions/services.TestResult'
+        type: array
+    type: object
+  services.TestResult:
+    properties:
+      reference_range:
+        type: string
+      status:
+        type: string
+      test_name:
+        type: string
+      unit:
+        type: string
+      value:
+        type: string
+    type: object
+host: 127.0.0.1:7556
 info:
   contact: {}
   description: Diagnoxix API
@@ -1288,6 +1484,252 @@ paths:
       summary: Update user profile
       tags:
       - User
+  /v1/ai/analyze-lab-package:
+    post:
+      consumes:
+      - application/json
+      description: Provides holistic analysis of comprehensive lab test packages
+      parameters:
+      - description: Lab package analysis data
+        in: body
+        name: packageData
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LabPackageAnalysisRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lab package analysis results
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Analyze lab package
+      tags:
+      - AI
+  /v1/ai/analyze-medical-image:
+    post:
+      consumes:
+      - application/json
+      description: Provides AI-powered analysis of medical images (X-rays, CT scans,
+        MRIs, etc.)
+      parameters:
+      - description: Medical image analysis data
+        in: body
+        name: imageData
+        required: true
+        schema:
+          $ref: '#/definitions/domain.MedicalImageAnalysisRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Medical image analysis results
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Analyze medical images
+      tags:
+      - AI
+  /v1/ai/analyze-symptoms:
+    post:
+      consumes:
+      - application/json
+      description: Provides AI-powered preliminary analysis of patient symptoms
+      parameters:
+      - description: Symptom analysis request
+        in: body
+        name: symptoms
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SymptomAnalysisRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Symptom analysis results
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Analyze patient symptoms
+      tags:
+      - AI
+  /v1/ai/capabilities:
+    get:
+      description: Returns list of available AI-powered features
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AI capabilities
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get AI capabilities
+      tags:
+      - AI
+  /v1/ai/detect-anomalies:
+    post:
+      consumes:
+      - application/json
+      description: Identifies unusual patterns in medical data that may require attention
+      parameters:
+      - description: Anomaly detection data
+        in: body
+        name: anomalyData
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AnomalyDetectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Anomaly detection results
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Detect anomalies in medical data
+      tags:
+      - AI
+  /v1/ai/generate-report:
+    post:
+      consumes:
+      - application/json
+      description: Creates comprehensive, professional medical reports using AI
+      parameters:
+      - description: Report generation data
+        in: body
+        name: reportData
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AutomatedReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Generated medical report
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Generate automated medical report
+      tags:
+      - AI
+  /v1/ai/interpret-lab:
+    post:
+      consumes:
+      - application/json
+      description: Provides AI-powered analysis and interpretation of lab test results
+      parameters:
+      - description: Lab test data
+        in: body
+        name: labTest
+        required: true
+        schema:
+          $ref: '#/definitions/domain.LabTest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lab interpretation results
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Interpret lab test results
+      tags:
+      - AI
+  /v1/ai/summarize-report:
+    post:
+      consumes:
+      - application/json
+      description: Creates patient-friendly or professional summaries of medical reports
+      parameters:
+      - description: Report summary request
+        in: body
+        name: report
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ReportSummaryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Report summary
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Generate medical report summary
+      tags:
+      - AI
   /v1/appointments:
     get:
       consumes:
@@ -3420,6 +3862,11 @@ paths:
       - application/json
       description: Get user's notifications with pagination
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - default: 1
         description: Page number
         in: query
@@ -3439,6 +3886,18 @@ paths:
             items:
               $ref: '#/definitions/domain.Notification'
             type: array
+        "400":
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/handlers.BAD_REQUEST'
+        "401":
+          description: UNAUTHORIZED_ERROR
+          schema:
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Get notifications
@@ -3448,9 +3907,14 @@ paths:
     post:
       description: Mark a specific notification as read
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Notification ID
         in: path
-        name: id
+        name: Notification_ID
         required: true
         type: string
       responses:
@@ -3458,6 +3922,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/domain.Notification'
+        "400":
+          description: BAD_REQUEST
+          schema:
+            $ref: '#/definitions/handlers.BAD_REQUEST'
+        "401":
+          description: UNAUTHORIZED_ERROR
+          schema:
+            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
+        "500":
+          description: INTERNAL_SERVER_ERROR
+          schema:
+            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
       summary: Mark notification as read
@@ -3664,4 +4140,74 @@ paths:
       summary: Verify user email
       tags:
       - User
+  /v1/ws/notifications:
+    get:
+      description: Upgrades HTTP connection to WebSocket for real-time notification
+        delivery
+      parameters:
+      - description: User ID for the WebSocket connection
+        in: query
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "101":
+          description: Switching Protocols - WebSocket connection established
+          schema:
+            type: string
+        "400":
+          description: Bad request - missing user_id
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Establish WebSocket connection for real-time notifications
+      tags:
+      - WebSocket
+  /v1/ws/test-notification:
+    post:
+      consumes:
+      - application/json
+      description: Sends a test notification to a specific user via WebSocket
+      parameters:
+      - description: Test notification data
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.TestNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification sent successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Send test notification
+      tags:
+      - WebSocket
+  /vs:
+    get:
+      description: Returns information about current WebSocket connections
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: WebSocket statistics
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get WebSocket connection statistics
+      tags:
+      - WebSocket
 swagger: "2.0"

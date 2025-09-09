@@ -67,6 +67,18 @@ func main() {
 	// Create a new echo instance
 	e := echo.New()
 
+	e.Pre(func(next echo.HandlerFunc) echo.HandlerFunc {
+    return func(c echo.Context) error {
+			if c.Path() == "/favicon.ico" {
+				return c.NoContent(http.StatusNoContent)
+			}
+			if c.Request().URL.Path == "" {
+        return c.NoContent(http.StatusNotFound)
+      }
+			return next(c)
+    }
+	})
+
 	// Setup Prometheus metrics endpoint first, before any other middleware
 	// ---- Metrics and Observability ----
 	e.GET("/metrics", echoprometheus.NewHandler())
@@ -112,6 +124,9 @@ func main() {
 
 	// Initialize HTTP handlers with core services
 	httpHandler := handlers.HttpAdapter(services.Core)
+
+	// Start WebSocket manager
+	services.Core.WebSocketManager.Start()
 
 	// Add a middleware to skip JWT validation for specific routes under /v1
 	v1 := e.Group("/v1")

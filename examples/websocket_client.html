@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <"viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnoxix WebSocket Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .notification {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #2196f3;
+        }
+        .notification-title {
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 5px;
+        }
+        .notification-message {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .notification-time {
+            font-size: 0.8em;
+            color: #666;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #1976d2;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Diagnoxix WebSocket Notifications</h1>
+        
+        <div class="controls">
+            <label>User ID:</label>
+            <input type="text" id="userId" value="user-123" placeholder="Enter user ID">
+            <button onclick="connect()" id="connectBtn">Connect</button>
+            <button onclick="disconnect()" id="disconnectBtn" disabled>Disconnect</button>
+        </div>
+
+        <div id="status" class="status disconnected">
+            ❌ Disconnected
+        </div>
+
+        <div class="controls">
+            <h3>Send Test Notification</h3>
+            <input type="text" id="testTitle" placeholder="Notification title" value="Test Notification">
+            <input type="text" id="testMessage" placeholder="Notification message" value="This is a test notification">
+            <button onclick="sendTestNotification()" id="testBtn" disabled>Send Test</button>
+        </div>
+
+        <div class="controls">
+            <h3>Simulate Notifications</h3>
+            <select id="notificationType">
+                <option value="appointment">Appointment</option>
+                <option value="lab_result">Lab Result</option>
+                <option value="ai_analysis">AI Analysis</option>
+                <option value="system">System</option>
+            </select>
+            <button onclick="simulateNotification()" id="simulateBtn" disabled>Simulate</button>
+        </div>
+
+        <h3>📬 Notifications</h3>
+        <div id="notifications"></div>
+
+        <h3>📋 Connection Log</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let userId = null;
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const testBtn = document.getElementById('testBtn');
+            const simulateBtn = document.getElementById('simulateBtn');
+
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.innerHTML = '✅ Connected to WebSocket';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                testBtn.disabled = false;
+                simulateBtn.disabled = false;
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.innerHTML = '❌ Disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                testBtn.disabled = true;
+                simulateBtn.disabled = true;
+            }
+        }
+
+        function connect() {
+            userId = document.getElementById('userId').value;
+            if (!userId) {
+                alert('Please enter a user ID');
+                return;
+            }
+
+            const wsUrl = `ws://localhost:7556/v1/ws/notifications?user_id=${userId}`;
+            log(`Connecting to ${wsUrl}`);
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function(event) {
+                log('WebSocket connection established');
+                updateStatus(true);
+            };
+
+            ws.onmessage = function(event) {
+                try {
+                    const notification = JSON.parse(event.data);
+                    log(`Received: ${notification.type} - ${notification.title}`);
+                    displayNotification(notification);
+                } catch (error) {
+                    log(`Error parsing message: ${error.message}`);
+                }
+            };
+
+            ws.onclose = function(event) {
+                log(`WebSocket connection closed: ${event.code} - ${event.reason}`);
+                updateStatus(false);
+                ws = null;
+            };
+
+            ws.onerror = function(error) {
+                log(`WebSocket error: ${error.message || 'Unknown error'}`);
+                updateStatus(false);
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                log('Disconnecting WebSocket');
+            }
+        }
+
+        function displayNotification(notification) {
+            const notificationsDiv = document.getElementById('notifications');
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'notification';
+            
+            const typeIcon = getTypeIcon(notification.type);
+            const timestamp = new Date(notification.timestamp).toLocaleString();
+            
+            notificationDiv.innerHTML = `
+                <div class="notification-title">${typeIcon} ${notification.title}</div>
+                <div class="notification-message">${notification.message}</div>
+                <div class="notification-time">📅 ${timestamp}</div>
+                ${notification.data ? `<div style="font-size: 0.8em; color: #666; margin-top: 5px;">Data: ${JSON.stringify(notification.data)}</div>` : ''}
+            `;
+            
+            notificationsDiv.insertBefore(notificationDiv, notificationsDiv.firstChild);
+            
+            // Keep only last 10 notifications
+            while (notificationsDiv.children.length > 10) {
+                notificationsDiv.removeChild(notificationsDiv.lastChild);
+            }
+        }
+
+        function getTypeIcon(type) {
+            const icons = {
+                'appointment': '📅',
+                'lab_result': '🧪',
+                'ai_analysis': '🤖',
+                'system': '⚙️',
+                'connection_established': '🔗',
+                'test_notification': '🧪',
+                'default': '📬'
+            };
+            return icons[type] || icons.default;
+        }
+
+        function sendTestNotification() {
+            const title = document.getElementById('testTitle').value;
+            const message = document.getElementById('testMessage').value;
+            
+            if (!title || !message) {
+                alert('Please enter both title and message');
+                return;
+            }
+
+            fetch('/v1/ws/test-notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    title: title,
+                    message: message,
+                    data: {
+                        sent_from: 'web_client',
+                        timestamp: new Date().toISOString()
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                log(`Test notification sent: ${data.message}`);
+            })
+            .catch(error => {
+                log(`Error sending test notification: ${error.message}`);
+            });
+        }
+
+        function simulateNotification() {
+            const type = document.getElementById('notificationType').value;
+            let title, message;
+
+            switch (type) {
+                case 'appointment':
+                    title = 'Appointment Reminder';
+                    message = 'You have an appointment tomorrow at 2:00 PM';
+                    break;
+                case 'lab_result':
+                    title = 'Lab Results Ready';
+                    message = 'Your blood test results are now available';
+                    break;
+                case 'ai_analysis':
+                    title = 'AI Analysis Complete';
+                    message = 'Your symptom analysis has been completed';
+                    break;
+                case 'system':
+                    title = 'System Maintenance';
+                    message = 'Scheduled maintenance will occur tonight at 11 PM';
+                    break;
+            }
+
+            fetch('/v1/ws/test-notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    title: title,
+                    message: message,
+                    data: {
+                        type: type,
+                        simulated: true
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                log(`Simulated ${type} notification sent`);
+            })
+            .catch(error => {
+                log(`Error sending simulated notification: ${error.message}`);
+            });
+        }
+
+        // Send ping every 30 seconds to keep connection alive
+        setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping' }));
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
