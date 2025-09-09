@@ -324,6 +324,42 @@ definitions:
       fileSize:
         type: integer
     type: object
+  domain.Notification:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+      metadata:
+        additionalProperties: true
+        type: object
+      read:
+        type: boolean
+      read_at:
+        type: string
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/domain.NotificationType'
+      user_id:
+        type: string
+    type: object
+  domain.NotificationType:
+    enum:
+    - APPOINTMENT_CREATED
+    - APPOINTMENT_CONFIRMED
+    - APPOINTMENT_RESCHEDULED
+    - APPOINTMENT_CANCELLED
+    - APPOINTMENT_REMINDER
+    type: string
+    x-enum-varnames:
+    - AppointmentCreated
+    - AppointmentConfirmed
+    - AppointmentRescheduled
+    - AppointmentCancelled
+    - AppointmentReminder
   domain.RegisterationDTO:
     properties:
       confirm_password:
@@ -3378,6 +3414,55 @@ paths:
       summary: List uploaded medical records
       tags:
       - MedicalRecord
+  /v1/notifications:
+    get:
+      consumes:
+      - application/json
+      description: Get user's notifications with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Notification'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get notifications
+      tags:
+      - Notifications
+  /v1/notifications/{notification_id}/read:
+    post:
+      description: Mark a specific notification as read
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Notification'
+      security:
+      - BearerAuth: []
+      summary: Mark notification as read
+      tags:
+      - Notifications
   /v1/register:
     post:
       consumes:

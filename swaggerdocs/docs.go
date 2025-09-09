@@ -3331,6 +3331,84 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/notifications": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get user's notifications with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Get notifications",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Notification"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/notifications/{notification_id}/read": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark a specific notification as read",
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark notification as read",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Notification"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/register": {
             "post": {
                 "description": "Register a new user (patient) or diagnostic centre owner in the system",
@@ -4065,6 +4143,56 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "domain.Notification": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "read": {
+                    "type": "boolean"
+                },
+                "read_at": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.NotificationType"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.NotificationType": {
+            "type": "string",
+            "enum": [
+                "APPOINTMENT_CREATED",
+                "APPOINTMENT_CONFIRMED",
+                "APPOINTMENT_RESCHEDULED",
+                "APPOINTMENT_CANCELLED",
+                "APPOINTMENT_REMINDER"
+            ],
+            "x-enum-varnames": [
+                "AppointmentCreated",
+                "AppointmentConfirmed",
+                "AppointmentRescheduled",
+                "AppointmentCancelled",
+                "AppointmentReminder"
+            ]
         },
         "domain.RegisterationDTO": {
             "type": "object",
