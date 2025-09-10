@@ -1003,6 +1003,23 @@ definitions:
         example: false
         type: boolean
     type: object
+  handlers.CacheInvalidationRequest:
+    properties:
+      input: {}
+      operation:
+        enum:
+        - lab_interpretation
+        - symptom_analysis
+        - report_summary
+        - image_analysis
+        - anomaly_detection
+        - lab_package_analysis
+        - automated_report
+        type: string
+    required:
+    - input
+    - operation
+    type: object
   handlers.DUPLICATE_ERROR:
     description: DUPLICATE_ERROR response for Swagger
     properties:
@@ -2342,6 +2359,92 @@ paths:
       summary: Update availability for a diagnostic centre
       tags:
       - Availability
+  /v1/cache/clear:
+    post:
+      description: Removes all cached AI responses to force fresh API calls
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cache cleared successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Clear AI cache
+      tags:
+      - Cache
+  /v1/cache/health:
+    get:
+      description: Returns the health status of the caching system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cache health status
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get cache health
+      tags:
+      - Cache
+  /v1/cache/invalidate:
+    post:
+      consumes:
+      - application/json
+      description: Removes a specific cached AI response by operation and input hash
+      parameters:
+      - description: Cache invalidation request
+        in: body
+        name: invalidation
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CacheInvalidationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cache entry invalidated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Invalidate specific cache entry
+      tags:
+      - Cache
+  /v1/cache/stats:
+    get:
+      description: Returns cache performance metrics including hit rate, response
+        times, and memory usage
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cache statistics
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get cache statistics
+      tags:
+      - Cache
   /v1/diagnostic_centres:
     get:
       description: Search for diagnostic centres based on location, available doctors,

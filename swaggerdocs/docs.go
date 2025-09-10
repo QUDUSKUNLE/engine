@@ -1489,6 +1489,132 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/cache/clear": {
+            "post": {
+                "description": "Removes all cached AI responses to force fresh API calls",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cache"
+                ],
+                "summary": "Clear AI cache",
+                "responses": {
+                    "200": {
+                        "description": "Cache cleared successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/cache/health": {
+            "get": {
+                "description": "Returns the health status of the caching system",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cache"
+                ],
+                "summary": "Get cache health",
+                "responses": {
+                    "200": {
+                        "description": "Cache health status",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/cache/invalidate": {
+            "post": {
+                "description": "Removes a specific cached AI response by operation and input hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cache"
+                ],
+                "summary": "Invalidate specific cache entry",
+                "parameters": [
+                    {
+                        "description": "Cache invalidation request",
+                        "name": "invalidation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CacheInvalidationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cache entry invalidated",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/cache/stats": {
+            "get": {
+                "description": "Returns cache performance metrics including hit rate, response times, and memory usage",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cache"
+                ],
+                "summary": "Get cache statistics",
+                "responses": {
+                    "200": {
+                        "description": "Cache statistics",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/v1/diagnostic_centres": {
             "get": {
                 "description": "Search for diagnostic centres based on location, available doctors, and test types",
@@ -5669,6 +5795,28 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": false
+                }
+            }
+        },
+        "handlers.CacheInvalidationRequest": {
+            "type": "object",
+            "required": [
+                "input",
+                "operation"
+            ],
+            "properties": {
+                "input": {},
+                "operation": {
+                    "type": "string",
+                    "enum": [
+                        "lab_interpretation",
+                        "symptom_analysis",
+                        "report_summary",
+                        "image_analysis",
+                        "anomaly_detection",
+                        "lab_package_analysis",
+                        "automated_report"
+                    ]
                 }
             }
         },
