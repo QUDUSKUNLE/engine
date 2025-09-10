@@ -13,14 +13,16 @@ import (
 // InterpretLabHandler analyzes lab test results using AI
 // @Summary Interpret lab test results
 // @Description Provides AI-powered analysis and interpretation of lab test results
-// @Tags AI
+// @Tags AI Medical
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param labTest body domain.LabTest true "Lab test data"
 // @Success 200 {object} map[string]interface{} "Lab interpretation results"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /v1/ai/interpret-lab [post]
+// @Router /v1/ai/interpret_lab [post]
 func (h *HTTPHandler) InterpretLabHandler(c echo.Context) error {
 	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
@@ -45,14 +47,16 @@ func (h *HTTPHandler) InterpretLabHandler(c echo.Context) error {
 // AnalyzeSymptomsHandler provides preliminary symptom analysis
 // @Summary Analyze patient symptoms
 // @Description Provides AI-powered preliminary analysis of patient symptoms
-// @Tags AI
+// @Tags AI Medical
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param symptoms body domain.SymptomAnalysisRequest true "Symptom analysis request"
 // @Success 200 {object} map[string]interface{} "Symptom analysis results"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /v1/ai/analyze-symptoms [post]
+// @Router /v1/ai/analyze_symptoms [post]
 func (h *HTTPHandler) AnalyzeSymptomsHandler(c echo.Context) error {
 	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
@@ -76,14 +80,16 @@ func (h *HTTPHandler) AnalyzeSymptomsHandler(c echo.Context) error {
 // GenerateReportSummaryHandler creates summaries of medical reports
 // @Summary Generate medical report summary
 // @Description Creates patient-friendly or professional summaries of medical reports
-// @Tags AI
+// @Tags AI Medical
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param report body domain.ReportSummaryRequest true "Report summary request"
 // @Success 200 {object} map[string]interface{} "Report summary"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /v1/ai/summarize-report [post]
+// @Router /v1/ai/summarize_report [post]
 func (h *HTTPHandler) GenerateReportSummaryHandler(c echo.Context) error {
 
 	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
@@ -114,7 +120,7 @@ func (h *HTTPHandler) GenerateReportSummaryHandler(c echo.Context) error {
 // GetAICapabilitiesHandler returns available AI features
 // @Summary Get AI capabilities
 // @Description Returns list of available AI-powered features
-// @Tags AI
+// @Tags AI Medical
 // @Produce json
 // @Success 200 {object} map[string]interface{} "AI capabilities"
 // @Router /v1/ai/capabilities [get]
@@ -174,14 +180,16 @@ func (h *HTTPHandler) GetAICapabilitiesHandler(c echo.Context) error {
 // AnalyzeMedicalImageHandler analyzes medical images using AI
 // @Summary Analyze medical images
 // @Description Provides AI-powered analysis of medical images (X-rays, CT scans, MRIs, etc.)
-// @Tags AI
+// @Tags AI Medical
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param imageData body domain.MedicalImageAnalysisRequest true "Medical image analysis data"
 // @Success 200 {object} map[string]interface{} "Medical image analysis results"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /v1/ai/analyze-medical-image [post]
+// @Router /v1/ai/analyze_medical_image [post]
 func (h *HTTPHandler) AnalyzeMedicalImageHandler(c echo.Context) error {
 	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
@@ -211,14 +219,16 @@ func (h *HTTPHandler) AnalyzeMedicalImageHandler(c echo.Context) error {
 // DetectAnomaliesHandler detects anomalies in medical data
 // @Summary Detect anomalies in medical data
 // @Description Identifies unusual patterns in medical data that may require attention
-// @Tags AI
+// @Tags AI Medical
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param anomalyData body AnomalyDetectionRequest true "Anomaly detection data"
 // @Success 200 {object} map[string]interface{} "Anomaly detection results"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /v1/ai/detect-anomalies [post]
+// @Router /v1/ai/detect_anomalies [post]
 func (h *HTTPHandler) DetectAnomaliesHandler(c echo.Context) error {
 	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
@@ -247,14 +257,16 @@ func (h *HTTPHandler) DetectAnomaliesHandler(c echo.Context) error {
 // AnalyzeLabPackageHandler analyzes comprehensive lab packages
 // @Summary Analyze lab package
 // @Description Provides holistic analysis of comprehensive lab test packages
-// @Tags AI
+// @Tags AI Medical
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param packageData body LabPackageAnalysisRequest true "Lab package analysis data"
 // @Success 200 {object} map[string]interface{} "Lab package analysis results"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /v1/ai/analyze-lab-package [post]
+// @Router /v1/ai/analyze_lab_package [post]
 func (h *HTTPHandler) AnalyzeLabPackageHandler(c echo.Context) error {
 	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
@@ -281,14 +293,16 @@ func (h *HTTPHandler) AnalyzeLabPackageHandler(c echo.Context) error {
 // GenerateAutomatedReportHandler generates comprehensive medical reports
 // @Summary Generate automated medical report
 // @Description Creates comprehensive, professional medical reports using AI
-// @Tags AI
+// @Tags AI Medical
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param reportData body AutomatedReportRequest true "Report generation data"
 // @Success 200 {object} map[string]interface{} "Generated medical report"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /v1/ai/generate-report [post]
+// @Router /v1/ai/generate_report [post]
 func (h *HTTPHandler) GenerateAutomatedReportHandler(c echo.Context) error {
 	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {

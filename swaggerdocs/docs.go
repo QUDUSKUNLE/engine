@@ -196,8 +196,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/analyze-lab-package": {
+        "/v1/ai/analyze_lab_package": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Provides holistic analysis of comprehensive lab test packages",
                 "consumes": [
                     "application/json"
@@ -206,10 +211,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "AI"
+                    "AI Medical"
                 ],
                 "summary": "Analyze lab package",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Lab package analysis data",
                         "name": "packageData",
@@ -245,8 +257,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/analyze-medical-image": {
+        "/v1/ai/analyze_medical_image": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Provides AI-powered analysis of medical images (X-rays, CT scans, MRIs, etc.)",
                 "consumes": [
                     "application/json"
@@ -255,10 +272,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "AI"
+                    "AI Medical"
                 ],
                 "summary": "Analyze medical images",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Medical image analysis data",
                         "name": "imageData",
@@ -294,8 +318,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/analyze-symptoms": {
+        "/v1/ai/analyze_symptoms": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Provides AI-powered preliminary analysis of patient symptoms",
                 "consumes": [
                     "application/json"
@@ -304,10 +333,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "AI"
+                    "AI Medical"
                 ],
                 "summary": "Analyze patient symptoms",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Symptom analysis request",
                         "name": "symptoms",
@@ -350,7 +386,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "AI"
+                    "AI Medical"
                 ],
                 "summary": "Get AI capabilities",
                 "responses": {
@@ -364,8 +400,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/detect-anomalies": {
+        "/v1/ai/detect_anomalies": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Identifies unusual patterns in medical data that may require attention",
                 "consumes": [
                     "application/json"
@@ -374,10 +415,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "AI"
+                    "AI Medical"
                 ],
                 "summary": "Detect anomalies in medical data",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Anomaly detection data",
                         "name": "anomalyData",
@@ -413,8 +461,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/generate-report": {
+        "/v1/ai/generate_report": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates comprehensive, professional medical reports using AI",
                 "consumes": [
                     "application/json"
@@ -423,10 +476,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "AI"
+                    "AI Medical"
                 ],
                 "summary": "Generate automated medical report",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Report generation data",
                         "name": "reportData",
@@ -462,8 +522,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/interpret-lab": {
+        "/v1/ai/interpret_lab": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Provides AI-powered analysis and interpretation of lab test results",
                 "consumes": [
                     "application/json"
@@ -472,10 +537,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "AI"
+                    "AI Medical"
                 ],
                 "summary": "Interpret lab test results",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Lab test data",
                         "name": "labTest",
@@ -511,8 +583,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/summarize-report": {
+        "/v1/ai/summarize_report": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates patient-friendly or professional summaries of medical reports",
                 "consumes": [
                     "application/json"
@@ -521,10 +598,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "AI"
+                    "AI Medical"
                 ],
                 "summary": "Generate medical report summary",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Report summary request",
                         "name": "report",
@@ -6108,8 +6192,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "diagnoxix.onrender.com",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Diagnoxix",
-	Description:      "Diagnoxix API",
+	Title:            "Diagnoxix AI",
+	Description:      "Diagnoxix AI API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

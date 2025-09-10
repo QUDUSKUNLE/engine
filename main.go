@@ -25,9 +25,9 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-// @title Diagnoxix
+// @title Diagnoxix AI
 // @version 1.0
-// @description Diagnoxix API
+// @description Diagnoxix AI API
 // @host diagnoxix.onrender.com
 // @BasePath /
 func main() {

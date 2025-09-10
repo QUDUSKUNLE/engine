@@ -1364,8 +1364,8 @@ definitions:
 host: diagnoxix.onrender.com
 info:
   contact: {}
-  description: Diagnoxix API
-  title: Diagnoxix
+  description: Diagnoxix AI API
+  title: Diagnoxix AI
   version: "1.0"
 paths:
   /v1/account:
@@ -1484,12 +1484,17 @@ paths:
       summary: Update user profile
       tags:
       - User
-  /v1/ai/analyze-lab-package:
+  /v1/ai/analyze_lab_package:
     post:
       consumes:
       - application/json
       description: Provides holistic analysis of comprehensive lab test packages
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Lab package analysis data
         in: body
         name: packageData
@@ -1514,16 +1519,23 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Analyze lab package
       tags:
-      - AI
-  /v1/ai/analyze-medical-image:
+      - AI Medical
+  /v1/ai/analyze_medical_image:
     post:
       consumes:
       - application/json
       description: Provides AI-powered analysis of medical images (X-rays, CT scans,
         MRIs, etc.)
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Medical image analysis data
         in: body
         name: imageData
@@ -1548,15 +1560,22 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Analyze medical images
       tags:
-      - AI
-  /v1/ai/analyze-symptoms:
+      - AI Medical
+  /v1/ai/analyze_symptoms:
     post:
       consumes:
       - application/json
       description: Provides AI-powered preliminary analysis of patient symptoms
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Symptom analysis request
         in: body
         name: symptoms
@@ -1581,9 +1600,11 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Analyze patient symptoms
       tags:
-      - AI
+      - AI Medical
   /v1/ai/capabilities:
     get:
       description: Returns list of available AI-powered features
@@ -1597,13 +1618,18 @@ paths:
             type: object
       summary: Get AI capabilities
       tags:
-      - AI
-  /v1/ai/detect-anomalies:
+      - AI Medical
+  /v1/ai/detect_anomalies:
     post:
       consumes:
       - application/json
       description: Identifies unusual patterns in medical data that may require attention
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Anomaly detection data
         in: body
         name: anomalyData
@@ -1628,15 +1654,22 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Detect anomalies in medical data
       tags:
-      - AI
-  /v1/ai/generate-report:
+      - AI Medical
+  /v1/ai/generate_report:
     post:
       consumes:
       - application/json
       description: Creates comprehensive, professional medical reports using AI
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Report generation data
         in: body
         name: reportData
@@ -1661,15 +1694,22 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Generate automated medical report
       tags:
-      - AI
-  /v1/ai/interpret-lab:
+      - AI Medical
+  /v1/ai/interpret_lab:
     post:
       consumes:
       - application/json
       description: Provides AI-powered analysis and interpretation of lab test results
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Lab test data
         in: body
         name: labTest
@@ -1694,15 +1734,22 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Interpret lab test results
       tags:
-      - AI
-  /v1/ai/summarize-report:
+      - AI Medical
+  /v1/ai/summarize_report:
     post:
       consumes:
       - application/json
       description: Creates patient-friendly or professional summaries of medical reports
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Report summary request
         in: body
         name: report
@@ -1727,9 +1774,11 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Generate medical report summary
       tags:
-      - AI
+      - AI Medical
   /v1/appointments:
     get:
       consumes:
