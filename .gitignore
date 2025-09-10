@@ -21,3 +21,4 @@ kubernetes/secrets/
 .air_tmp
 *.sql
 diagnoxix
+CACHING_IMPLEMENTATION_GUIDE.md

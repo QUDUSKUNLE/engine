@@ -11,14 +11,19 @@ import (
 	"time"
 
 	"github.com/diagnoxix/core/domain"
+	"github.com/diagnoxix/core/services/cache"
 	"github.com/diagnoxix/core/utils"
 	"github.com/google/uuid"
 )
 
 type (
 	AIService struct {
-		openAIKey string
-		client    *http.Client
+		openAIKey   string
+		client      *http.Client
+		cache       *cache.AICache
+		cacheConfig cache.CacheTTLConfig
+		keyConfig   cache.CacheKeyConfig
+		metrics     *cache.CacheMetrics
 	}
 	OpenAIRequest struct {
 		Model       string    `json:"model"`
@@ -92,11 +97,51 @@ func NewAIService(openAIKey string) *AIService {
 		client: &http.Client{
 			Timeout: 30 * time.Second,
 		},
+		cacheConfig: cache.DefaultCacheTTLConfig(),
+		keyConfig:   cache.DefaultCacheKeyConfig(),
+		metrics:     cache.NewCacheMetrics(),
+	}
+}
+
+// NewAIServiceWithCache creates a new AI service with caching enabled
+func NewAIServiceWithCache(openAIKey string, aiCache *cache.AICache) *AIService {
+	return &AIService{
+		openAIKey: openAIKey,
+		client: &http.Client{
+			Timeout: 30 * time.Second,
+		},
+		cache:       aiCache,
+		cacheConfig: cache.DefaultCacheTTLConfig(),
+		keyConfig:   cache.DefaultCacheKeyConfig(),
+		metrics:     cache.NewCacheMetrics(),
 	}
 }
 
 // InterpretLabResults analyzes lab test results and provides medical interpretation
 func (ai *AIService) InterpretLabResults(ctx context.Context, labTest domain.LabTest) (*LabInterpretation, error) {
+	operation := "lab_interpretation"
+	
+	// Try cache first if available
+	if ai.cache != nil {
+		cacheKey := ai.generateCacheKey(operation, labTest)
+		start := time.Now()
+		
+		if cached, found, err := ai.cache.Get(ctx, cacheKey); err == nil && found {
+			ai.metrics.RecordHit(time.Since(start))
+			utils.Info("Cache hit for lab interpretation", utils.LogField{Key: "cache_key", Value: cacheKey})
+			
+			if interpretation, ok := cached.(*LabInterpretation); ok {
+				return interpretation, nil
+			}
+		} else if err == nil {
+			ai.metrics.RecordMiss(time.Since(start))
+		} else {
+			ai.metrics.RecordError(time.Since(start))
+			utils.Warn("Cache error for lab interpretation", utils.LogField{Key: "error", Value: err.Error()})
+		}
+	}
+
+	// Cache miss or no cache - call OpenAI
 	prompt := ai.buildLabInterpretationPrompt(labTest)
 	
 	response, err := ai.callOpenAI(ctx, prompt, "You are a medical AI assistant specializing in lab result interpretation. Provide accurate, helpful analysis while emphasizing the need for professional medical consultation.")
@@ -111,11 +156,56 @@ func (ai *AIService) InterpretLabResults(ctx context.Context, labTest domain.Lab
 		return nil, fmt.Errorf("failed to parse AI response: %w", err)
 	}
 
+	// Cache the result if cache is available
+	if ai.cache != nil {
+		cacheKey := ai.generateCacheKey(operation, labTest)
+		ttl := ai.cacheConfig.GetTTLForOperation(operation)
+		start := time.Now()
+		
+		if err := ai.cache.Set(ctx, cacheKey, interpretation, ttl); err != nil {
+			ai.metrics.RecordError(time.Since(start))
+			utils.Warn("Failed to cache lab interpretation", utils.LogField{Key: "error", Value: err.Error()})
+		} else {
+			ai.metrics.RecordSet(time.Since(start))
+			utils.Info("Cached lab interpretation", 
+				utils.LogField{Key: "cache_key", Value: cacheKey},
+				utils.LogField{Key: "ttl", Value: ttl.String()})
+		}
+	}
+
 	return interpretation, nil
 }
 
 // AnalyzeSymptoms provides preliminary analysis of patient symptoms
 func (ai *AIService) AnalyzeSymptoms(ctx context.Context, symptoms []string, patientAge int, patientGender string) (*SymptomAnalysis, error) {
+	operation := "symptom_analysis"
+	input := map[string]interface{}{
+		"symptoms": symptoms,
+		"age":      patientAge,
+		"gender":   patientGender,
+	}
+	
+	// Try cache first if available
+	if ai.cache != nil {
+		cacheKey := ai.generateCacheKey(operation, input)
+		start := time.Now()
+		
+		if cached, found, err := ai.cache.Get(ctx, cacheKey); err == nil && found {
+			ai.metrics.RecordHit(time.Since(start))
+			utils.Info("Cache hit for symptom analysis", utils.LogField{Key: "cache_key", Value: cacheKey})
+			
+			if analysis, ok := cached.(*SymptomAnalysis); ok {
+				return analysis, nil
+			}
+		} else if err == nil {
+			ai.metrics.RecordMiss(time.Since(start))
+		} else {
+			ai.metrics.RecordError(time.Since(start))
+			utils.Warn("Cache error for symptom analysis", utils.LogField{Key: "error", Value: err.Error()})
+		}
+	}
+
+	// Cache miss or no cache - call OpenAI
 	prompt := ai.buildSymptomAnalysisPrompt(symptoms, patientAge, patientGender)
 	
 	response, err := ai.callOpenAI(ctx, prompt, "You are a medical AI assistant for preliminary symptom analysis. Always emphasize that this is not a diagnosis and professional medical consultation is required.")
@@ -128,6 +218,23 @@ func (ai *AIService) AnalyzeSymptoms(ctx context.Context, symptoms []string, pat
 	if err != nil {
 		utils.Error("Failed to parse symptom analysis", utils.LogField{Key: "error", Value: err.Error()})
 		return nil, fmt.Errorf("failed to parse AI response: %w", err)
+	}
+
+	// Cache the result if cache is available
+	if ai.cache != nil {
+		cacheKey := ai.generateCacheKey(operation, input)
+		ttl := ai.cacheConfig.GetTTLForOperation(operation)
+		start := time.Now()
+		
+		if err := ai.cache.Set(ctx, cacheKey, analysis, ttl); err != nil {
+			ai.metrics.RecordError(time.Since(start))
+			utils.Warn("Failed to cache symptom analysis", utils.LogField{Key: "error", Value: err.Error()})
+		} else {
+			ai.metrics.RecordSet(time.Since(start))
+			utils.Info("Cached symptom analysis", 
+				utils.LogField{Key: "cache_key", Value: cacheKey},
+				utils.LogField{Key: "ttl", Value: ttl.String()})
+		}
 	}
 
 	return analysis, nil
@@ -817,4 +924,106 @@ func (ai *AIService) parseAutomatedReport(response string) (*AutomatedReport, er
 	report.ReportID = uuid.New().String()
 	
 	return &report, nil
+}
+// Cache-related helper methods
+
+// generateCacheKey creates a cache key for the given operation and input
+func (ai *AIService) generateCacheKey(operation string, input interface{}) string {
+	if ai.cache == nil {
+		return ""
+	}
+	
+	prefix := ai.keyConfig.GetKeyPrefixForOperation(operation)
+	hash := ai.cache.GenerateCacheKey(prefix, input)
+	return hash
+}
+
+// GetCacheStats returns cache performance statistics
+func (ai *AIService) GetCacheStats(ctx context.Context) (*cache.CacheStats, error) {
+	if ai.cache == nil {
+		return nil, fmt.Errorf("cache not available")
+	}
+	
+	stats, err := ai.cache.GetStats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Merge with metrics
+	metricsStats := ai.metrics.GetStats()
+	stats.Hits = metricsStats.Hits
+	stats.Misses = metricsStats.Misses
+	stats.HitRate = metricsStats.HitRate
+	
+	return stats, nil
+}
+
+// ClearCache clears all cached AI responses
+func (ai *AIService) ClearCache(ctx context.Context) error {
+	if ai.cache == nil {
+		return fmt.Errorf("cache not available")
+	}
+	
+	return ai.cache.Clear(ctx)
+}
+
+// InvalidateCacheKey removes a specific cache entry
+func (ai *AIService) InvalidateCacheKey(ctx context.Context, operation string, input interface{}) error {
+	if ai.cache == nil {
+		return fmt.Errorf("cache not available")
+	}
+	
+	cacheKey := ai.generateCacheKey(operation, input)
+	return ai.cache.Delete(ctx, cacheKey)
+}
+// Generic caching wrapper for AI operations
+func (ai *AIService) WithCache(ctx context.Context, operation string, input interface{}, aiCall func() (interface{}, error)) (interface{}, error) {
+	// Try cache first if available
+	if ai.cache != nil {
+		cacheKey := ai.generateCacheKey(operation, input)
+		start := time.Now()
+		
+		if cached, found, err := ai.cache.Get(ctx, cacheKey); err == nil && found {
+			ai.metrics.RecordHit(time.Since(start))
+			utils.Info("Cache hit", 
+				utils.LogField{Key: "operation", Value: operation},
+				utils.LogField{Key: "cache_key", Value: cacheKey})
+			return cached, nil
+		} else if err == nil {
+			ai.metrics.RecordMiss(time.Since(start))
+		} else {
+			ai.metrics.RecordError(time.Since(start))
+			utils.Warn("Cache error", 
+				utils.LogField{Key: "operation", Value: operation},
+				utils.LogField{Key: "error", Value: err.Error()})
+		}
+	}
+
+	// Cache miss or no cache - call AI function
+	result, err := aiCall()
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache the result if cache is available
+	if ai.cache != nil {
+		cacheKey := ai.generateCacheKey(operation, input)
+		ttl := ai.cacheConfig.GetTTLForOperation(operation)
+		start := time.Now()
+		
+		if err := ai.cache.Set(ctx, cacheKey, result, ttl); err != nil {
+			ai.metrics.RecordError(time.Since(start))
+			utils.Warn("Failed to cache result", 
+				utils.LogField{Key: "operation", Value: operation},
+				utils.LogField{Key: "error", Value: err.Error()})
+		} else {
+			ai.metrics.RecordSet(time.Since(start))
+			utils.Info("Cached result", 
+				utils.LogField{Key: "operation", Value: operation},
+				utils.LogField{Key: "cache_key", Value: cacheKey},
+				utils.LogField{Key: "ttl", Value: ttl.String()})
+		}
+	}
+
+	return result, nil
 }

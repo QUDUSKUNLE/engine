@@ -19,6 +19,7 @@ func RoutesAdaptor(public *echo.Group, handler *handlers.HTTPHandler) *echo.Grou
 	PaymentRoutes(public, handler)
 	AvailabilityRoutes(public, handler)
 	AIRoutes(public, handler)
+	CacheRoutes(public, handler)
 	
 	// WebSocket routes (separate group for ws prefix)
 	wsGroup := public.Group("/ws")

@@ -111,6 +111,7 @@ func ConditionalJWTMiddleware(jwtSecret string) echo.MiddlewareFunc {
 		"POST /v1/auth/google":                             true,
 		"GET /v1/health":                                   true,
 		"GET /v1/ai/capabilities": 													true,
+		"GET /v1/cache/health": 														true,
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {

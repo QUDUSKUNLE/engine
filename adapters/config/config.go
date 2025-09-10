@@ -64,6 +64,9 @@ type EnvConfiguration struct {
 
 	// MONGODB_URL
 	MONGODB_URL string
+
+	// Redis Cache
+	REDIS_URL string
 }
 
 func LoadEnvironmentVariables(serviceName string) (*EnvConfiguration, error) {
@@ -95,6 +98,7 @@ func LoadEnvironmentVariables(serviceName string) (*EnvConfiguration, error) {
 		config.PAYSTACK_BASE_URL = os.Getenv("PAYSTACK_BASE_URL")
 		config.PAYSTACK_PUBLIC_KEY = os.Getenv("PAYSTACK_PUBLIC_KEY")
 		config.PAYSTACK_SECRET_KEY = os.Getenv("PAYSTACK_SECRET_KEY")
+		config.REDIS_URL = os.Getenv("REDIS_URL")
 
 		// Validate required fields
 		if config.PORT == "" {
