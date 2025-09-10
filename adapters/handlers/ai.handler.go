@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/diagnoxix/adapters/db"
 	"github.com/diagnoxix/core/domain"
 	"github.com/diagnoxix/core/services"
 	"github.com/diagnoxix/core/utils"
@@ -21,35 +22,24 @@ import (
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /v1/ai/interpret-lab [post]
 func (h *HTTPHandler) InterpretLabHandler(c echo.Context) error {
-	var labTest domain.LabTest
-	if err := c.Bind(&labTest); err != nil {
-		utils.Error("Failed to bind lab test data", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Invalid request format",
-		})
+	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, c)
 	}
 
-	if err := c.Validate(&labTest); err != nil {
-		utils.Error("Lab test validation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Validation failed",
-			"details": err.Error(),
-		})
-	}
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.LabTest)
 
-	interpretation, err := h.service.AI.InterpretLabResults(c.Request().Context(), labTest)
+	interpretation, err := h.service.AI.InterpretLabResults(c.Request().Context(), *dto)
 	if err != nil {
 		utils.Error("Lab interpretation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Failed to interpret lab results",
-		})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    interpretation,
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
+		"success":    true,
+		"data":       interpretation,
 		"disclaimer": "This analysis is for informational purposes only and should not replace professional medical consultation.",
-	})
+	}, c)
 }
 
 // AnalyzeSymptomsHandler provides preliminary symptom analysis
@@ -64,35 +54,23 @@ func (h *HTTPHandler) InterpretLabHandler(c echo.Context) error {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /v1/ai/analyze-symptoms [post]
 func (h *HTTPHandler) AnalyzeSymptomsHandler(c echo.Context) error {
-	var req domain.SymptomAnalysisRequest
-	if err := c.Bind(&req); err != nil {
-		utils.Error("Failed to bind symptom analysis request", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Invalid request format",
-		})
+	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, c)
 	}
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.SymptomAnalysisRequest)
 
-	if err := c.Validate(&req); err != nil {
-		utils.Error("Symptom analysis validation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Validation failed",
-			"details": err.Error(),
-		})
-	}
-
-	analysis, err := h.service.AI.AnalyzeSymptoms(c.Request().Context(), req.Symptoms, req.Age, req.Gender)
+	analysis, err := h.service.AI.AnalyzeSymptoms(c.Request().Context(), dto.Symptoms, dto.Age, dto.Gender)
 	if err != nil {
 		utils.Error("Symptom analysis failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Failed to analyze symptoms",
-		})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    analysis,
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
+		"success":    true,
+		"data":       analysis,
 		"disclaimer": "This is preliminary analysis only. Please consult with a healthcare professional for proper diagnosis and treatment.",
-	})
+	}, c)
 }
 
 // GenerateReportSummaryHandler creates summaries of medical reports
@@ -107,40 +85,30 @@ func (h *HTTPHandler) AnalyzeSymptomsHandler(c echo.Context) error {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /v1/ai/summarize-report [post]
 func (h *HTTPHandler) GenerateReportSummaryHandler(c echo.Context) error {
-	var req domain.ReportSummaryRequest
-	if err := c.Bind(&req); err != nil {
-		utils.Error("Failed to bind report summary request", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Invalid request format",
-		})
+
+	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, c)
 	}
 
-	if err := c.Validate(&req); err != nil {
-		utils.Error("Report summary validation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Validation failed",
-			"details": err.Error(),
-		})
-	}
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.ReportSummaryRequest)
 
-	summary, err := h.service.AI.GenerateReportSummary(c.Request().Context(), req.MedicalReport, req.PatientFriendly)
+	summary, err := h.service.AI.GenerateReportSummary(c.Request().Context(), dto.MedicalReport, dto.PatientFriendly)
 	if err != nil {
 		utils.Error("Report summary generation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Failed to generate report summary",
-		})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
 		"success": true,
 		"summary": summary,
 		"type": func() string {
-			if req.PatientFriendly {
+			if dto.PatientFriendly {
 				return "patient-friendly"
 			}
 			return "professional"
 		}(),
-	})
+	}, c)
 }
 
 // GetAICapabilitiesHandler returns available AI features
@@ -154,53 +122,53 @@ func (h *HTTPHandler) GetAICapabilitiesHandler(c echo.Context) error {
 	capabilities := map[string]interface{}{
 		"features": []map[string]interface{}{
 			{
-				"name": "Lab Result Interpretation",
-				"endpoint": "/v1/ai/interpret-lab",
+				"name":        "Lab Result Interpretation",
+				"endpoint":    "/v1/ai/interpret-lab",
 				"description": "AI-powered analysis of laboratory test results",
-				"method": "POST",
+				"method":      "POST",
 			},
 			{
-				"name": "Symptom Analysis",
-				"endpoint": "/v1/ai/analyze-symptoms",
+				"name":        "Symptom Analysis",
+				"endpoint":    "/v1/ai/analyze-symptoms",
 				"description": "Preliminary analysis of patient symptoms",
-				"method": "POST",
+				"method":      "POST",
 			},
 			{
-				"name": "Report Summarization",
-				"endpoint": "/v1/ai/summarize-report",
+				"name":        "Report Summarization",
+				"endpoint":    "/v1/ai/summarize-report",
 				"description": "Generate patient-friendly or professional summaries of medical reports",
-				"method": "POST",
+				"method":      "POST",
 			},
 			{
-				"name": "Medical Image Analysis",
-				"endpoint": "/v1/ai/analyze-medical-image",
+				"name":        "Medical Image Analysis",
+				"endpoint":    "/v1/ai/analyze-medical-image",
 				"description": "AI-powered analysis of medical images (X-rays, CT scans, MRIs)",
-				"method": "POST",
+				"method":      "POST",
 			},
 			{
-				"name": "Anomaly Detection",
-				"endpoint": "/v1/ai/detect-anomalies",
+				"name":        "Anomaly Detection",
+				"endpoint":    "/v1/ai/detect-anomalies",
 				"description": "Detect unusual patterns in medical data",
-				"method": "POST",
+				"method":      "POST",
 			},
 			{
-				"name": "Lab Package Analysis",
-				"endpoint": "/v1/ai/analyze-lab-package",
+				"name":        "Lab Package Analysis",
+				"endpoint":    "/v1/ai/analyze-lab-package",
 				"description": "Comprehensive analysis of lab test packages",
-				"method": "POST",
+				"method":      "POST",
 			},
 			{
-				"name": "Automated Report Generation",
-				"endpoint": "/v1/ai/generate-report",
+				"name":        "Automated Report Generation",
+				"endpoint":    "/v1/ai/generate-report",
 				"description": "Generate comprehensive medical reports using AI",
-				"method": "POST",
+				"method":      "POST",
 			},
 		},
 		"disclaimer": "All AI features are for informational purposes only and should not replace professional medical consultation.",
-		"version": "2.0",
+		"version":    "2.0",
 	}
 
-	return c.JSON(http.StatusOK, capabilities)
+	return utils.ResponseMessage(http.StatusOK, capabilities, c)
 }
 
 // AnalyzeMedicalImageHandler analyzes medical images using AI
@@ -215,42 +183,29 @@ func (h *HTTPHandler) GetAICapabilitiesHandler(c echo.Context) error {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /v1/ai/analyze-medical-image [post]
 func (h *HTTPHandler) AnalyzeMedicalImageHandler(c echo.Context) error {
-	var req domain.MedicalImageAnalysisRequest
-	if err := c.Bind(&req); err != nil {
-		utils.Error("Failed to bind medical image analysis request", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Invalid request format",
-		})
+	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, c)
 	}
-
-	if err := c.Validate(&req); err != nil {
-		utils.Error("Medical image analysis validation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Validation failed",
-			"details": err.Error(),
-		})
-	}
-
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.MedicalImageAnalysisRequest)
 	analysis, err := h.service.AI.AnalyzeMedicalImage(
 		c.Request().Context(),
-		req.ImageURL,
-		req.ImageType,
-		req.BodyPart,
-		req.PatientAge,
-		req.PatientGender,
+		dto.ImageURL,
+		dto.ImageType,
+		dto.BodyPart,
+		dto.PatientAge,
+		dto.PatientGender,
 	)
 	if err != nil {
 		utils.Error("Medical image analysis failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Failed to analyze medical image",
-		})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    analysis,
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
+		"success":    true,
+		"data":       analysis,
 		"disclaimer": "This analysis is for informational purposes only and requires professional radiologist review.",
-	})
+	}, c)
 }
 
 // DetectAnomaliesHandler detects anomalies in medical data
@@ -265,40 +220,28 @@ func (h *HTTPHandler) AnalyzeMedicalImageHandler(c echo.Context) error {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /v1/ai/detect-anomalies [post]
 func (h *HTTPHandler) DetectAnomaliesHandler(c echo.Context) error {
-	var req AnomalyDetectionRequest
-	if err := c.Bind(&req); err != nil {
-		utils.Error("Failed to bind anomaly detection request", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Invalid request format",
-		})
+	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, c)
 	}
-
-	if err := c.Validate(&req); err != nil {
-		utils.Error("Anomaly detection validation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Validation failed",
-			"details": err.Error(),
-		})
-	}
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*AnomalyDetectionRequest)
 
 	result, err := h.service.AI.DetectAnomalies(
 		c.Request().Context(),
-		req.Data,
-		req.DataType,
-		req.PatientProfile,
+		dto.Data,
+		dto.DataType,
+		dto.PatientProfile,
 	)
 	if err != nil {
 		utils.Error("Anomaly detection failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Failed to detect anomalies",
-		})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    result,
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
+		"success":    true,
+		"data":       result,
 		"disclaimer": "This analysis is for informational purposes only and should not replace professional medical evaluation.",
-	})
+	}, c)
 }
 
 // AnalyzeLabPackageHandler analyzes comprehensive lab packages
@@ -313,38 +256,26 @@ func (h *HTTPHandler) DetectAnomaliesHandler(c echo.Context) error {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /v1/ai/analyze-lab-package [post]
 func (h *HTTPHandler) AnalyzeLabPackageHandler(c echo.Context) error {
-	var req LabPackageAnalysisRequest
-	if err := c.Bind(&req); err != nil {
-		utils.Error("Failed to bind lab package analysis request", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Invalid request format",
-		})
+	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, c)
 	}
-
-	if err := c.Validate(&req); err != nil {
-		utils.Error("Lab package analysis validation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Validation failed",
-			"details": err.Error(),
-		})
-	}
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*LabPackageAnalysisRequest)
 
 	analysis, err := h.service.AI.AnalyzeLabPackage(
 		c.Request().Context(),
-		req.PackageData,
+		dto.PackageData,
 	)
 	if err != nil {
 		utils.Error("Lab package analysis failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Failed to analyze lab package",
-		})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    analysis,
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
+		"success":    true,
+		"data":       analysis,
 		"disclaimer": "This analysis is for informational purposes only and should not replace professional medical consultation.",
-	})
+	}, c)
 }
 
 // GenerateAutomatedReportHandler generates comprehensive medical reports
@@ -359,54 +290,41 @@ func (h *HTTPHandler) AnalyzeLabPackageHandler(c echo.Context) error {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /v1/ai/generate-report [post]
 func (h *HTTPHandler) GenerateAutomatedReportHandler(c echo.Context) error {
-	var req AutomatedReportRequest
-	if err := c.Bind(&req); err != nil {
-		utils.Error("Failed to bind automated report request", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Invalid request format",
-		})
+	_, err := services.PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumPATIENT})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, c)
 	}
-
-	if err := c.Validate(&req); err != nil {
-		utils.Error("Automated report validation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error": "Validation failed",
-			"details": err.Error(),
-		})
-	}
+	dto, _ := c.Get(utils.ValidatedBodyDTO).(*AutomatedReportRequest)
 
 	report, err := h.service.AI.GenerateAutomatedReport(
 		c.Request().Context(),
-		req.ReportData,
+		dto.ReportData,
 	)
 	if err != nil {
 		utils.Error("Automated report generation failed", utils.LogField{Key: "error", Value: err.Error()})
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Failed to generate automated report",
-		})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"success": true,
-		"data":    report,
+	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{
+		"success":    true,
+		"data":       report,
 		"disclaimer": "This report is AI-generated and should be reviewed by qualified medical professionals.",
-	})
+	}, c)
 }
 
+// AnomalyDetectionRequest represents an anomaly detection request
+type AnomalyDetectionRequest struct {
+	Data           []float64               `json:"data" validate:"required,min=1"`
+	DataType       string                  `json:"data_type" validate:"required"`
+	PatientProfile services.PatientProfile `json:"patient_profile" validate:"required"`
+}
 
-	// AnomalyDetectionRequest represents an anomaly detection request
-	type AnomalyDetectionRequest struct {
-		Data           []float64               `json:"data" validate:"required,min=1"`
-		DataType       string                  `json:"data_type" validate:"required"`
-		PatientProfile services.PatientProfile `json:"patient_profile" validate:"required"`
-	}
+// LabPackageAnalysisRequest represents a lab package analysis request
+type LabPackageAnalysisRequest struct {
+	PackageData services.LabPackageData `json:"package_data" validate:"required"`
+}
 
-	// LabPackageAnalysisRequest represents a lab package analysis request
-	type LabPackageAnalysisRequest struct {
-		PackageData services.LabPackageData `json:"package_data" validate:"required"`
-	}
-
-	// AutomatedReportRequest represents an automated report generation request
-	type AutomatedReportRequest struct {
-		ReportData services.ReportGenerationData `json:"report_data" validate:"required"`
-	}
+// AutomatedReportRequest represents an automated report generation request
+type AutomatedReportRequest struct {
+	ReportData services.ReportGenerationData `json:"report_data" validate:"required"`
+}

@@ -22,7 +22,7 @@ func AIRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodPost,
 			path:        "/ai/analyze-symptoms",
 			handler:     handler.AnalyzeSymptomsHandler,
-			factory:     func() interface{} { return domain.SymptomAnalysisRequest{} },
+			factory:     func() interface{} { return &domain.SymptomAnalysisRequest{} },
 			description: "Analyze patient symptoms using AI",
 		},
 		{
@@ -36,7 +36,7 @@ func AIRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodGet,
 			path:        "/ai/capabilities",
 			handler:     handler.GetAICapabilitiesHandler,
-			factory:     nil,
+			factory:     func() interface{} { return &domain.CapabilitiesDTO{} },
 			description: "Get available AI capabilities",
 		},
 		{

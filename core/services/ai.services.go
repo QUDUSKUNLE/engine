@@ -94,6 +94,7 @@ func NewAIService(openAIKey string) *AIService {
 		},
 	}
 }
+
 // InterpretLabResults analyzes lab test results and provides medical interpretation
 func (ai *AIService) InterpretLabResults(ctx context.Context, labTest domain.LabTest) (*LabInterpretation, error) {
 	prompt := ai.buildLabInterpretationPrompt(labTest)
@@ -472,6 +473,7 @@ type ReportSection struct {
 
 // Medical Image Analysis using AI
 func (ai *AIService) AnalyzeMedicalImage(ctx context.Context, imageURL, imageType, bodyPart string, patientAge int, patientGender string) (*MedicalImageAnalysis, error) {
+
 	prompt := ai.buildMedicalImagePrompt(imageURL, imageType, bodyPart, patientAge, patientGender)
 	
 	response, err := ai.callOpenAI(ctx, prompt, "You are a medical AI assistant specializing in medical image analysis. Provide accurate analysis while emphasizing the need for professional radiologist consultation.")

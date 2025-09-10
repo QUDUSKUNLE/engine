@@ -17,7 +17,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-
 // Validate handles struct validation with detailed error messages
 func (c *CustomValidator) Validate(inter interface{}) error {
 	if err := c.validator.Struct(inter); err != nil {
@@ -204,7 +203,7 @@ func BodyValidationInterceptorFor(dtoFactory func() interface{}) echo.Middleware
 					}
 					bindFunc = c.Bind
 				}
-
+				
 				if err := bindAndValidateDTO(c, dtoFactory, bindFunc, validatedBodyKey); err != nil {
 					return err
 				}

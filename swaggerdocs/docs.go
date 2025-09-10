@@ -4699,7 +4699,7 @@ const docTemplate = `{
             "required": [
                 "body_part",
                 "image_type",
-                "imarl",
+                "image_url",
                 "patient_age",
                 "patient_gender"
             ],
@@ -4717,7 +4717,7 @@ const docTemplate = `{
                         "MAMMOGRAM"
                     ]
                 },
-                "imarl": {
+                "image_url": {
                     "type": "string"
                 },
                 "patient_age": {
@@ -6105,7 +6105,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "127.0.0.1:7556",
+	Host:             "diagnoxix.onrender.com",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Diagnoxix",

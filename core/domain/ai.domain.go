@@ -18,6 +18,10 @@ type (
 		MedicalReport   string `json:"medical_report" validate:"required"`
 		PatientFriendly bool   `json:"patient_friendly"`
 	}
+
+	CapabilitiesDTO struct {
+		PaginationQueryDTO
+	}
 	// MedicalImageAnalysisRequest represents a medical image analysis request
 	MedicalImageAnalysisRequest struct {
 		ImageURL      string `json:"image_url" validate:"required,url"`

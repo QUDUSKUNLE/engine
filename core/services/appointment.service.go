@@ -23,6 +23,8 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 	// Authenticate and authorize user - owner or manager only
 	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
+		utils.Error("Failed to validate user",
+			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
 

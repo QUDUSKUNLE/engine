@@ -359,7 +359,7 @@ definitions:
         - ULTRASOUND
         - MAMMOGRAM
         type: string
-      imarl:
+      image_url:
         type: string
       patient_age:
         maximum: 120
@@ -373,7 +373,7 @@ definitions:
     required:
     - body_part
     - image_type
-    - imarl
+    - image_url
     - patient_age
     - patient_gender
     type: object
@@ -1361,7 +1361,7 @@ definitions:
       value:
         type: string
     type: object
-host: 127.0.0.1:7556
+host: diagnoxix.onrender.com
 info:
   contact: {}
   description: Diagnoxix API
