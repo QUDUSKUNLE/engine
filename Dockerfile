@@ -10,8 +10,11 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy source code
+# Copy code
 COPY . .
+
+# Copy env file (optional for migrations inside container)
+COPY .env .env
 
 # Install migration tools
 RUN make setup
