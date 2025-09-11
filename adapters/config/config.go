@@ -31,7 +31,7 @@ func DBConfig() db.DBConfig {
 
 type EnvConfiguration struct {
 	PORT          string
-	DB_URL        string
+	DATABASE_URL  string
 	JWT_KEY       string
 	ALLOW_ORIGINS string
 	APP_URL       string
@@ -79,7 +79,7 @@ func LoadEnvironmentVariables(serviceName string) (*EnvConfiguration, error) {
 	switch serviceName {
 	case "MEDIVUE":
 		config.PORT = os.Getenv("PORT")
-		config.DB_URL = os.Getenv("DB_URL")
+		config.DATABASE_URL = os.Getenv("DATABASE_URL")
 		config.APP_URL = os.Getenv("APP_URL")
 		config.EMAIL_HOST = os.Getenv("EMAIL_HOST")
 		config.EMAIL_TYPE = os.Getenv("EMAIL_TYPE")

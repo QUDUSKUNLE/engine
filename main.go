@@ -55,7 +55,7 @@ func main() {
 	// Initialize database with custom configuration
 	dbConfig := config.DBConfig()
 
-	store, conn, err := db.DatabaseConnection(context.Background(), cfg.DB_URL, dbConfig)
+	store, conn, err := db.DatabaseConnection(context.Background(), cfg.DATABASE_URL, dbConfig)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -68,15 +68,15 @@ func main() {
 	e := echo.New()
 
 	e.Pre(func(next echo.HandlerFunc) echo.HandlerFunc {
-    return func(c echo.Context) error {
+		return func(c echo.Context) error {
 			if c.Path() == "/favicon.ico" {
 				return c.NoContent(http.StatusNoContent)
 			}
 			if c.Request().URL.Path == "" {
-        return c.NoContent(http.StatusNotFound)
-      }
+				return c.NoContent(http.StatusNotFound)
+			}
 			return next(c)
-    }
+		}
 	})
 
 	// Setup Prometheus metrics endpoint first, before any other middleware
