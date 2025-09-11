@@ -34,13 +34,13 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/bin/migrate ./bin/migrate
 COPY --from=builder /app/adapters/db/migrations ./adapters/db/migrations
 
-# Copy migration script
-COPY --from=builder /app/scripts/migrate.sh /migrate.sh
-RUN chmod +x /migrate.sh
-
 # Copy entrypoint script
 COPY --from=builder /app/scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+# Copy migrate script
+COPY --from=builder /app/scripts/migrate.sh /migrate.sh
+RUN chmod +x /migrate.sh
 
 # Create logs directory
 RUN mkdir -p logs

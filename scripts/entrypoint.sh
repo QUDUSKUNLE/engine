@@ -16,7 +16,7 @@ log "Starting Medicue application..."
 
 if [ "$RUN_MIGRATIONS" = "true" ]; then
     log "Running database migrations..."
-    if ./migrate.sh up; then
+    if /migrate.sh up; then
         log "Migrations complete."
     else
         warn "Migrations failed, continuing without blocking startup."
