@@ -10,7 +10,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy code
+# Copy the entire source code (including scripts/)
 COPY . .
 
 # Install migration tools
@@ -22,7 +22,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 # Production stage
 FROM alpine:latest
 
-# Install ca-certificates for HTTPS requests
+# Install runtime dependencies
 RUN apk --no-cache add ca-certificates tzdata bash postgresql-client
 
 WORKDIR /root/
@@ -34,18 +34,16 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/bin/migrate ./bin/migrate
 COPY --from=builder /app/adapters/db/migrations ./adapters/db/migrations
 
-
 # Copy scripts directly into final image
+# Make sure .dockerignore does NOT exclude the scripts/ folder
 COPY scripts/entrypoint.sh /entrypoint.sh
 COPY scripts/migrate.sh /migrate.sh
-
-
 RUN chmod +x /entrypoint.sh /migrate.sh
 
 # Create logs directory
 RUN mkdir -p logs
 
-# Expose port (for local clarity — Railway will override with $PORT)
+# Expose port (Railway overrides this with $PORT)
 EXPOSE 8080
 
 # Entrypoint script will run migrations then exec the app
