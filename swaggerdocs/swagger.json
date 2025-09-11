@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "diagnoxix.onrender.com",
+    "host": "diagnoxix.up.railway.app",
     "basePath": "/",
     "paths": {
         "/v1/account": {

@@ -28,7 +28,7 @@ import (
 // @title Diagnoxix AI
 // @version 1.0
 // @description Diagnoxix AI API
-// @host diagnoxix.onrender.com
+// @host diagnoxix.up.railway.app
 // @BasePath /
 func main() {
 	// Initialize logger with custom configuration

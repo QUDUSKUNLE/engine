@@ -1378,7 +1378,7 @@ definitions:
       value:
         type: string
     type: object
-host: diagnoxix.onrender.com
+host: diagnoxix.up.railway.app
 info:
   contact: {}
   description: Diagnoxix AI API
