@@ -41,7 +41,10 @@ docs/
 
 # Scripts not needed in production
 deploy-*.sh
-scripts/migrate.sh
+
+!scripts/migrate.sh
+!scripts/entrypoint.sh
+
 
 # Build artifacts
 bin/
