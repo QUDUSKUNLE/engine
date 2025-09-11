@@ -144,7 +144,7 @@ func main() {
 	e.GET("", handlers.Home)
 
 	// Get port from environment
-	port := cfg.PORT
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
