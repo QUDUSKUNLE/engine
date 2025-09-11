@@ -25,6 +25,7 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
+
 // @title Diagnoxix AI
 // @version 1.0
 // @description Diagnoxix AI API
