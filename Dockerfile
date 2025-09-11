@@ -13,9 +13,6 @@ RUN go mod download
 # Copy code
 COPY . .
 
-# Copy env file (optional for migrations inside container)
-COPY .env .env
-
 # Install migration tools
 RUN make setup
 

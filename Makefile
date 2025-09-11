@@ -2,8 +2,11 @@ GOBASE=$(shell pwd)
 GOBIN=$(GOBASE)/bin
 
 # Load environment variables from .env file
-include .env
-export $(shell sed 's/=.*//' .env)
+# Load environment variables from .env file if it exists
+-include .env
+ifneq (,$(wildcard .env))
+  export $(shell sed 's/=.*//' .env)
+endif
 
 .PHONY: setup generate migrate-up migrate-up-online migrate-down 
 
