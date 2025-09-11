@@ -6,10 +6,8 @@ RUN apk add --no-cache git make
 
 WORKDIR /app
 
-# Copy go mod files
+# Copy go mod files first for better caching
 COPY go.mod go.sum ./
-
-# Download dependencies
 RUN go mod download
 
 # Copy source code
@@ -18,39 +16,36 @@ COPY . .
 # Install migration tools
 RUN make setup
 
-# Build the application
+# Build the application (static binary)
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 # Production stage
 FROM alpine:latest
 
 # Install ca-certificates for HTTPS requests
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata bash
 
 WORKDIR /root/
 
-# Copy the binary from builder stage
+# Copy the Go binary
 COPY --from=builder /app/main .
 
-# Copy migration tools
+# Copy migration tools + files
 COPY --from=builder /app/bin/migrate ./bin/migrate
-
-# Copy migration files
 COPY --from=builder /app/adapters/db/migrations ./adapters/db/migrations
 
-# Copy scripts
+# Copy entrypoint script
 COPY --from=builder /app/scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
-# Copy config files
-# COPY .env .env
 
 # Create logs directory
 RUN mkdir -p logs
 
-# Expose port
+# Expose port (for local clarity — Railway will override with $PORT)
 EXPOSE 8080
 
-# Use entrypoint script
-ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
+# Entrypoint script will run migrations then exec the app
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Default command starts the app
 CMD ["./main"]

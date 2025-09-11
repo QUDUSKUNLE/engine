@@ -8,15 +8,30 @@ import (
 )
 
 // CacheMetrics tracks cache performance
-type CacheMetrics struct {
-	hits        int64
-	misses      int64
-	errors      int64
-	sets        int64
-	deletes     int64
-	totalTime   int64 // in nanoseconds
-	operations  int64
-}
+type (
+		CacheMetrics struct {
+		hits        int64
+		misses      int64
+		errors      int64
+		sets        int64
+		deletes     int64
+		totalTime   int64 // in nanoseconds
+		operations  int64
+	}
+	// Enhanced CacheStats with additional metrics
+	CacheStats struct {
+		Hits            int64   `json:"hits"`
+		Misses          int64   `json:"misses"`
+		Errors          int64   `json:"errors"`
+		Sets            int64   `json:"sets"`
+		Deletes         int64   `json:"deletes"`
+		HitRate         float64 `json:"hit_rate"`
+		TotalOperations int64   `json:"total_operations"`
+		AvgResponseTime float64 `json:"avg_response_time_ms"`
+		TotalKeys       int64   `json:"total_keys"`
+		MemoryUsage     int64   `json:"memory_usage"`
+	}
+)
 
 // NewCacheMetrics creates a new metrics instance
 func NewCacheMetrics() *CacheMetrics {
@@ -113,18 +128,4 @@ func (m *CacheMetrics) Reset() {
 	atomic.StoreInt64(&m.deletes, 0)
 	atomic.StoreInt64(&m.totalTime, 0)
 	atomic.StoreInt64(&m.operations, 0)
-}
-
-// Enhanced CacheStats with additional metrics
-type CacheStats struct {
-	Hits            int64   `json:"hits"`
-	Misses          int64   `json:"misses"`
-	Errors          int64   `json:"errors"`
-	Sets            int64   `json:"sets"`
-	Deletes         int64   `json:"deletes"`
-	HitRate         float64 `json:"hit_rate"`
-	TotalOperations int64   `json:"total_operations"`
-	AvgResponseTime float64 `json:"avg_response_time_ms"`
-	TotalKeys       int64   `json:"total_keys"`
-	MemoryUsage     int64   `json:"memory_usage"`
 }

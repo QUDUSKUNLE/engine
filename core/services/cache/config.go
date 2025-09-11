@@ -5,15 +5,28 @@ import (
 )
 
 // CacheTTLConfig defines TTL for different AI operations
-type CacheTTLConfig struct {
-	LabInterpretation    time.Duration `yaml:"lab_interpretation" default:"2h"`
-	SymptomAnalysis      time.Duration `yaml:"symptom_analysis" default:"1h"`
-	ReportSummary        time.Duration `yaml:"report_summary" default:"4h"`
-	ImageAnalysis        time.Duration `yaml:"image_analysis" default:"6h"`
-	AnomalyDetection     time.Duration `yaml:"anomaly_detection" default:"30m"`
-	LabPackageAnalysis   time.Duration `yaml:"lab_package_analysis" default:"3h"`
-	AutomatedReport      time.Duration `yaml:"automated_report" default:"8h"`
-}
+type (
+		CacheTTLConfig struct {
+		LabInterpretation    time.Duration `yaml:"lab_interpretation" default:"2h"`
+		SymptomAnalysis      time.Duration `yaml:"symptom_analysis" default:"1h"`
+		ReportSummary        time.Duration `yaml:"report_summary" default:"4h"`
+		ImageAnalysis        time.Duration `yaml:"image_analysis" default:"6h"`
+		AnomalyDetection     time.Duration `yaml:"anomaly_detection" default:"30m"`
+		LabPackageAnalysis   time.Duration `yaml:"lab_package_analysis" default:"3h"`
+		AutomatedReport      time.Duration `yaml:"automated_report" default:"8h"`
+	}
+	// CacheKeyConfig defines key patterns for different operations
+	CacheKeyConfig struct {
+		LabInterpretation  string `yaml:"lab_interpretation" default:"lab:interp"`
+		SymptomAnalysis    string `yaml:"symptom_analysis" default:"symptom:analysis"`
+		ReportSummary      string `yaml:"report_summary" default:"report:summary"`
+		ImageAnalysis      string `yaml:"image_analysis" default:"image:analysis"`
+		AnomalyDetection   string `yaml:"anomaly_detection" default:"anomaly:detect"`
+		LabPackageAnalysis string `yaml:"lab_package_analysis" default:"lab:package"`
+		AutomatedReport    string `yaml:"automated_report" default:"report:auto"`
+	}
+)
+
 
 // DefaultCacheTTLConfig returns default TTL configuration
 func DefaultCacheTTLConfig() CacheTTLConfig {
@@ -48,17 +61,6 @@ func (c CacheTTLConfig) GetTTLForOperation(operation string) time.Duration {
 	default:
 		return 1 * time.Hour // Default TTL
 	}
-}
-
-// CacheKeyConfig defines key patterns for different operations
-type CacheKeyConfig struct {
-	LabInterpretation  string `yaml:"lab_interpretation" default:"lab:interp"`
-	SymptomAnalysis    string `yaml:"symptom_analysis" default:"symptom:analysis"`
-	ReportSummary      string `yaml:"report_summary" default:"report:summary"`
-	ImageAnalysis      string `yaml:"image_analysis" default:"image:analysis"`
-	AnomalyDetection   string `yaml:"anomaly_detection" default:"anomaly:detect"`
-	LabPackageAnalysis string `yaml:"lab_package_analysis" default:"lab:package"`
-	AutomatedReport    string `yaml:"automated_report" default:"report:auto"`
 }
 
 // DefaultCacheKeyConfig returns default key configuration

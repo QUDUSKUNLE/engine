@@ -89,6 +89,137 @@ type (
 		Description string  `json:"description"`
 		Symptoms    []string `json:"symptoms"`
 	}
+	// Additional AI service structures for enhanced funct
+	MedicalImageAnalysis struct {
+		ImageType       string                 `json:"image_type"`
+		BodyPart        string                 `json:"body_part"`
+		Findings        []ImageFinding         `json:"findings"`
+		Abnormalities   []ImageAbnormality     `json:"abnormalities"`
+		Measurements    []ImageMeasurement     `json:"measurements"`
+		Recommendations []string               `json:"recommendations"`
+		UrgencyLevel    string                 `json:"urgency_level"`
+		Confidence      float64                `json:"confidence"`
+		RequiresReview  bool                   `json:"requires_review"`
+	}
+	ImageFinding struct {
+		Finding     string  `json:"finding"`
+		Location    string  `json:"location"`
+		Severity    string  `json:"severity"`
+		Description string  `json:"description"`
+		Confidence  float64 `json:"confidence"`
+	}
+	
+	ImageAbnormality struct {
+		Type        string  `json:"type"`
+		Location    string  `json:"location"`
+		Size        string  `json:"size,omitempty"`
+		Description string  `json:"description"`
+		Significance string  `json:"significance"`
+	}
+	
+	ImageMeasurement struct {
+		Parameter string  `json:"parameter"`
+		Value     string  `json:"value"`
+		Unit      string  `json:"unit"`
+		Normal    bool    `json:"normal"`
+	}
+	
+	AnomalyDetectionResult struct {
+		AnomaliesDetected bool              `json:"anomalies_detected"`
+		Anomalies         []DetectedAnomaly `json:"anomalies"`
+		OverallRisk       string            `json:"overall_risk"`
+		Recommendations   []string          `json:"recommendations"`
+		Confidence        float64           `json:"confidence"`
+		DataQuality       string            `json:"data_quality"`
+	}
+	DetectedAnomaly struct {
+		DataPoint   string  `json:"data_point"`
+		Value       float64 `json:"value"`
+		ExpectedRange string `json:"expected_range"`
+		Severity    string  `json:"severity"`
+		Description string  `json:"description"`
+	}
+	
+	PatientProfile struct {
+		Age           int      `json:"age"`
+		Gender        string   `json:"gender"`
+		MedicalHistory []string `json:"medical_history,omitempty"`
+		Medications   []string `json:"medications,omitempty"`
+		Allergies     []string `json:"allergies,omitempty"`
+	}
+	
+	LabPackageData struct {
+		PackageType    string                 `json:"package_type"`
+		PatientProfile PatientProfile         `json:"patient_profile"`
+		TestResults    map[string]interface{} `json:"test_results"`
+		ReferenceRanges map[string]string     `json:"reference_ranges"`
+		TestDate       string                 `json:"test_date"`
+	}
+	
+	LabPackageAnalysis struct {
+		PackageType     string                    `json:"package_type"`
+		OverallAssessment string                  `json:"overall_assessment"`
+		KeyFindings     []PackageFinding          `json:"key_findings"`
+		SystemAnalysis  map[string]SystemAnalysis `json:"system_analysis"`
+		Correlations    []TestCorrelation         `json:"correlations"`
+		Recommendations []string                  `json:"recommendations"`
+		FollowUpTests   []string                  `json:"follow_up_tests"`
+		RiskFactors     []string                  `json:"risk_factors"`
+	}
+	PackageFinding struct {
+		Category    string `json:"category"`
+		Finding     string `json:"finding"`
+		Significance string `json:"significance"`
+		Impact      string `json:"impact"`
+	}
+	
+	SystemAnalysis struct {
+		System      string   `json:"system"`
+		Status      string   `json:"status"`
+		Findings    []string `json:"findings"`
+		Concerns    []string `json:"concerns"`
+	}
+	
+	TestCorrelation struct {
+		Tests       []string `json:"tests"`
+		Relationship string   `json:"relationship"`
+		Significance string   `json:"significance"`
+	}
+	
+	ReportGenerationData struct {
+		ReportType     string                 `json:"report_type"`
+		PatientInfo    PatientProfile         `json:"patient_info"`
+		TestResults    []TestResult           `json:"test_results"`
+		ClinicalData   map[string]interface{} `json:"clinical_data"`
+		ReportPurpose  string                 `json:"report_purpose"`
+		TargetAudience string                 `json:"target_audience"`
+	}
+	
+	TestResult struct {
+		TestName    string `json:"test_name"`
+		Value       string `json:"value"`
+		Unit        string `json:"unit,omitempty"`
+		ReferenceRange string `json:"reference_range,omitempty"`
+		Status      string `json:"status"`
+	}
+	AutomatedReport struct {
+		ReportID       string                 `json:"report_id"`
+		ReportType     string                 `json:"report_type"`
+		PatientSummary string                 `json:"patient_summary"`
+		ExecutiveSummary string               `json:"executive_summary"`
+		DetailedFindings []ReportSection      `json:"detailed_findings"`
+		Recommendations []string              `json:"recommendations"`
+		Conclusions     string                `json:"conclusions"`
+		Metadata        map[string]interface{} `json:"metadata"`
+		GeneratedAt     string                `json:"generated_at"`
+	}
+	
+	ReportSection struct {
+		Title       string   `json:"title"`
+		Content     string   `json:"content"`
+		Findings    []string `json:"findings"`
+		Significance string  `json:"significance"`
+	}
 )
 
 func NewAIService(openAIKey string) *AIService {
@@ -440,142 +571,6 @@ func (ai *AIService) parseSymptomAnalysis(response string) (*SymptomAnalysis, er
 	}
 	
 	return &analysis, nil
-}
-
-// Additional AI service structures for enhanced funct
-type MedicalImageAnalysis struct {
-	ImageType       string                 `json:"image_type"`
-	BodyPart        string                 `json:"body_part"`
-	Findings        []ImageFinding         `json:"findings"`
-	Abnormalities   []ImageAbnormality     `json:"abnormalities"`
-	Measurements    []ImageMeasurement     `json:"measurements"`
-	Recommendations []string               `json:"recommendations"`
-	UrgencyLevel    string                 `json:"urgency_level"`
-	Confidence      float64                `json:"confidence"`
-	RequiresReview  bool                   `json:"requires_review"`
-}
-
-type ImageFinding struct {
-	Finding     string  `json:"finding"`
-	Location    string  `json:"location"`
-	Severity    string  `json:"severity"`
-	Description string  `json:"description"`
-	Confidence  float64 `json:"confidence"`
-}
-
-type ImageAbnormality struct {
-	Type        string  `json:"type"`
-	Location    string  `json:"location"`
-	Size        string  `json:"size,omitempty"`
-	Description string  `json:"description"`
-	Significance string  `json:"significance"`
-}
-
-type ImageMeasurement struct {
-	Parameter string  `json:"parameter"`
-	Value     string  `json:"value"`
-	Unit      string  `json:"unit"`
-	Normal    bool    `json:"normal"`
-}
-
-type AnomalyDetectionResult struct {
-	AnomaliesDetected bool              `json:"anomalies_detected"`
-	Anomalies         []DetectedAnomaly `json:"anomalies"`
-	OverallRisk       string            `json:"overall_risk"`
-	Recommendations   []string          `json:"recommendations"`
-	Confidence        float64           `json:"confidence"`
-	DataQuality       string            `json:"data_quality"`
-}
-
-type DetectedAnomaly struct {
-	DataPoint   string  `json:"data_point"`
-	Value       float64 `json:"value"`
-	ExpectedRange string `json:"expected_range"`
-	Severity    string  `json:"severity"`
-	Description string  `json:"description"`
-}
-
-type PatientProfile struct {
-	Age           int      `json:"age"`
-	Gender        string   `json:"gender"`
-	MedicalHistory []string `json:"medical_history,omitempty"`
-	Medications   []string `json:"medications,omitempty"`
-	Allergies     []string `json:"allergies,omitempty"`
-}
-
-type LabPackageData struct {
-	PackageType    string                 `json:"package_type"`
-	PatientProfile PatientProfile         `json:"patient_profile"`
-	TestResults    map[string]interface{} `json:"test_results"`
-	ReferenceRanges map[string]string     `json:"reference_ranges"`
-	TestDate       string                 `json:"test_date"`
-}
-
-type LabPackageAnalysis struct {
-	PackageType     string                    `json:"package_type"`
-	OverallAssessment string                  `json:"overall_assessment"`
-	KeyFindings     []PackageFinding          `json:"key_findings"`
-	SystemAnalysis  map[string]SystemAnalysis `json:"system_analysis"`
-	Correlations    []TestCorrelation         `json:"correlations"`
-	Recommendations []string                  `json:"recommendations"`
-	FollowUpTests   []string                  `json:"follow_up_tests"`
-	RiskFactors     []string                  `json:"risk_factors"`
-}
-
-type PackageFinding struct {
-	Category    string `json:"category"`
-	Finding     string `json:"finding"`
-	Significance string `json:"significance"`
-	Impact      string `json:"impact"`
-}
-
-type SystemAnalysis struct {
-	System      string   `json:"system"`
-	Status      string   `json:"status"`
-	Findings    []string `json:"findings"`
-	Concerns    []string `json:"concerns"`
-}
-
-type TestCorrelation struct {
-	Tests       []string `json:"tests"`
-	Relationship string   `json:"relationship"`
-	Significance string   `json:"significance"`
-}
-
-type ReportGenerationData struct {
-	ReportType     string                 `json:"report_type"`
-	PatientInfo    PatientProfile         `json:"patient_info"`
-	TestResults    []TestResult           `json:"test_results"`
-	ClinicalData   map[string]interface{} `json:"clinical_data"`
-	ReportPurpose  string                 `json:"report_purpose"`
-	TargetAudience string                 `json:"target_audience"`
-}
-
-type TestResult struct {
-	TestName    string `json:"test_name"`
-	Value       string `json:"value"`
-	Unit        string `json:"unit,omitempty"`
-	ReferenceRange string `json:"reference_range,omitempty"`
-	Status      string `json:"status"`
-}
-
-type AutomatedReport struct {
-	ReportID       string                 `json:"report_id"`
-	ReportType     string                 `json:"report_type"`
-	PatientSummary string                 `json:"patient_summary"`
-	ExecutiveSummary string               `json:"executive_summary"`
-	DetailedFindings []ReportSection      `json:"detailed_findings"`
-	Recommendations []string              `json:"recommendations"`
-	Conclusions     string                `json:"conclusions"`
-	Metadata        map[string]interface{} `json:"metadata"`
-	GeneratedAt     string                `json:"generated_at"`
-}
-
-type ReportSection struct {
-	Title       string   `json:"title"`
-	Content     string   `json:"content"`
-	Findings    []string `json:"findings"`
-	Significance string  `json:"significance"`
 }
 
 // Medical Image Analysis using AI

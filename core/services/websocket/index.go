@@ -14,34 +14,34 @@ import (
 )
 
 // WebSocketManager manages all WebSocket connections and notifications
-type WebSocketManager struct {
-	clients    map[string]*Client // userID -> Client
-	register   chan *Client
-	unregister chan *Client
-	broadcast  chan *NotificationMessage
-	mutex      sync.RWMutex
-}
-
-// Client represents a WebSocket client connection
-type Client struct {
-	ID       string
-	UserID   string
-	Conn     *websocket.Conn
-	Send     chan *NotificationMessage
-	Manager  *WebSocketManager
-	LastSeen time.Time
-}
-
-// NotificationMessage represents a real-time notification
-type NotificationMessage struct {
-	Type      string                 `json:"type"`
-	UserID    string                 `json:"user_id"`
-	Title     string                 `json:"title"`
-	Message   string                 `json:"message"`
-	Data      map[string]interface{} `json:"data,omitempty"`
-	Timestamp time.Time              `json:"timestamp"`
-	ID        string                 `json:"id"`
-}
+type (
+	WebSocketManager struct {
+		clients    map[string]*Client // userID -> Client
+		register   chan *Client
+		unregister chan *Client
+		broadcast  chan *NotificationMessage
+		mutex      sync.RWMutex
+	}
+	// Client represents a WebSocket client connection
+	Client struct {
+		ID       string
+		UserID   string
+		Conn     *websocket.Conn
+		Send     chan *NotificationMessage
+		Manager  *WebSocketManager
+		LastSeen time.Time
+	}
+	// NotificationMessage represents a real-time notification
+	NotificationMessage struct {
+		Type      string                 `json:"type"`
+		UserID    string                 `json:"user_id"`
+		Title     string                 `json:"title"`
+		Message   string                 `json:"message"`
+		Data      map[string]interface{} `json:"data,omitempty"`
+		Timestamp time.Time              `json:"timestamp"`
+		ID        string                 `json:"id"`
+	}
+)
 
 // WebSocket upgrader configuration
 var upgrader = websocket.Upgrader{
@@ -114,7 +114,7 @@ func (manager *WebSocketManager) registerClient(client *Client) {
 		Timestamp: time.Now(),
 		ID:        uuid.New().String(),
 	}
-	
+
 	select {
 	case client.Send <- welcomeMsg:
 	default:
@@ -354,7 +354,7 @@ func (client *Client) handleMessage(message []byte) {
 	case "mark_read":
 		// Handle marking notifications as read
 		if notificationID, ok := msg["notification_id"].(string); ok {
-			utils.Info("Notification marked as read via WebSocket", 
+			utils.Info("Notification marked as read via WebSocket",
 				utils.LogField{Key: "user_id", Value: client.UserID},
 				utils.LogField{Key: "notification_id", Value: notificationID})
 		}

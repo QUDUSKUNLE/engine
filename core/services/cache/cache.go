@@ -14,33 +14,35 @@ import (
 )
 
 // CacheConfig holds cache configuration
-type CacheConfig struct {
-	RedisURL     string        `yaml:"redis_url" default:"redis://localhost:6379"`
-	DefaultTTL   time.Duration `yaml:"default_ttl" default:"1h"`
-	MaxRetries   int           `yaml:"max_retries" default:"3"`
-	DialTimeout  time.Duration `yaml:"dial_timeout" default:"5s"`
-	ReadTimeout  time.Duration `yaml:"read_timeout" default:"3s"`
-	WriteTimeout time.Duration `yaml:"write_timeout" default:"3s"`
-	PoolSize     int           `yaml:"pool_size" default:"10"`
-}
+type (
+		CacheConfig struct {
+		RedisURL     string        `yaml:"redis_url" default:"redis://localhost:6379"`
+		DefaultTTL   time.Duration `yaml:"default_ttl" default:"1h"`
+		MaxRetries   int           `yaml:"max_retries" default:"3"`
+		DialTimeout  time.Duration `yaml:"dial_timeout" default:"5s"`
+		ReadTimeout  time.Duration `yaml:"read_timeout" default:"3s"`
+		WriteTimeout time.Duration `yaml:"write_timeout" default:"3s"`
+		PoolSize     int           `yaml:"pool_size" default:"10"`
+	}
+	// AICache provides caching functionality for AI responses
+	AICache struct {
+		client     *redis.Client
+		config     CacheConfig
+		keyPrefix  string
+		fallback   bool // Use in-memory fallback if Redis is unavailable
+		memCache   map[string]*CacheEntry
+		memMutex   sync.RWMutex
+	}
+	// CacheEntry represents a cached item
+	CacheEntry struct {
+		Data      interface{} `json:"data"`
+		ExpiresAt time.Time   `json:"expires_at"`
+		CreatedAt time.Time   `json:"created_at"`
+		Hash      string      `json:"hash"`
+	}
+)
 
-// AICache provides caching functionality for AI responses
-type AICache struct {
-	client     *redis.Client
-	config     CacheConfig
-	keyPrefix  string
-	fallback   bool // Use in-memory fallback if Redis is unavailable
-	memCache   map[string]*CacheEntry
-	memMutex   sync.RWMutex
-}
 
-// CacheEntry represents a cached item
-type CacheEntry struct {
-	Data      interface{} `json:"data"`
-	ExpiresAt time.Time   `json:"expires_at"`
-	CreatedAt time.Time   `json:"created_at"`
-	Hash      string      `json:"hash"`
-}
 
 // NewAICache creates a new AI cache instance
 func NewAICache(config CacheConfig) (*AICache, error) {
