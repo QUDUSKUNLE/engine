@@ -35,7 +35,7 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
     
     # Simple database connection check using migrate
     for i in $(seq 1 30); do
-        if ./bin/migrate -path=adapters/db/migrations -database "$DB_URL" version >/dev/null 2>&1; then
+        if ./bin/migrate -path=adapters/db/migrations -database "$DATABASE_URL" version >/dev/null 2>&1; then
             log "Database connection established!"
             break
         elif [ $i -eq 30 ]; then
@@ -49,7 +49,7 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
     
     # Run migrations
     log "Executing database migrations..."
-    if ./bin/migrate -path=adapters/db/migrations -database "$DB_URL" up; then
+    if ./bin/migrate -path=adapters/db/migrations -database "$DATABASE_URL" up; then
         log "✅ Database migrations completed successfully!"
     else
         error "❌ Database migration failed!"

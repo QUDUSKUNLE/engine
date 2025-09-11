@@ -4,7 +4,7 @@
 set -e
 
 # Default values
-DB_URL="${DB_URL:-postgres://medicue_user:medicue_password@localhost:5432/medivue?sslmode=disable}"
+DATABASE_URL="${DATABASE_URL:-postgres://medicue_user:medicue_password@localhost:5432/medivue?sslmode=disable}"
 MIGRATION_PATH="${MIGRATION_PATH:-adapters/db/migrations}"
 MIGRATE_BINARY="${MIGRATE_BINARY:-./bin/migrate}"
 
@@ -44,9 +44,9 @@ wait_for_db() {
     log "Waiting for database to be ready..."
     
     # Extract database connection info
-    DB_HOST=$(echo $DB_URL | sed 's|.*@\([^:]*\):.*|\1|')
-    DB_PORT=$(echo $DB_URL | sed 's|.*:\([0-9]*\)/.*|\1|')
-    DB_USER=$(echo $DB_URL | sed 's|.*://\([^:]*\):.*|\1|')
+    DB_HOST=$(echo $DATABASE_URL | sed 's|.*@\([^:]*\):.*|\1|')
+    DB_PORT=$(echo $DATABASE_URL | sed 's|.*:\([0-9]*\)/.*|\1|')
+    DB_USER=$(echo $DATABASE_URL | sed 's|.*://\([^:]*\):.*|\1|')
     
     # Wait for PostgreSQL to be ready
     for i in {1..30}; do
@@ -69,7 +69,7 @@ run_migrations() {
     log "Migration path: $MIGRATION_PATH"
     
     # Run migrations
-    if $MIGRATE_BINARY -path="$MIGRATION_PATH" -database "$DB_URL" up; then
+    if $MIGRATE_BINARY -path="$MIGRATION_PATH" -database "$DATABASE_URL" up; then
         log "✅ Migrations completed successfully!"
         return 0
     else
@@ -81,7 +81,7 @@ run_migrations() {
 # Get migration version
 get_version() {
     log "Getting current migration version..."
-    if $MIGRATE_BINARY -path="$MIGRATION_PATH" -database "$DB_URL" version; then
+    if $MIGRATE_BINARY -path="$MIGRATION_PATH" -database "$DATABASE_URL" version; then
         return 0
     else
         warn "Could not get migration version (database might be empty)"
@@ -98,7 +98,7 @@ force_version() {
     fi
     
     warn "Forcing migration to version: $version"
-    if $MIGRATE_BINARY -path="$MIGRATION_PATH" -database "$DB_URL" force "$version"; then
+    if $MIGRATE_BINARY -path="$MIGRATION_PATH" -database "$DATABASE_URL" force "$version"; then
         log "✅ Forced migration to version $version"
     else
         error "❌ Failed to force migration to version $version"
@@ -111,7 +111,7 @@ rollback() {
     local steps=${1:-1}
     warn "Rolling back $steps migration(s)..."
     
-    if $MIGRATE_BINARY -path="$MIGRATION_PATH" -database "$DB_URL" down "$steps"; then
+    if $MIGRATE_BINARY -path="$MIGRATION_PATH" -database "$DATABASE_URL" down "$steps"; then
         log "✅ Rollback completed successfully!"
     else
         error "❌ Rollback failed!"
@@ -149,7 +149,7 @@ case "${1:-up}" in
         echo "  help              Show this help message"
         echo ""
         echo "Environment variables:"
-        echo "  DB_URL            Database connection string"
+        echo "  DATABASE_URL            Database connection string"
         echo "  MIGRATION_PATH    Path to migration files"
         echo "  MIGRATE_BINARY    Path to migrate binary"
         ;;
