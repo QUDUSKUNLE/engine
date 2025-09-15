@@ -15,14 +15,6 @@ type HealthResponse struct {
 	Service   string    `json:"service"`
 }
 
-// HealthCheck handles health check requests
-// @Summary Health check endpoint
-// @Description Returns the health status of the service
-// @Tags health
-// @Accept json
-// @Produce json
-// @Success 200 {object} HealthResponse
-// @Router /v1/health [get]
 func (h *HTTPHandler) HealthCheck(c echo.Context) error {
 	response := HealthResponse{
 		Status:    "healthy",

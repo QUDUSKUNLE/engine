@@ -64,7 +64,7 @@ func (h *HTTPHandler) AnalyzeSymptomsHandler(c echo.Context) error {
 	}
 	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.SymptomAnalysisRequest)
 
-	analysis, err := h.service.AI.AnalyzeSymptoms(c.Request().Context(), dto.Symptoms, dto.Age, dto.Gender)
+	analysis, err := h.service.AI.AnalyzeSymptoms(c.Request().Context(), *dto)
 	if err != nil {
 		utils.Error("Symptom analysis failed", utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
@@ -99,7 +99,7 @@ func (h *HTTPHandler) GenerateReportSummaryHandler(c echo.Context) error {
 
 	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.ReportSummaryRequest)
 
-	summary, err := h.service.AI.GenerateReportSummary(c.Request().Context(), dto.MedicalReport, dto.PatientFriendly)
+	summary, err := h.service.AI.GenerateReportSummary(c.Request().Context(), *dto)
 	if err != nil {
 		utils.Error("Report summary generation failed", utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
@@ -197,13 +197,7 @@ func (h *HTTPHandler) AnalyzeMedicalImageHandler(c echo.Context) error {
 	}
 	dto, _ := c.Get(utils.ValidatedBodyDTO).(*domain.MedicalImageAnalysisRequest)
 	analysis, err := h.service.AI.AnalyzeMedicalImage(
-		c.Request().Context(),
-		dto.ImageURL,
-		dto.ImageType,
-		dto.BodyPart,
-		dto.PatientAge,
-		dto.PatientGender,
-	)
+		c.Request().Context(), *dto)
 	if err != nil {
 		utils.Error("Medical image analysis failed", utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, c)

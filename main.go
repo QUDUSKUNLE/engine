@@ -25,7 +25,6 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-
 // @title Diagnoxix AI
 // @version 1.0
 // @description Diagnoxix AI API
@@ -145,7 +144,7 @@ func main() {
 	e.GET("", handlers.Home)
 
 	// Get port from environment
-	port := os.Getenv("PORT")
+	port := cfg.PORT
 	if port == "" {
 		port = "8080"
 	}

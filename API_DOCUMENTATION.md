@@ -884,7 +884,7 @@ DELETE /v1/availability/{diagnostic_centre_id}/{day_of_week}
 Get AI analysis of laboratory test results.
 
 ```http
-POST /v1/ai/interpret-lab
+POST /v1/ai/interpret_lab
 ```
 
 **Request Body:**
@@ -938,7 +938,7 @@ POST /v1/ai/interpret-lab
 Get AI analysis of patient symptoms.
 
 ```http
-POST /v1/ai/analyze-symptoms
+POST /v1/ai/analyze_symptoms
 ```
 
 **Request Body:**
@@ -988,7 +988,7 @@ POST /v1/ai/analyze-symptoms
 Create patient-friendly or professional summaries of medical reports.
 
 ```http
-POST /v1/ai/summarize-report
+POST /v1/ai/summarize_report
 ```
 
 **Request Body:**

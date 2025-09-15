@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/diagnoxix/adapters/handlers"
+	"github.com/diagnoxix/core/domain"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,14 +15,14 @@ func WebSocketRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			method:      http.MethodGet,
 			path:        "/notifications",
 			handler:     handler.WebSocketHandler,
-			factory:     nil,
+			factory:     func() interface{} { return &domain.CapabilitiesDTO{} },
 			description: "Establish WebSocket connection for real-time notifications",
 		},
 		{
 			method:      http.MethodGet,
 			path:        "/stats",
 			handler:     handler.GetWebSocketStatsHandler,
-			factory:     nil,
+			factory:     func() interface{} { return &domain.CapabilitiesDTO{} },
 			description: "Get WebSocket connection statistics",
 		},
 		{

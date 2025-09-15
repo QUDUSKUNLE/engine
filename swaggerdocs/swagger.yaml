@@ -1089,17 +1089,6 @@ definitions:
         example: false
         type: boolean
     type: object
-  handlers.HealthResponse:
-    properties:
-      service:
-        type: string
-      status:
-        type: string
-      timestamp:
-        type: string
-      version:
-        type: string
-    type: object
   handlers.INTERNAL_SERVER_ERROR:
     description: INTERNAL_SERVER_ERROR response for Swagger
     properties:
@@ -3193,6 +3182,10 @@ paths:
         name: Authorization
         required: true
         type: string
+      - description: Assigned
+        in: query
+        name: assigned
+        type: boolean
       - default: 1
         description: Page number
         in: query
@@ -3548,21 +3541,6 @@ paths:
       summary: Update a diagnostic schedule
       tags:
       - Schedule
-  /v1/health:
-    get:
-      consumes:
-      - application/json
-      description: Returns the health status of the service
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.HealthResponse'
-      summary: Health check endpoint
-      tags:
-      - health
   /v1/login:
     post:
       consumes:

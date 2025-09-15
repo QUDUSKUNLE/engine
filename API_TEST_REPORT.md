@@ -143,15 +143,15 @@
 | Endpoint | Status | Security | Notes |
 |----------|--------|----------|-------|
 | `GET /v1/ai/capabilities` | 🔒 Protected | ✅ Secure | JWT required |
-| `POST /v1/ai/interpret-lab` | 🔒 Protected | ✅ Secure | JWT required |
-| `POST /v1/ai/analyze-symptoms` | 🔒 Protected | ✅ Secure | JWT required |
-| `POST /v1/ai/summarize-report` | 🔒 Protected | ✅ Secure | JWT required |
-| `POST /v1/ai/analyze-medical-image` | 🔒 Protected | ✅ Secure | JWT required |
-| `POST /v1/ai/detect-anomalies` | 🔒 Protected | ✅ Secure | JWT required |
-| `POST /v1/ai/analyze-lab-package` | 🔒 Protected | ✅ Secure | JWT required |
-| `POST /v1/ai/generate-report` | 🔒 Protected | ✅ Secure | JWT required |
+| `POST /v1/ai/interpret_lab` | 🔒 Protected | ✅ Secure | JWT required |
+| `POST /v1/ai/analyze_symptoms` | 🔒 Protected | ✅ Secure | JWT required |
+| `POST /v1/ai/summarize_report` | 🔒 Protected | ✅ Secure | JWT required |
+| `POST /v1/ai/analyze_medical_image` | 🔒 Protected | ✅ Secure | JWT required |
+| `POST /v1/ai/detect_anomalies` | 🔒 Protected | ✅ Secure | JWT required |
+| `POST /v1/ai/analyze_lab_package` | 🔒 Protected | ✅ Secure | JWT required |
+| `POST /v1/ai/generate_report` | 🔒 Protected | ✅ Secure | JWT required |
 | `GET /v1/ws/stats` | 🔒 Protected | ✅ Secure | JWT required |
-| `POST /v1/ws/test-notification` | 🔒 Protected | ✅ Secure | JWT required |
+| `POST /v1/ws/test_notification` | 🔒 Protected | ✅ Secure | JWT required |
 
 ---
 

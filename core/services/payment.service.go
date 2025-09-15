@@ -412,6 +412,11 @@ func (s *ServicesHandler) GetPayment(ctx echo.Context) error {
 
 // ListPayments lists payments with filtering
 func (s *ServicesHandler) ListPayments(ctx echo.Context) error {
+	// Authentication & Authorization
+	_, err := PrivateMiddlewareContext(ctx, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
+	}
 
 	dto := ctx.Get(utils.ValidatedQueryParamDTO).(*domain.ListPaymentsDTO)
 
@@ -457,6 +462,10 @@ func (s *ServicesHandler) ListPayments(ctx echo.Context) error {
 	payments, err := s.paymentPort.ListPayments(ctx.Request().Context(), params)
 	if err != nil {
 		return fmt.Errorf("failed to list payments: %v", err)
+	}
+
+	if len(payments) == 0 {
+		return utils.ResponseMessage(http.StatusOK, []interface{}{}, ctx)
 	}
 
 	return utils.ResponseMessage(http.StatusOK, payments, ctx)

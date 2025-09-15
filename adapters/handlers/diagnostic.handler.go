@@ -156,6 +156,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
+// @Param assigned query boolean false "Assigned" 
 // @Param page query integer false "Page number" minimum(1) default(1)
 // @Param per_page query integer false "Items per page" minimum(1) maximum(50) default(20)
 // @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"

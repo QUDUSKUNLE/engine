@@ -12,7 +12,7 @@ Your Diagnoxix platform now includes **4 additional advanced AI capabilities** t
 AI-powered analysis of medical images including X-rays, CT scans, MRIs, and ultrasounds.
 
 ```http
-POST /v1/ai/analyze-medical-image
+POST /v1/ai/analyze_medical_image
 ```
 
 **Request Body:**
@@ -87,7 +87,7 @@ POST /v1/ai/analyze-medical-image
 Identifies unusual patterns in medical data that may require attention.
 
 ```http
-POST /v1/ai/detect-anomalies
+POST /v1/ai/detect_anomalies
 ```
 
 **Request Body:**
@@ -149,7 +149,7 @@ POST /v1/ai/detect-anomalies
 Provides holistic analysis of comprehensive lab test packages with correlations and system-wide insights.
 
 ```http
-POST /v1/ai/analyze-lab-package
+POST /v1/ai/analyze_lab_package
 ```
 
 **Request Body:**
@@ -283,7 +283,7 @@ POST /v1/ai/analyze-lab-package
 Creates professional, comprehensive medical reports using AI.
 
 ```http
-POST /v1/ai/generate-report
+POST /v1/ai/generate_report
 ```
 
 **Request Body:**

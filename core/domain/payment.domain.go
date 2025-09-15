@@ -35,19 +35,22 @@ type (
 		PaymentMetadata   interface{}      `json:"payment_metadata,omitempty"`
 		ProviderReference string           `json:"provider_reference,omitempty"`
 	}
+
 	// GetPaymentDTO represents the request parameters for getting a payment
 	GetPaymentDTO struct {
 		PaymentID string `param:"payment_id" validate:"required,uuid"`
 	}
+
 	// ListPaymentsDTO represents the query parameters for listing payments
 	ListPaymentsDTO struct {
-		DiagnosticCentreID string           `query:"diagnostic_centre_id" validate:"omitempty,uuid"`
-		PatientID          string           `query:"patient_id" validate:"omitempty,uuid"`
-		Status             db.PaymentStatus `query:"status" validate:"omitempty,oneof=pending success failed refunded cancelled"`
+		DiagnosticCentreID string           `query:"diagnostic_centre_id" validate:"uuid"`
+		PatientID          string           `query:"patient_id" validate:"uuid"`
+		Status             db.PaymentStatus `query:"status" validate:"oneof=pending success failed refunded cancelled"`
 		FromDate           time.Time        `query:"from_date" validate:"omitempty"`
 		ToDate             time.Time        `query:"to_date" validate:"omitempty,gtefield=FromDate"`
 		PaginationQueryDTO
 	}
+
 	// RefundPaymentDTO represents the request body for refunding a payment
 	RefundPaymentDTO struct {
 		PaymentID    string  `param:"payment_id" validate:"required,uuid"`
@@ -55,6 +58,7 @@ type (
 		RefundReason string  `json:"refund_reason" validate:"required,max=500"`
 		RefundedBy   string  `json:"refunded_by"`
 	}
+
 	// PaymentWebhookDTO represents the request body for payment webhook
 	PaymentWebhookDTO struct {
 		PaymentID     string           `json:"payment_id" validate:"required"`
@@ -62,6 +66,7 @@ type (
 		TransactionID string           `json:"transaction_id" validate:"required"`
 		Metadata      interface{}      `json:"metadata,omitempty"`
 	}
+
 	VerifyPaymentDTO struct {
 		Reference string `param:"reference" validate:"required"`
 	}

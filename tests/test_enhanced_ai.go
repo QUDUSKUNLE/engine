@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/diagnoxix/core/domain"
 	"github.com/diagnoxix/core/services"
 	"github.com/joho/godotenv"
 )
@@ -47,11 +48,13 @@ func TestEnhancedAIFeatures() {
 func testMedicalImageAnalysis(aiService *services.AIService) {
 	analysis, err := aiService.AnalyzeMedicalImage(
 		context.Background(),
-		"https://example.com/chest-xray.jpg",
-		"XRAY",
-		"chest",
-		45,
-		"male",
+		domain.MedicalImageAnalysisRequest{
+			ImageURL:      "https://example.com/chest-xray.jpg",
+			ImageType:     "XRAY",
+			BodyPart:      "chest",
+			PatientAge:    45,
+			PatientGender: "male",
+		},
 	)
 	if err != nil {
 		log.Printf("Medical image analysis failed: %v", err)
@@ -65,7 +68,7 @@ func testMedicalImageAnalysis(aiService *services.AIService) {
 func testAnomalyDetection(aiService *services.AIService) {
 	// Sample vital signs data with some anomalies
 	vitalSigns := []float64{120, 80, 98.6, 72, 16, 98} // BP sys, BP dia, temp, HR, RR, O2 sat
-	
+
 	patientProfile := services.PatientProfile{
 		Age:            45,
 		Gender:         "male",
@@ -182,11 +185,11 @@ func testAutomatedReportGeneration(aiService *services.AIService) {
 			},
 		},
 		ClinicalData: map[string]interface{}{
-			"weight":        "185 lbs",
-			"height":        "5'10\"",
-			"bmi":           "26.5",
+			"weight":         "185 lbs",
+			"height":         "5'10\"",
+			"bmi":            "26.5",
 			"smoking_status": "former smoker",
-			"exercise":      "moderate",
+			"exercise":       "moderate",
 		},
 	}
 
