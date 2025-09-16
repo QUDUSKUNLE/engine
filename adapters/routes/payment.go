@@ -12,18 +12,11 @@ import (
 func PaymentRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 	paymentGroup := []routeConfig{
 		{
-			method:      http.MethodPost,
-			path:        "/payments",
-			handler:     handler.CreatePayment,
-			factory:     func() interface{} { return &domain.CreatePaymentDTO{} },
-			description: "Process a new payment",
-		},
-		{
 			method:      http.MethodGet,
 			path:        "/payments/:payment_id",
 			handler:     handler.GetPayment,
 			factory:     func() interface{} { return &domain.GetPaymentDTO{} },
-			description: "Get payment details",
+			description: "Get a payment details",
 		},
 		{
 			method:      http.MethodGet,

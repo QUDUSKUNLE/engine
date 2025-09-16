@@ -346,57 +346,6 @@ func (s *ServicesHandler) IsPaymentVerificationError(err error) bool {
 		strings.Contains(err.Error(), "temporary"))
 }
 
-// CreatePayment creates a new payment for an appointment
-func (s *ServicesHandler) CreatePayment(ctx echo.Context) error {
-	dto := ctx.Get(utils.ValidatedBodyDTO).(*domain.CreatePaymentDTO)
-	// Validate appointment exists and is in valid state
-	appointment, err := s.appointmentPort.GetAppointment(ctx.Request().Context(), dto.AppointmentID)
-	if err != nil {
-		if errors.Is(err, utils.ErrNotFound) {
-			return fmt.Errorf("appointment not found: %v", utils.ErrNotFound)
-		}
-		return fmt.Errorf("failed to get appointment: %v", err)
-	}
-
-	if appointment.Status != db.AppointmentStatusPending && appointment.Status != db.AppointmentStatusConfirmed {
-		return fmt.Errorf("appointment is not in valid state for payment: %v", utils.ErrBadRequest)
-	}
-
-	// Create payment
-	var pgAmount pgtype.Numeric
-	if err := pgAmount.Scan(dto.Amount); err != nil {
-		return fmt.Errorf("invalid amount format: %v", utils.ErrBadRequest)
-	}
-
-	var pgMetadata []byte
-	if dto.PaymentMetadata != nil {
-		metadata, err := json.Marshal(dto.PaymentMetadata)
-		if err != nil {
-			return fmt.Errorf("invalid payment metadata format: %v", utils.ErrBadRequest)
-		}
-		pgMetadata = metadata
-	}
-
-	appointmentUUID, err := uuid.Parse(dto.AppointmentID)
-	if err != nil {
-		return fmt.Errorf("invalid appointment ID: %v", utils.ErrBadRequest)
-	}
-
-	payment, err := s.paymentPort.CreatePayment(ctx.Request().Context(), db.Create_PaymentParams{
-		AppointmentID:      appointmentUUID.String(),
-		PatientID:          appointment.PatientID,
-		DiagnosticCentreID: appointment.DiagnosticCentreID,
-		Amount:             pgAmount,
-		Currency:           dto.Currency,
-		PaymentMethod:      db.PaymentMethod(dto.PaymentMethod),
-		PaymentMetadata:    pgMetadata,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create payment: %w", err)
-	}
-	return utils.ResponseMessage(http.StatusCreated, payment, ctx)
-}
-
 // GetPayment retrieves a payment by ID
 func (s *ServicesHandler) GetPayment(ctx echo.Context) error {
 	dto := ctx.Get(utils.ValidatedQueryParamDTO).(*domain.GetPaymentDTO)
@@ -461,7 +410,7 @@ func (s *ServicesHandler) ListPayments(ctx echo.Context) error {
 
 	payments, err := s.paymentPort.ListPayments(ctx.Request().Context(), params)
 	if err != nil {
-		return fmt.Errorf("failed to list payments: %v", err)
+		return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
 	}
 
 	if len(payments) == 0 {
@@ -478,37 +427,37 @@ func (s *ServicesHandler) RPayment(ctx echo.Context) error {
 	payment, err := s.paymentPort.GetPayment(ctx.Request().Context(), dto.PaymentID)
 	if err != nil {
 		if errors.Is(err, utils.ErrNotFound) {
-			return fmt.Errorf("payment not found: %v", utils.ErrNotFound)
+			return utils.ErrorResponse(http.StatusNotFound, err, ctx)
 		}
-		return fmt.Errorf("failed to get payment: %v", err)
+		return utils.ErrorResponse(http.StatusFailedDependency, err, ctx)
 	}
 
 	// Validate payment can be refunded
 	if payment.PaymentStatus != db.PaymentStatusSuccess {
-		return fmt.Errorf("payment must be successful to be refunded: %v", utils.ErrBadRequest)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("payment cannot be refunded"), ctx)
 	}
 	if payment.RefundAmount.Valid {
-		return fmt.Errorf("payment has already been refunded: %v", utils.ErrBadRequest)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid refund"), ctx)
 	}
 
 	var paymentAmount float64
 	err = payment.Amount.Scan(&paymentAmount)
 	if err != nil {
-		return fmt.Errorf("failed to parse payment amount: %w", err)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("failed to parse amount"), ctx)
 	}
 
 	if dto.RefundAmount > paymentAmount {
-		return fmt.Errorf("refund amount cannot be greater than payment amount: %v", utils.ErrBadRequest)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("refund amount cannot be greater than payment amount"), ctx)
 	}
 
 	var refundAmount pgtype.Numeric
 	if err := refundAmount.Scan(dto.RefundAmount); err != nil {
-		return fmt.Errorf("invalid refund amount format: %v", utils.ErrBadRequest)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid refund amount format"), ctx)
 	}
 
 	refundedByUUID, err := uuid.Parse(dto.RefundedBy)
 	if err != nil {
-		return fmt.Errorf("invalid refunded by ID: %v", utils.ErrBadRequest)
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid refunded by ID"), ctx)
 	}
 
 	// Process refund
@@ -519,7 +468,7 @@ func (s *ServicesHandler) RPayment(ctx echo.Context) error {
 		RefundedBy:   pgtype.UUID{Bytes: refundedByUUID, Valid: true},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to process refund: %v", err)
+		return utils.ErrorResponse(http.StatusUnprocessableEntity, err, ctx)
 	}
 
 	return utils.ResponseMessage(http.StatusAccepted, refundedPayment, ctx)
@@ -532,7 +481,7 @@ func (s *ServicesHandler) HandlePaymentWebhook(ctx echo.Context) error {
 	if dto.Metadata != nil {
 		metadata, err := json.Marshal(dto.Metadata)
 		if err != nil {
-			return fmt.Errorf("invalid metadata format: %v", utils.ErrBadRequest)
+			return utils.ErrorResponse(http.StatusBadRequest, err, ctx)
 		}
 		pgMetadata = metadata
 	}
@@ -546,43 +495,43 @@ func (s *ServicesHandler) HandlePaymentWebhook(ctx echo.Context) error {
 	})
 	if err != nil {
 		if errors.Is(err, utils.ErrNotFound) {
-			return fmt.Errorf("payment not found: %v", utils.ErrNotFound)
+			return utils.ErrorResponse(http.StatusNotFound, err, ctx)
 		}
-		return fmt.Errorf("failed to update payment status: %v", err)
+		return utils.ErrorResponse(http.StatusPreconditionFailed, err, ctx)
 	}
 
 	return utils.ResponseMessage(http.StatusAccepted, payment, ctx)
 }
 
 // VerifyPayment verifies a payment using Paystack and updates the payment status
-func (s *ServicesHandler) VerifyPayment(c echo.Context, reference string) error {
+func (s *ServicesHandler) VerifyPayment(c echo.Context) error {
+	// Authentication & Authorization
+	_, err := PrivateMiddlewareContext(c, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREOWNER, db.UserEnumDIAGNOSTICCENTREMANAGER})
+	if err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, err, c)
+	}
+
+	// Get payment to validate it
+	dto := c.Get(utils.ValidatedQueryParamDTO).(*domain.VerifyPaymentDTO)
 	// Start transaction
 	tx, err := s.paymentPort.BeginWith(c.Request().Context())
 	if err != nil {
-		return &PaymentError{
-			Code:    ErrCodeSystemError,
-			Message: "failed to start transaction",
-			Err:     err,
-		}
+		return utils.ErrorResponse(http.StatusAlreadyReported, err, c)
 	}
 	defer tx.Rollback(c.Request().Context())
 
 	// Verify and update payment with retries
-	payment, err := s.verifyAndUpdatePaymentWithRetry(c.Request().Context(), reference)
+	payment, err := s.verifyAndUpdatePaymentWithRetry(c.Request().Context(), dto.Reference)
 	if err != nil {
 		utils.Error("Payment verification failed",
 			utils.LogField{Key: "error", Value: err.Error()},
-			utils.LogField{Key: "reference", Value: reference})
-		return err
+			utils.LogField{Key: "reference", Value: dto.Reference})
+		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
 	}
 
 	// Commit transaction
 	if err := tx.Commit(c.Request().Context()); err != nil {
-		return &PaymentError{
-			Code:    ErrCodeSystemError,
-			Message: "failed to commit transaction",
-			Err:     err,
-		}
+		return utils.ErrorResponse(http.StatusExpectationFailed, err, c)
 	}
 
 	utils.Info("Payment verified successfully",
