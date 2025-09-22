@@ -241,6 +241,9 @@ func (handler *HTTPHandler) GetDiagnosticCentreManagers(context echo.Context) er
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
+// @Param assigned query boolean false "Assigned" 
+// @Param page query integer false "Page number" minimum(1) default(1)
+// @Param per_page query integer false "Items per page" minimum(1) maximum(50) default(20)
 // @Success 200 {array} handlers.ManagerSwagger "List of managers"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
