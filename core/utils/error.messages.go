@@ -19,6 +19,7 @@ const (
 // Common error types
 var (
 	ErrNotFound                 = errors.New("resource not found")
+	ErrNoRowFound               = errors.New("no rows in result set")
 	ErrNotFoundDiagnositcCentre = errors.New("diagnostic centre not found")
 	ErrPermissionDenied         = errors.New("permission denied")
 	ErrInvalidInput             = errors.New("invalid input")

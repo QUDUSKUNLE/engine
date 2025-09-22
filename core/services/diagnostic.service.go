@@ -12,6 +12,7 @@ import (
 	"github.com/diagnoxix/core/domain"
 	"github.com/diagnoxix/core/utils"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
@@ -126,7 +127,7 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 
 	ctx := context.Request().Context()
 	diagnosticCentre, err := service.diagnosticPort.GetDiagnosticCentre(ctx, params.DiagnosticCentreID)
-	// Handle errors
+
 	if err != nil {
 		utils.Error("Failed to get diagnostic centre",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -134,10 +135,10 @@ func (service *ServicesHandler) GetDiagnosticCentre(context echo.Context) error 
 		)
 
 		switch {
-		case errors.Is(err, utils.ErrNotFound):
-			return echo.NewHTTPError(http.StatusNotFound, "Diagnostic centre not found")
 		case errors.Is(err, utils.ErrDatabaseError):
 			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
+		case errors.Is(err, pgx.ErrNoRows):
+			return echo.NewHTTPError(http.StatusNotFound, "Diagnostic centre not found")
 		default:
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve diagnostic centre")
 		}
@@ -225,6 +226,8 @@ func (service *ServicesHandler) GetDiagnosticCentreByManagerOrOwner(context echo
 			return echo.NewHTTPError(http.StatusNotFound, "Diagnostic centre not found")
 		case errors.Is(err, utils.ErrDatabaseError):
 			return echo.NewHTTPError(http.StatusInternalServerError, "Database error occurred")
+		case errors.Is(err, pgx.ErrNoRows):
+			return echo.NewHTTPError(http.StatusNotFound, "Diagnostic centre not found")
 		default:
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve diagnostic centre")
 		}
