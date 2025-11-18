@@ -47,7 +47,7 @@ func main() {
 	}()
 
 	// Load configuration
-	cfg, err := config.LoadEnvironmentVariables("MEDIVUE")
+	cfg, err := config.LoadEnvironmentVariables()
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
