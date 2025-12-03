@@ -20,7 +20,7 @@ type UserSwagger struct {
 // @name DiagnosticCentreSwagger
 type DiagnosticCentreSwagger struct {
 	ID        string  `json:"id" example:"dc-001"`
-	Name      string  `json:"name" example:"Diagnoxix Diagnostics"`
+	Name      string  `json:"name" example:"DiagnoxixAI Diagnostics"`
 	Latitude  float64 `json:"latitude" example:"6.5244"`
 	Longitude float64 `json:"longitude" example:"3.3792"`
 	Address   string  `json:"address" example:"123 Main St, Lagos"`
@@ -62,7 +62,7 @@ type MedicalRecordSwagger struct {
 	DiagnosticCentreID string `json:"diagnostic_centre_id" example:"dc-001"`
 	FileType           string `json:"file_type" example:"PDF"`
 	FileURL            string `json:"file_url" example:"https://medivue.com/records/rec-001.pdf"`
-	CreatedAt          string `json:"created_at" example:"2025-06-26T20:00:00Z"` 
+	CreatedAt          string `json:"created_at" example:"2025-06-26T20:00:00Z"`
 	UpdatedAt          string `json:"updated_at" example:"2025-06-26T20:30:00Z"`
 }
 
@@ -76,7 +76,7 @@ type AppointmentSwagger struct {
 	DiagnosticCentreID string `json:"diagnostic_centre_id" example:"dc-001"`
 	PatientID          string `json:"patient_id" example:"user-001"`
 	Status             string `json:"status" example:"pending"`
-	CreatedAt          string `json:"created_at" example:"2025-06-26T20:00:00Z"` 
+	CreatedAt          string `json:"created_at" example:"2025-06-26T20:00:00Z"`
 	UpdatedAt          string `json:"updated_at" example:"2025-06-26T20:30:00Z"`
 }
 

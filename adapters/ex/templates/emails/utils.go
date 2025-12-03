@@ -74,5 +74,5 @@ func AddTemplateFuncs(t *template.Template) *template.Template {
 const (
 	ContactSupportFooter = "If you need any assistance, please contact our support team."
 	UrgentContactFooter  = "For urgent matters, please call our 24/7 support line."
-	DefaultFooter        = "Best regards,\nThe Diagnoxix Team"
+	DefaultFooter        = "Best regards,\nThe DiagnoxixAI Team"
 )

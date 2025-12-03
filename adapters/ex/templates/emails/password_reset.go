@@ -4,7 +4,7 @@ const passwordResetTemplate = `
 {{define "password_reset"}}
 <p><strong>Dear {{.Name}},</strong></p>
 
-<p>We received a request to reset your Diagnoxix account password. Click the button below to set a new password:</p>
+<p>We received a request to reset your DiagnoxixAI account password. Click the button below to set a new password:</p>
 
 <p style="text-align: center; margin: 30px 0;">
     <a href="{{.ResetLink}}" style="display: inline-block; padding: 12px 24px; background-color: var(--primary-color); color: #2563eb; text-decoration: none; border-radius: 6px; font-weight: bold;">

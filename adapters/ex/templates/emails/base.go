@@ -12,7 +12,7 @@ const BaseLayout = `
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.Title}} - Diagnoxix</title>
+    <title>{{.Title}} - DiagnoxixAI</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -150,7 +150,7 @@ const BaseLayout = `
             {{end}}
         </div>
         <div class="footer">
-            <p>Best regards,<br><strong>The Diagnoxix Team</strong></p>
+            <p>Best regards,<br><strong>The DiagnoxixAI Team</strong></p>
             <div class="small-text">
                 {{.FooterContent}}
             </div>

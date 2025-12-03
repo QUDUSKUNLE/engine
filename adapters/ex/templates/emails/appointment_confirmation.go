@@ -23,7 +23,7 @@ const appointmentConfirmationTemplate = `
 </div>
 {{end}}
 
-<p>You can view or manage your appointment by logging into your Diagnoxix account at any time.</p>
-<p>Thank you for choosing Diagnoxix!</p>
+<p>You can view or manage your appointment by logging into your DiagnoxixAI account at any time.</p>
+<p>Thank you for choosing DiagnoxixAI!</p>
 {{end}}
 `

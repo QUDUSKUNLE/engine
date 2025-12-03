@@ -8,7 +8,7 @@ const emailVerificationTemplate = `
 	</strong>
 </p>
 <p>
-	Thank you for registering with Diagnoxix. Please verify your email address to complete your registration.
+	Thank you for registering with DiagnoxixAI. Please verify your email address to complete your registration.
 </p>
 <p>
 	Click the button below to verify your email address:

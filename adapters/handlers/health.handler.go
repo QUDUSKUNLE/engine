@@ -20,7 +20,7 @@ func (h *HTTPHandler) HealthCheck(c echo.Context) error {
 		Status:    "healthy",
 		Timestamp: time.Now(),
 		Version:   "1.0.0",
-		Service:   "Diagnoxix API",
+		Service:   "DiagnoxixAI API",
 	}
 	return c.JSON(http.StatusOK, response)
 }

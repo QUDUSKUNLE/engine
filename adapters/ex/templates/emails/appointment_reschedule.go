@@ -20,6 +20,6 @@ const appointmentRescheduleTemplate = `
     <p>If this new schedule doesn’t work for you, feel free to contact us to find a more suitable time.</p>
 </div>
 
-<p>Thank you for using Diagnoxix.</p>
+<p>Thank you for using DiagnoxixAI.</p>
 {{end}}
 `

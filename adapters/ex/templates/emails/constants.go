@@ -34,8 +34,8 @@ const (
 )
 
 const (
-	SubjectEmailVerification          = "Sign up for Diagnoxix - Email Verification"
-	SubjectResetPassword              = "Reset Your Password - Diagnoxix"
+	SubjectEmailVerification          = "Sign up for DiagnoxixAI - Email Verification"
+	SubjectResetPassword              = "Reset Your Password - DiagnoxixAI"
 	SubjectDiagnosticCentreManager    = "Diagnostic Centre Manager Notification"
 	SubjectDiagnosticCentreManagement = "Diagnostic Centre Management Notification"
 )

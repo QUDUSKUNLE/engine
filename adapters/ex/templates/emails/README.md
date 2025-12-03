@@ -1,6 +1,6 @@
 # Email Templates
 
-This package provides a collection of responsive, modern email templates for the Diagnoxix healthcare platform.
+This package provides a collection of responsive, modern email templates for the DiagnoxixAI healthcare platform.
 
 ## Available Templates
 

@@ -26,16 +26,16 @@ func (n *NotificationAdapter) SendEmail(
 	switch n.config.EmailType {
 	case GMAIL, ZOHO:
 		msg = []byte(fmt.Sprintf(
-			"From: Diagnoxix <%s>\r\n"+
-			"To: %s\r\n"+
-			"Subject: %s\r\n"+
-			"MIME-Version: 1.0\r\n"+
-			"Content-Type: text/html; charset=utf-8\r\n"+
-			"X-Priority: 1 (Highest)\r\n"+
-			"X-MSMail-Priority: High\r\n"+
-			"Importance: High\r\n"+
-			"\r\n"+
-			"%s\r\n", n.config.From, to, subject, htmlContent),
+			"From: DiagnoxixAI <%s>\r\n"+
+				"To: %s\r\n"+
+				"Subject: %s\r\n"+
+				"MIME-Version: 1.0\r\n"+
+				"Content-Type: text/html; charset=utf-8\r\n"+
+				"X-Priority: 1 (Highest)\r\n"+
+				"X-MSMail-Priority: High\r\n"+
+				"Importance: High\r\n"+
+				"\r\n"+
+				"%s\r\n", n.config.From, to, subject, htmlContent),
 		)
 	}
 

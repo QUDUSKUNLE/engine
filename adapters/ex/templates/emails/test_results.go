@@ -25,6 +25,6 @@ const testResultsTemplate = `
 </div>
 
 <p>If you have any questions about your results, please contact your healthcare provider.</p>
-<p>Thank you for using Diagnoxix.</p>
+<p>Thank you for using DiagnoxixAI.</p>
 {{end}}
 `
