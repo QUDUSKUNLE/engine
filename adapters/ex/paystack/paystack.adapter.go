@@ -67,7 +67,7 @@ func NewPaystackAdapter(con *PaystackConfig) *PaystackAdapter {
 	}
 }
 
-func (p *PaystackAdapter) InitializeTransaction(email string, amount float64, reference string, metadata map[string]interface{}) (*PaystackTransactionResponse, error) {
+func (p *PaystackAdapter) InitializeTransaction(email, reference string, amount float64, metadata map[string]interface{}) (*PaystackTransactionResponse, error) {
 	url := fmt.Sprintf("%s/transaction/initialize", p.config.BaseURL)
 
 	// Paystack expects amount in kobo (multiply by 100)

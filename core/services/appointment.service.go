@@ -126,8 +126,8 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 
 	paystackResponse, err := service.paymentService.InitializeTransaction(
 		user.Email.String,
-		dto.Amount,
 		paymentReference,
+		dto.Amount,
 		metadata,
 	)
 
