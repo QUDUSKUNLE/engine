@@ -1146,7 +1146,7 @@ definitions:
         example: 3.3792
         type: number
       name:
-        example: Diagnoxix Diagnostics
+        example: DiagnoxixAI Diagnostics
         type: string
       phone:
         example: "+2348000000000"
@@ -3104,79 +3104,6 @@ paths:
       summary: Get diagnostic centre medical records
       tags:
       - DiagnosticCentre
-  /v1/diagnostic_centres/{diagnostic_centre_id}/schedules:
-    get:
-      description: Get all schedules for a diagnostic centre with pagination and filtering
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - default: 123e4567-e89b-12d3-a456-426614174000
-        description: Diagnostic Centre ID
-        format: uuid
-        in: path
-        name: diagnostic_centre_id
-        required: true
-        type: string
-      - description: Filter by start date (YYYY-MM-DD)
-        format: date
-        in: query
-        name: start_date
-        type: string
-      - description: Filter by end date (YYYY-MM-DD)
-        format: date
-        in: query
-        name: end_date
-        type: string
-      - description: Filter by status
-        enum:
-        - PENDING
-        - ACCEPTED
-        - REJECTED
-        in: query
-        name: status
-        type: string
-      - default: 1
-        description: Page number
-        in: query
-        minimum: 1
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        maximum: 100
-        minimum: 1
-        name: per_page
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of schedules
-          schema:
-            items:
-              $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
-            type: array
-        "401":
-          description: UNAUTHORIZED_ERROR
-          schema:
-            $ref: '#/definitions/handlers.UNAUTHORIZED_ERROR'
-        "404":
-          description: NOT_FOUND_ERROR
-          schema:
-            $ref: '#/definitions/handlers.NOT_FOUND_ERROR'
-        "500":
-          description: INTERNAL_SERVER_ERROR
-          schema:
-            $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
-      security:
-      - BearerAuth: []
-      summary: Get diagnostic centre schedules
-      tags:
-      - DiagnosticCentre
   /v1/diagnostic_centres/{diagnostic_centre_id}/stats:
     get:
       description: Get statistical information about a diagnostic centre (appointments,
@@ -3258,7 +3185,7 @@ paths:
       summary: Assign manager to a centre
       tags:
       - DiagnosticCentre
-  /v1/diagnostic_centres/manager:
+  /v1/diagnostic_centres/managers:
     get:
       description: Get all diagnostic centres managed by the authenticated diagnostic
         centre manager

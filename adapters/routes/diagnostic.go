@@ -20,12 +20,21 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 		},
 		{
 			method:  http.MethodPost,
-			path:    "/diagnostic_centres/manager",
+			path:    "/diagnostic_centres/managers",
 			handler: handler.CreateDiagnosticCentreManager,
 			factory: func() interface{} {
 				return &domain.DiagnosticCentreManagerRegisterDTO{}
 			},
 			description: "Create a diagnostic centre manager",
+		},
+		{
+			method:  http.MethodGet,
+			path:    "/diagnostic_centres/managers",
+			handler: handler.GetDiagnosticCentresByManager,
+			factory: func() interface{} {
+				return &domain.PaginationQueryDTO{}
+			},
+			description: "Get Diagnostic Centre Manager",
 		},
 		{
 			method:  http.MethodPost,
@@ -80,9 +89,12 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			description: "Update diagnostic centre",
 		},
 		{
-			method:      http.MethodDelete,
-			path:        "/diagnostic_centres/:diagnostic_centre_id",
-			handler:     handler.DeleteDiagnosticCentre,
+			method:  http.MethodDelete,
+			path:    "/diagnostic_centres/:diagnostic_centre_id",
+			handler: handler.DeleteDiagnosticCentre,
+			factory: func() interface{} {
+				return &domain.PaginationQueryDTO{}
+			},
 			description: "Delete diagnostic centre",
 		},
 		{

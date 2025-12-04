@@ -1894,7 +1894,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/diagnostic_centres/manager": {
+        "/v1/diagnostic_centres/managers": {
             "get": {
                 "security": [
                     {
@@ -2774,112 +2774,6 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/handlers.MedicalRecordSwagger"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "UNAUTHORIZED_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
-                        }
-                    },
-                    "404": {
-                        "description": "NOT_FOUND_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
-                        }
-                    },
-                    "500": {
-                        "description": "INTERNAL_SERVER_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/diagnostic_centres/{diagnostic_centre_id}/schedules": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get all schedules for a diagnostic centre with pagination and filtering",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "DiagnosticCentre"
-                ],
-                "summary": "Get diagnostic centre schedules",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "default": "123e4567-e89b-12d3-a456-426614174000",
-                        "description": "Diagnostic Centre ID",
-                        "name": "diagnostic_centre_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "date",
-                        "description": "Filter by start date (YYYY-MM-DD)",
-                        "name": "start_date",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "format": "date",
-                        "description": "Filter by end date (YYYY-MM-DD)",
-                        "name": "end_date",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "PENDING",
-                            "ACCEPTED",
-                            "REJECTED"
-                        ],
-                        "type": "string",
-                        "description": "Filter by status",
-                        "name": "status",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 1,
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Items per page",
-                        "name": "per_page",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of schedules",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
                             }
                         }
                     },
@@ -6350,7 +6244,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "example": "Diagnoxix Diagnostics"
+                    "example": "DiagnoxixAI Diagnostics"
                 },
                 "phone": {
                     "type": "string",

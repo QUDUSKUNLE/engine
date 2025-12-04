@@ -38,7 +38,7 @@ func (handler *HTTPHandler) CreateDiagnostic(context echo.Context) error {
 // @Failure 409 {object} handlers.DUPLICATE_ERROR "DUPLICATE_ERROR"
 // @Failure 422 {object} handlers.UNPROCESSED_ERROR "UNPROCESSED_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
-// @Router /v1/diagnostic_centres/manager [post]
+// @Router /v1/diagnostic_centres/managers [post]
 func (handler *HTTPHandler) CreateDiagnosticCentreManager(context echo.Context) error {
 	return handler.service.CreateDiagnosticCentreManager(context)
 }
@@ -156,13 +156,13 @@ func (handler *HTTPHandler) GetDiagnosticCentreStats(context echo.Context) error
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param assigned query boolean false "Assigned" 
+// @Param assigned query boolean false "Assigned"
 // @Param page query integer false "Page number" minimum(1) default(1)
 // @Param per_page query integer false "Items per page" minimum(1) maximum(50) default(20)
 // @Success 200 {array} handlers.DiagnosticCentreSwagger "List of diagnostic centres"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
-// @Router /v1/diagnostic_centres/manager [get]
+// @Router /v1/diagnostic_centres/managers [get]
 func (handler *HTTPHandler) GetDiagnosticCentresByManager(context echo.Context) error {
 	return handler.service.GetDiagnosticCentresByManager(context)
 }
@@ -204,7 +204,7 @@ func (handler *HTTPHandler) UpdateDiagnosticCentreManager(context echo.Context) 
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
-// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/schedules [get]
+// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules [get]
 func (handler *HTTPHandler) GetDiagnosticCentreSchedules(context echo.Context) error {
 	return handler.service.GetDiagnosticCentreSchedules(context)
 }
@@ -241,7 +241,7 @@ func (handler *HTTPHandler) GetDiagnosticCentreManagers(context echo.Context) er
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param assigned query boolean false "Assigned" 
+// @Param assigned query boolean false "Assigned"
 // @Param page query integer false "Page number" minimum(1) default(1)
 // @Param per_page query integer false "Items per page" minimum(1) maximum(50) default(20)
 // @Success 200 {array} handlers.ManagerSwagger "List of managers"

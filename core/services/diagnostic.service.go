@@ -380,6 +380,7 @@ func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) err
 			Message: err.Error(),
 		}
 	}
+	ctx := context.Request().Context()
 
 	param := context.Param(utils.DiagnosticCentreID)
 	parsedUUID, err := uuid.Parse(param)
@@ -392,7 +393,7 @@ func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) err
 	}
 
 	// First check if the diagnostic center exists and is owned by this user
-	_, err = service.diagnosticPort.GetDiagnosticCentreByOwner(context.Request().Context(), db.Get_Diagnostic_Centre_ByOwnerParams{
+	_, err = service.diagnosticPort.GetDiagnosticCentreByOwner(ctx, db.Get_Diagnostic_Centre_ByOwnerParams{
 		ID:        parsedUUID.String(),
 		CreatedBy: currentUser.UserID.String(),
 	})
@@ -405,7 +406,7 @@ func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) err
 		if errors.Is(err, utils.ErrNotFound) {
 			return &echo.HTTPError{
 				Code:    http.StatusNotFound,
-				Message: "diagnostic centre not found",
+				Message: "Diagnostic centre not found",
 			}
 		}
 		return &echo.HTTPError{
@@ -415,7 +416,8 @@ func (service *ServicesHandler) DeleteDiagnosticCentre(context echo.Context) err
 	}
 
 	// Attempt to delete
-	response, err := service.diagnosticPort.DeleteDiagnosticCentreByOwner(context.Request().Context(), params)
+	response, err := service.diagnosticPort.DeleteDiagnosticCentreByOwner(
+		ctx, params)
 	if err != nil {
 		utils.Error("Failed to delete diagnostic centre",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -628,10 +630,12 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 // GetDiagnosticCentreSchedules retrieves all schedules for a diagnostic centre
 func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Context) error {
 	// Authentication & Authorization check - try owner first, then manager
-	admin, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
+	manager, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumDIAGNOSTICCENTREMANAGER})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
 	}
+
+	ctx := context.Request().Context()
 
 	// Get diagnostic centre ID and schedule params
 	centreID := context.Param(utils.DiagnosticCentreID)
@@ -641,10 +645,14 @@ func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Contex
 	params = SetDefaultPagination(params).(*domain.GetDiagnosticSchedulesByCentreParamDTO)
 
 	// Verify centre exists
-	if _, err := service.diagnosticPort.GetDiagnosticCentreByManager(context.Request().Context(), db.Get_Diagnostic_Centre_ByManagerParams{ID: centreID, AdminID: pgtype.UUID{
-		Bytes: admin.UserID,
-		Valid: true}}); err != nil {
-		return utils.ErrorResponse(http.StatusNotFound, errors.New("diagnostic centre not found"), context)
+	if _, err := service.diagnosticPort.GetDiagnosticCentreByManager(ctx, db.Get_Diagnostic_Centre_ByManagerParams{
+		ID: centreID,
+		AdminID: pgtype.UUID{
+			Bytes: manager.UserID,
+			Valid: true,
+		},
+	}); err != nil {
+		return utils.ErrorResponse(http.StatusUnauthorized, errors.New("manager not authorized"), context)
 	}
 
 	// Get schedules from schedule repository
@@ -654,7 +662,7 @@ func (service *ServicesHandler) GetDiagnosticCentreSchedules(context echo.Contex
 		Limit:              params.GetLimit(),
 	}
 
-	schedules, err := service.schedulePort.GetDiagnosticSchedulesByCentre(context.Request().Context(), req)
+	schedules, err := service.schedulePort.GetDiagnosticSchedulesByCentre(ctx, req)
 	if err != nil {
 		utils.Error("Failed to retrieve schedules",
 			utils.LogField{Key: "error", Value: err.Error()},
