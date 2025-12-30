@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"log"
 
 	"github.com/diagnoxix/adapters/metrics"
 	"github.com/jackc/pgx/v5"
@@ -74,7 +75,7 @@ func DatabaseConnection(
 		return nil, nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	fmt.Printf("Database connected in %v\n", connTime)
+	log.Printf("Database connected in %v\n", connTime)
 
 	queries := New(pool)
 	return queries, pool, nil
@@ -131,10 +132,10 @@ func MonitorConnectionHealth(pool *pgxpool.Pool, checkInterval time.Duration) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			if err := pool.Ping(ctx); err != nil {
 				if err == context.DeadlineExceeded {
-					fmt.Printf("Database health check timeout - pool may be exhausted or DB is slow. Active: %d, Idle: %d\n", 
+					log.Printf("Database health check timeout - pool may be exhausted or DB is slow. Active: %d, Idle: %d\n", 
                         stats.AcquiredConns(), stats.IdleConns())
 				} else {
-					fmt.Printf("Database health check failed: %v\n", err)
+					log.Printf("Database health check failed: %v\n", err)
 				}
 				metrics.DBConnectionErrors.Inc()
 			}
