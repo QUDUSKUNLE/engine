@@ -46,7 +46,7 @@ type (
 		Email     string      `json:"email" validate:"email,required"`
 		LastName  string      `json:"last_name" validate:"gte=3,required"`
 		FirstName string      `json:"first_name" validate:"gte=3,required"`
-		UserType  db.UserEnum `json:"user_type" validate:"required,oneof=DIAGNOSTIC_CENTRE_MANAGER"`
+		UserType  db.UserEnum `json:"user_type" validate:"required,oneof=DIAGNOSTIC_CENTRE_MANAGER" example:"DIAGNOSTIC_CENTRE_MANAGER"`
 	}
 	UserSignInDTO struct {
 		Email    string `json:"email" validate:"email,required" example:"example@diagnoxix.com"`

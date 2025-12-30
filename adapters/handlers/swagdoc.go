@@ -142,6 +142,36 @@ type DUPLICATE_ERROR struct {
 	} `json:"error"`
 }
 
+// LOGIN_RESPONSE is used for Swagger documentation only
+// @Description LOGIN_RESPONSE response for Swagger
+// @name LOGIN_RESPONSE
+// @property token string "Token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYjE5NDFiNTEtZDc0ZS00ZmFlLWI5MGQtMDU2ZWNhYjk1NTRiIiwidXNlcl90eXBlIjoiUEFUSUVOVCIsImRpYWdub3N0aWNfaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJleHAiOjE3NzA0ODA0NjYsIm5iZiI6MTc2NjU5MjQ2NiwiaWF0IjoxNzY2NTkyNDY2fQ.Ok1nv-f3GU7pYYwzNC2WZ2PX8C7sYq07l-rbsFD_UR"
+// @property user_type string "USerType" example:"PATIENT"
+type LOGIN_RESPONSE struct {
+	Status  int64 `json:"status" example:"200"`
+	Success bool  `json:"success" example:"true"`
+	Data struct {
+		Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYjE5NDFiNTEtZDc0ZS00ZmFlLWI5MGQtMDU2ZWNhYjk1NTRiIiwidXNlcl90eXBlIjoiUEFUSUVOVCIsImRpYWdub3N0aWNfaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJleHAiOjE3NzA0ODA0NjYsIm5iZiI6MTc2NjU5MjQ2NiwiaWF0IjoxNzY2NTkyNDY2fQ.Ok1nv-f3GU7pYYwzNC2WZ2PX8C7sYq07l-rbsFD_UR"`
+		UserType string `json:"user_type" example:"PATIENT"`
+	}
+}
+
+type REQUEST_PASSWORD_RESET_RESPONSE struct {
+	Status  int64 `json:"status" example:"200"`
+	Success bool  `json:"success" example:"true"`
+	Data struct {
+		Message string `json:"message" example:"If your email exists in our system, you will receive a password reset link"`
+	}
+}
+
+type RESEND_VERIFICATION_RESPONSE struct {
+	Status  int64 `json:"status" example:"200"`
+	Success bool  `json:"success" example:"true"`
+	Data struct {
+		Message string `json:"message" example:"Verification email sent"`
+	}
+}
+
 // UNPROCESSED_ERROR is used for Swagger documentation only
 // @Description UNPROCESSED_ERROR response for Swagger
 // @name DUPLICATE_ERROR

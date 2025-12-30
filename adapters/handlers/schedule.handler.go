@@ -111,7 +111,6 @@ func (handler *HTTPHandler) GetDiagnosticScheduleByCentre(context echo.Context) 
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
-// @Router /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules [get]
 func (handler *HTTPHandler) GetDiagnosticSchedulesByCentre(context echo.Context) error {
 	return handler.service.GetDiagnosticSchedulesByCentre(context)
 }

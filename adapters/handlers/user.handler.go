@@ -27,7 +27,7 @@ func (handler *HTTPHandler) Register(context echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param RequestBody body domain.UserSignInDTO true "User credentials"
-// @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
+// @Success 200 {object} handlers.LOGIN_RESPONSE "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
@@ -44,7 +44,7 @@ func (handler *HTTPHandler) SignIn(context echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param RequestBody body domain.RequestPasswordResetDTO true "Password reset request"
-// @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
+// @Success 200 {object} handlers.REQUEST_PASSWORD_RESET_RESPONSE "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/request_password_reset [post]
@@ -162,7 +162,7 @@ func (handler *HTTPHandler) VerifyEmail(context echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param RequestBody body domain.ResendVerificationDTO true "Email address"
-// @Success 200 {object} handlers.SUCCESS_RESPONSE "SUCCESS_RESPONSE"
+// @Success 200 {object} handlers.RESEND_VERIFICATION_RESPONSE "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
