@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"time"
+	// "time"
 
 	"github.com/diagnoxix/adapters/db"
 	"github.com/google/uuid"
@@ -81,8 +81,8 @@ type (
 	}
 	GetDiagnosticRecordsParamDTO struct {
 		DiagnosticCentreID string    `param:"diagnostic_centre_id" validate:"required,uuid"`
-		StartDate          time.Time `query:"start_date" validate:"omitempty" time_format:"2006-01-02"`
-		EndDate            time.Time `query:"end_date" validate:"omitempty" time_format:"2006-01-02"`
+		StartDate          string `query:"start_date" validate:"omitempty,datetime=2006-01-02"`
+		EndDate            string `query:"end_date" validate:"omitempty,datetime=2006-01-02"`
 		DocumentType       string    `query:"document_type" validate:"omitempty,oneof=LAB_REPORT PRESCRIPTION IMAGING DISCHARGE_SUMMARY OTHER"`
 		PaginationQueryDTO
 	}

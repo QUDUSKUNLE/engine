@@ -23,8 +23,8 @@ type DBConfig struct {
 // DefaultDBConfig returns default database configuration
 func DefaultDBConfig() DBConfig {
 	return DBConfig{
-		MaxConns:          10,
-		MinConns:          2,
+		MaxConns:          25,
+		MinConns:          5,
 		MaxConnLifetime:   30 * time.Minute,
 		MaxConnIdleTime:   5 * time.Minute,
 		HealthCheckPeriod: time.Minute,
@@ -128,10 +128,15 @@ func MonitorConnectionHealth(pool *pgxpool.Pool, checkInterval time.Duration) {
 			metrics.DBPoolActiveConnections.Set(float64(stats.AcquiredConns()))
 			metrics.DBPoolIdleConnections.Set(float64(stats.IdleConns()))
 
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			if err := pool.Ping(ctx); err != nil {
+				if err == context.DeadlineExceeded {
+					fmt.Printf("Database health check timeout - pool may be exhausted or DB is slow. Active: %d, Idle: %d\n", 
+                        stats.AcquiredConns(), stats.IdleConns())
+				} else {
+					fmt.Printf("Database health check failed: %v\n", err)
+				}
 				metrics.DBConnectionErrors.Inc()
-				fmt.Printf("Database health check failed: %v\n", err)
 			}
 			cancel()
 		}

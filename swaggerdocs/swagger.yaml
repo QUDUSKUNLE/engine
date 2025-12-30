@@ -321,6 +321,7 @@ definitions:
         - $ref: '#/definitions/db.UserEnum'
         enum:
         - DIAGNOSTIC_CENTRE_MANAGER
+        example: DIAGNOSTIC_CENTRE_MANAGER
     required:
     - email
     - first_name
@@ -1193,6 +1194,25 @@ definitions:
         example: false
         type: boolean
     type: object
+  handlers.LOGIN_RESPONSE:
+    description: LOGIN_RESPONSE response for Swagger
+    properties:
+      data:
+        properties:
+          token:
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYjE5NDFiNTEtZDc0ZS00ZmFlLWI5MGQtMDU2ZWNhYjk1NTRiIiwidXNlcl90eXBlIjoiUEFUSUVOVCIsImRpYWdub3N0aWNfaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJleHAiOjE3NzA0ODA0NjYsIm5iZiI6MTc2NjU5MjQ2NiwiaWF0IjoxNzY2NTkyNDY2fQ.Ok1nv-f3GU7pYYwzNC2WZ2PX8C7sYq07l-rbsFD_UR
+            type: string
+          user_type:
+            example: PATIENT
+            type: string
+        type: object
+      status:
+        example: 200
+        type: integer
+      success:
+        example: true
+        type: boolean
+    type: object
   handlers.LabPackageAnalysisRequest:
     properties:
       package_data:
@@ -1263,6 +1283,37 @@ definitions:
         type: integer
       success:
         example: false
+        type: boolean
+    type: object
+  handlers.REQUEST_PASSWORD_RESET_RESPONSE:
+    properties:
+      data:
+        properties:
+          message:
+            example: If your email exists in our system, you will receive a password
+              reset link
+            type: string
+        type: object
+      status:
+        example: 200
+        type: integer
+      success:
+        example: true
+        type: boolean
+    type: object
+  handlers.RESEND_VERIFICATION_RESPONSE:
+    properties:
+      data:
+        properties:
+          message:
+            example: Verification email sent
+            type: string
+        type: object
+      status:
+        example: 200
+        type: integer
+      success:
+        example: true
         type: boolean
     type: object
   handlers.SUCCESS_RESPONSE:
@@ -1452,7 +1503,7 @@ definitions:
       value:
         type: string
     type: object
-host: diagnoxix.up.railway.app
+host: 127.0.0.1:7556
 info:
   contact: {}
   description: Diagnoxix AI API
@@ -2608,7 +2659,7 @@ paths:
         - COVID_19_RT_PCR_TEST
         - PREGNANCY_TEST
         in: query
-        name: available_tests
+        name: test
         required: true
         type: string
       - default: 1
@@ -2810,7 +2861,7 @@ paths:
       - DiagnosticCentre
   /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules:
     get:
-      description: Get all schedules for a specific diagnostic centre with pagination
+      description: Get all schedules for a diagnostic centre with pagination and filtering
       parameters:
       - description: Bearer token
         in: header
@@ -2824,32 +2875,46 @@ paths:
         name: diagnostic_centre_id
         required: true
         type: string
+      - description: Filter by start date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: end_date
+        type: string
+      - description: Filter by status
+        enum:
+        - PENDING
+        - ACCEPTED
+        - REJECTED
+        in: query
+        name: status
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
       - default: 10
-        description: Number of records to return
+        description: Items per page
         in: query
         maximum: 100
         minimum: 1
-        name: limit
-        type: integer
-      - default: 0
-        description: Number of records to skip
-        in: query
-        minimum: 0
-        name: offset
+        name: per_page
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: SUCCESS_RESPONSE
+          description: List of schedules
           schema:
             items:
-              $ref: '#/definitions/handlers.ScheduleSwagger'
+              $ref: '#/definitions/handlers.DiagnosticCentreSwagger'
             type: array
-        "400":
-          description: BAD_REQUEST
-          schema:
-            $ref: '#/definitions/handlers.BAD_REQUEST'
         "401":
           description: UNAUTHORIZED_ERROR
           schema:
@@ -2864,9 +2929,9 @@ paths:
             $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
       security:
       - BearerAuth: []
-      summary: List schedules for a diagnostic centre
+      summary: Get diagnostic centre schedules
       tags:
-      - Schedule
+      - DiagnosticCentre
   /v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules/{schedule_id}:
     get:
       description: Retrieve a specific schedule for a diagnostic centre. Accessible
@@ -3572,7 +3637,7 @@ paths:
         "200":
           description: SUCCESS_RESPONSE
           schema:
-            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
+            $ref: '#/definitions/handlers.LOGIN_RESPONSE'
         "400":
           description: BAD_REQUEST
           schema:
@@ -4377,7 +4442,7 @@ paths:
         "200":
           description: SUCCESS_RESPONSE
           schema:
-            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
+            $ref: '#/definitions/handlers.REQUEST_PASSWORD_RESET_RESPONSE'
         "400":
           description: BAD_REQUEST
           schema:
@@ -4407,7 +4472,7 @@ paths:
         "200":
           description: SUCCESS_RESPONSE
           schema:
-            $ref: '#/definitions/handlers.SUCCESS_RESPONSE'
+            $ref: '#/definitions/handlers.RESEND_VERIFICATION_RESPONSE'
         "400":
           description: BAD_REQUEST
           schema:

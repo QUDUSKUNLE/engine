@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"time"
-
 	"github.com/diagnoxix/adapters/db"
 	"github.com/google/uuid"
 )
@@ -31,8 +29,8 @@ type (
 	}
 	GetDiagnosticSchedulesByCentreParamDTO struct {
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id" validate:"uuid,required"`
-		StartDate          time.Time `query:"start_date" validate:"omitempty" time_format:"2006-01-02"`
-		EndDate            time.Time `query:"end_date" validate:"omitempty" time_format:"2006-01-02"`
+		StartDate          string `query:"start_date" validate:"omitempty,datetime=2006-01-02"`
+		EndDate            string `query:"end_date" validate:"omitempty,datetime=2006-01-02"`
 		Status             string    `query:"status" validate:"omitempty,oneof=PENDING ACCEPTED REJECTED"`
 		PaginationQueryDTO
 	}

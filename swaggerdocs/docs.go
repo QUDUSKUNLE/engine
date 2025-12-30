@@ -1722,7 +1722,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "description": "Filter by available test type",
-                        "name": "available_tests",
+                        "name": "test",
                         "in": "query",
                         "required": true
                     },
@@ -2370,14 +2370,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get all schedules for a specific diagnostic centre with pagination",
+                "description": "Get all schedules for a diagnostic centre with pagination and filtering",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Schedule"
+                    "DiagnosticCentre"
                 ],
-                "summary": "List schedules for a diagnostic centre",
+                "summary": "Get diagnostic centre schedules",
                 "parameters": [
                     {
                         "type": "string",
@@ -2396,37 +2396,56 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "PENDING",
+                            "ACCEPTED",
+                            "REJECTED"
+                        ],
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
                         "default": 10,
-                        "description": "Number of records to return",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 0,
-                        "type": "integer",
-                        "default": 0,
-                        "description": "Number of records to skip",
-                        "name": "offset",
+                        "description": "Items per page",
+                        "name": "per_page",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "SUCCESS_RESPONSE",
+                        "description": "List of schedules",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/handlers.ScheduleSwagger"
+                                "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
                             }
-                        }
-                    },
-                    "400": {
-                        "description": "BAD_REQUEST",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
                     },
                     "401": {
@@ -3156,7 +3175,7 @@ const docTemplate = `{
                     "200": {
                         "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
+                            "$ref": "#/definitions/handlers.LOGIN_RESPONSE"
                         }
                     },
                     "400": {
@@ -4358,7 +4377,7 @@ const docTemplate = `{
                     "200": {
                         "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
+                            "$ref": "#/definitions/handlers.REQUEST_PASSWORD_RESET_RESPONSE"
                         }
                     },
                     "400": {
@@ -4404,7 +4423,7 @@ const docTemplate = `{
                     "200": {
                         "description": "SUCCESS_RESPONSE",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SUCCESS_RESPONSE"
+                            "$ref": "#/definitions/handlers.RESEND_VERIFICATION_RESPONSE"
                         }
                     },
                     "400": {
@@ -5112,7 +5131,8 @@ const docTemplate = `{
                         {
                             "$ref": "#/definitions/db.UserEnum"
                         }
-                    ]
+                    ],
+                    "example": "DIAGNOSTIC_CENTRE_MANAGER"
                 }
             }
         },
@@ -6310,6 +6330,33 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.LOGIN_RESPONSE": {
+            "description": "LOGIN_RESPONSE response for Swagger",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "token": {
+                            "type": "string",
+                            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYjE5NDFiNTEtZDc0ZS00ZmFlLWI5MGQtMDU2ZWNhYjk1NTRiIiwidXNlcl90eXBlIjoiUEFUSUVOVCIsImRpYWdub3N0aWNfaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJleHAiOjE3NzA0ODA0NjYsIm5iZiI6MTc2NjU5MjQ2NiwiaWF0IjoxNzY2NTkyNDY2fQ.Ok1nv-f3GU7pYYwzNC2WZ2PX8C7sYq07l-rbsFD_UR"
+                        },
+                        "user_type": {
+                            "type": "string",
+                            "example": "PATIENT"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "handlers.LabPackageAnalysisRequest": {
             "type": "object",
             "required": [
@@ -6408,6 +6455,50 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": false
+                }
+            }
+        },
+        "handlers.REQUEST_PASSWORD_RESET_RESPONSE": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string",
+                            "example": "If your email exists in our system, you will receive a password reset link"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "handlers.RESEND_VERIFICATION_RESPONSE": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string",
+                            "example": "Verification email sent"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -6687,7 +6778,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "diagnoxix.up.railway.app",
+	Host:             "127.0.0.1:7556",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Diagnoxix AI",
