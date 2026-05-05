@@ -23,7 +23,7 @@ type AppointmentRepository interface {
 	ListAppointments(
 		ctx context.Context,
 		params db.GetCentreAppointmentsParams,
-	) ([]*db.Appointment, error)
+	) ([]*db.GetCentreAppointmentsRow, error)
 
 	UpdateAppointment(
 		ctx context.Context,

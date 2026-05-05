@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "127.0.0.1:7556",
+    "host": "localhost:7556",
     "basePath": "/",
     "paths": {
         "/v1/account": {

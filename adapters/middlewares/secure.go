@@ -24,10 +24,26 @@ func SecureHeaders() echo.MiddlewareFunc {
 }
 
 func CORS(cfg *config.EnvConfiguration) echo.MiddlewareFunc {
+	origins := strings.Split(cfg.ALLOW_ORIGINS, ",")
+	for i := range origins {
+		origins[i] = strings.TrimSpace(origins[i])
+	}
 	return middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     strings.Split(cfg.ALLOW_ORIGINS, ","),
-		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodHead},
+		AllowOrigins: origins,
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+		},
+		AllowMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodDelete,
+			http.MethodHead,
+			http.MethodOptions,
+		},
 		AllowCredentials: true,
 	})
 }

@@ -36,7 +36,7 @@ type Querier interface {
 	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
 	GetAdminHistory(ctx context.Context, id string) ([]*GetAdminHistoryRow, error)
 	GetAppointment(ctx context.Context, id string) (*Appointment, error)
-	GetCentreAppointments(ctx context.Context, arg GetCentreAppointmentsParams) ([]*Appointment, error)
+	GetCentreAppointments(ctx context.Context, arg GetCentreAppointmentsParams) ([]*GetCentreAppointmentsRow, error)
 	GetEmailVerificationToken(ctx context.Context, token string) (*EmailVerificationToken, error)
 	// Get a Medical Record
 	GetMedicalRecord(ctx context.Context, arg GetMedicalRecordParams) (*GetMedicalRecordRow, error)

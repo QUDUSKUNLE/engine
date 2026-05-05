@@ -14,25 +14,48 @@ INSERT INTO appointments (
 
 -- name: GetAppointment :one
 SELECT * FROM appointments WHERE id = $1;
+
 -- name: GetPatientAppointments :many
 SELECT 
-    a.*,
-    dc.diagnostic_centre_name as diagnostic_centre_name,
+    a.id,
+    a.patient_id,
+    a.schedule_id,
+    a.diagnostic_centre_id,
+    a.appointment_date,
+    a.status,
+    a.time_slot,
+    a.notes,
+
+    dc.diagnostic_centre_name,
     dc.address as diagnostic_centre_address
 FROM appointments a
-JOIN diagnostic_centres dc ON a.diagnostic_centre_id = dc.id
-JOIN diagnostic_schedules s ON a.schedule_id = s.id
+JOIN diagnostic_centres dc
+    ON a.diagnostic_centre_id = dc.id
 WHERE a.patient_id = $1
-    AND a.status = ANY($2::appointment_status[])
-    AND a.appointment_date BETWEEN $3 AND $4
+    AND (
+        a.status = ANY($2::text[])
+    )
+    AND a.appointment_date >= $3
+    AND a.appointment_date < $4
 ORDER BY a.appointment_date ASC, a.time_slot ASC
 LIMIT $5 OFFSET $6;
 
 -- name: GetCentreAppointments :many
-SELECT /*+ INDEX(appointments idx_appointments_diagnostic_centre) */ * FROM appointments 
+SELECT 
+    id,
+    diagnostic_centre_id,
+    status,
+    appointment_date,
+    time_slot,
+    created_at,
+    updated_at
+FROM appointments 
 WHERE diagnostic_centre_id = $1
-AND status = ANY($2::appointment_status[])
-AND appointment_date BETWEEN $3 AND $4
+    AND (
+        status = ANY($2::text[])
+    )
+    AND appointment_date >= $3
+    AND appointment_date < $4
 ORDER BY appointment_date ASC
 LIMIT $5 OFFSET $6;
 
@@ -99,7 +122,7 @@ SELECT
     old_appointment.diagnostic_centre_id,
     $6,  -- new_appointment_date
     $7,  -- new_time_slot
-    'confirmed'::appointment_status,
+    'confirmed',
     old_appointment.payment_amount,
     old_appointment.notes,
     old_appointment.original_appointment_id

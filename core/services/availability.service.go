@@ -14,8 +14,6 @@ import (
 const (
 	errInvalidStartTime    = "invalid start time format"
 	errInvalidEndTime      = "invalid end time format"
-	errInvalidSlotDuration = "invalid slot duration format"
-	errInvalidBreakTime    = "invalid break time format"
 )
 
 // CreateAvailability creates new availability slots for a diagnostic centre

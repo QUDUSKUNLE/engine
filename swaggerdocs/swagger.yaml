@@ -1503,7 +1503,7 @@ definitions:
       value:
         type: string
     type: object
-host: 127.0.0.1:7556
+host: localhost:7556
 info:
   contact: {}
   description: Diagnoxix AI API

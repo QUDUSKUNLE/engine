@@ -416,7 +416,10 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 	}
 
 	// Get validated DTO
-	dto := context.Get(utils.ValidatedBodyDTO).(*domain.ListAppointmentsDTO)
+	dto, ok := context.Get(utils.ValidatedQueryParamDTO).(*domain.ListAppointmentsDTO)
+	if !ok || dto == nil {
+		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid query"), context)
+	}
 
 	// If no date range specified, default to next 30 days
 	if dto.FromDate.IsZero() {
@@ -433,14 +436,29 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 	}
 
 	// Build status array
-	var statuses []db.AppointmentStatus
+	var statuses []string
 	if dto.Status != "" {
-		statuses = append(statuses, db.AppointmentStatus(dto.Status))
+		switch dto.Status {
+		case "pending":
+			statuses = []string{string(db.AppointmentStatusPending)}
+		case "confirmed":
+			statuses = []string{string(db.AppointmentStatusConfirmed)}
+		case "in_progress":
+			statuses = []string{string(db.AppointmentStatusInProgress)}
+		case "completed":
+			statuses = []string{string(db.AppointmentStatusCompleted)}
+		case "cancelled":
+			statuses = []string{string(db.AppointmentStatusCancelled)}
+		case "rescheduled":
+			statuses = []string{string(db.AppointmentStatusRescheduled)}
+		default:
+			return fmt.Errorf("invalid status: %s", dto.Status)
+		}
 	}
 
 	param, _ := SetDefaultPagination(&dto.PaginationQueryDTO).(*domain.PaginationQueryDTO)
-
 	// Get appointments
+
 	params := db.GetCentreAppointmentsParams{
 		DiagnosticCentreID: dto.DiagnosticCentreID,
 		Column2:            statuses, // Status array
