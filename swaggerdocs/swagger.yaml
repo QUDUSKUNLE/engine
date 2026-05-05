@@ -1503,7 +1503,7 @@ definitions:
       value:
         type: string
     type: object
-host: https://engine-nwu3.onrender.com
+host: engine-nwu3.onrender.com
 info:
   contact: {}
   description: Diagnoxix AI API
