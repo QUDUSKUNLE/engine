@@ -51,7 +51,6 @@ func (h *HTTPHandler) GetAPatientAppointment(c echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id query string false "Filter by diagnostic centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param status query string false "Filter by status" Enums(pending, confirmed, in_progress, completed, cancelled, rescheduled)
 // @Param from_date query string false "Start date (RFC3339)"
 // @Param to_date query string false "End date (RFC3339)"

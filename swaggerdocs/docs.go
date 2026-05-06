@@ -671,13 +671,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "default": "123e4567-e89b-12d3-a456-426614174000",
-                        "description": "Filter by diagnostic centre ID",
-                        "name": "diagnostic_centre_id",
-                        "in": "query"
-                    },
-                    {
                         "enum": [
                             "pending",
                             "confirmed",

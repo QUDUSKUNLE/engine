@@ -43,8 +43,6 @@ type (
 	}
 	// ListAppointmentsDTO represents the query parameters for listing appointments
 	ListAppointmentsDTO struct {
-		DiagnosticCentreID string            `query:"diagnostic_centre_id" validate:"omitempty,uuid"`
-		PatientID          string            `query:"patient_id" validate:"omitempty,uuid"`
 		Status             AppointmentStatus `query:"status" validate:"omitempty,oneof=pending confirmed in_progress completed cancelled rescheduled"`
 		FromDate           time.Time         `query:"from_date" validate:"omitempty"`
 		ToDate             time.Time         `query:"to_date" validate:"omitempty,gtefield=FromDate"`

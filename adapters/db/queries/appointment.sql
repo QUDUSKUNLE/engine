@@ -20,26 +20,29 @@ SELECT * FROM appointments WHERE id = $1 AND patient_id = $2;
 
 -- name: GetPatientAppointments :many
 SELECT 
-    a.id,
-    a.patient_id,
-    a.schedule_id,
-    a.diagnostic_centre_id,
-    a.appointment_date,
-    a.status,
-    a.time_slot,
-    a.notes,
-
-    dc.diagnostic_centre_name,
-    dc.address as diagnostic_centre_address
+    a.*,
+    ARRAY_AGG(
+        json_build_object(
+            'diagnostic_centre_name', dc.diagnostic_centre_name,
+            'diagnostic_centre_address', dc.address,
+            'latitude', dc.latitude,
+            'longitude', dc.longitude,
+            'doctors', dc.doctors,
+            'created_at', dc.created_at
+        )
+    ) FILTER (WHERE dc.id IS NOT NULL) AS appointment_detail
 FROM appointments a
-JOIN diagnostic_centres dc
+LEFT JOIN diagnostic_centres dc
     ON a.diagnostic_centre_id = dc.id
 WHERE a.patient_id = $1
     AND (
-        a.status = ANY($2::text[])
+        $2::text[] IS NULL
+        OR array_length($2::text[], 1) = 0
+        OR a.status = ANY($2::appointment_status[])
     )
     AND a.appointment_date >= $3
     AND a.appointment_date < $4
+GROUP BY a.id
 ORDER BY a.appointment_date ASC, a.time_slot ASC
 LIMIT $5 OFFSET $6;
 

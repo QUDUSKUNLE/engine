@@ -67,9 +67,9 @@ func (repo *Repository) GetAPatientAppointment(
 
 func (repo *Repository) ListAppointments(
 	ctx context.Context,
-	params db.GetCentreAppointmentsParams,
-) ([]*db.GetCentreAppointmentsRow, error) {
-	return repo.database.GetCentreAppointments(ctx, params)
+	params db.GetPatientAppointmentsParams,
+) ([]*db.GetPatientAppointmentsRow, error) {
+	return repo.database.GetPatientAppointments(ctx, params)
 }
 
 func (repo *Repository) UpdateAppointment(

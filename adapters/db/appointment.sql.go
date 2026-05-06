@@ -307,26 +307,29 @@ func (q *Queries) GetCentreAppointments(ctx context.Context, arg GetCentreAppoin
 
 const getPatientAppointments = `-- name: GetPatientAppointments :many
 SELECT 
-    a.id,
-    a.patient_id,
-    a.schedule_id,
-    a.diagnostic_centre_id,
-    a.appointment_date,
-    a.status,
-    a.time_slot,
-    a.notes,
-
-    dc.diagnostic_centre_name,
-    dc.address as diagnostic_centre_address
+    a.id, a.patient_id, a.schedule_id, a.diagnostic_centre_id, a.appointment_date, a.time_slot, a.status, a.payment_id, a.payment_status, a.payment_amount, a.payment_date, a.check_in_time, a.completion_time, a.notes, a.cancellation_reason, a.cancelled_by, a.cancellation_time, a.cancellation_fee, a.original_appointment_id, a.rescheduling_reason, a.rescheduled_by, a.rescheduling_time, a.rescheduling_fee, a.created_at, a.updated_at, a.reminder_sent, a.reminder_sent_at,
+    ARRAY_AGG(
+        json_build_object(
+            'diagnostic_centre_name', dc.diagnostic_centre_name,
+            'diagnostic_centre_address', dc.address,
+            'latitude', dc.latitude,
+            'longitude', dc.longitude,
+            'doctors', dc.doctors,
+            'created_at', dc.created_at
+        )
+    ) FILTER (WHERE dc.id IS NOT NULL) AS appointment_detail
 FROM appointments a
-JOIN diagnostic_centres dc
+LEFT JOIN diagnostic_centres dc
     ON a.diagnostic_centre_id = dc.id
 WHERE a.patient_id = $1
     AND (
-        a.status = ANY($2::text[])
+        $2::text[] IS NULL
+        OR array_length($2::text[], 1) = 0
+        OR a.status = ANY($2::appointment_status[])
     )
     AND a.appointment_date >= $3
     AND a.appointment_date < $4
+GROUP BY a.id
 ORDER BY a.appointment_date ASC, a.time_slot ASC
 LIMIT $5 OFFSET $6
 `
@@ -341,16 +344,34 @@ type GetPatientAppointmentsParams struct {
 }
 
 type GetPatientAppointmentsRow struct {
-	ID                      string             `db:"id" json:"id"`
-	PatientID               string             `db:"patient_id" json:"patient_id"`
-	ScheduleID              string             `db:"schedule_id" json:"schedule_id"`
-	DiagnosticCentreID      string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
-	AppointmentDate         pgtype.Timestamptz `db:"appointment_date" json:"appointment_date"`
-	Status                  AppointmentStatus  `db:"status" json:"status"`
-	TimeSlot                string             `db:"time_slot" json:"time_slot"`
-	Notes                   pgtype.Text        `db:"notes" json:"notes"`
-	DiagnosticCentreName    string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
-	DiagnosticCentreAddress []byte             `db:"diagnostic_centre_address" json:"diagnostic_centre_address"`
+	ID                    string             `db:"id" json:"id"`
+	PatientID             string             `db:"patient_id" json:"patient_id"`
+	ScheduleID            string             `db:"schedule_id" json:"schedule_id"`
+	DiagnosticCentreID    string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	AppointmentDate       pgtype.Timestamptz `db:"appointment_date" json:"appointment_date"`
+	TimeSlot              string             `db:"time_slot" json:"time_slot"`
+	Status                AppointmentStatus  `db:"status" json:"status"`
+	PaymentID             pgtype.UUID        `db:"payment_id" json:"payment_id"`
+	PaymentStatus         NullPaymentStatus  `db:"payment_status" json:"payment_status"`
+	PaymentAmount         pgtype.Numeric     `db:"payment_amount" json:"payment_amount"`
+	PaymentDate           pgtype.Timestamptz `db:"payment_date" json:"payment_date"`
+	CheckInTime           pgtype.Timestamptz `db:"check_in_time" json:"check_in_time"`
+	CompletionTime        pgtype.Timestamptz `db:"completion_time" json:"completion_time"`
+	Notes                 pgtype.Text        `db:"notes" json:"notes"`
+	CancellationReason    pgtype.Text        `db:"cancellation_reason" json:"cancellation_reason"`
+	CancelledBy           pgtype.UUID        `db:"cancelled_by" json:"cancelled_by"`
+	CancellationTime      pgtype.Timestamptz `db:"cancellation_time" json:"cancellation_time"`
+	CancellationFee       pgtype.Numeric     `db:"cancellation_fee" json:"cancellation_fee"`
+	OriginalAppointmentID pgtype.UUID        `db:"original_appointment_id" json:"original_appointment_id"`
+	ReschedulingReason    pgtype.Text        `db:"rescheduling_reason" json:"rescheduling_reason"`
+	RescheduledBy         pgtype.UUID        `db:"rescheduled_by" json:"rescheduled_by"`
+	ReschedulingTime      pgtype.Timestamptz `db:"rescheduling_time" json:"rescheduling_time"`
+	ReschedulingFee       pgtype.Numeric     `db:"rescheduling_fee" json:"rescheduling_fee"`
+	CreatedAt             pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ReminderSent          pgtype.Bool        `db:"reminder_sent" json:"reminder_sent"`
+	ReminderSentAt        pgtype.Timestamptz `db:"reminder_sent_at" json:"reminder_sent_at"`
+	AppointmentDetail     interface{}        `db:"appointment_detail" json:"appointment_detail"`
 }
 
 func (q *Queries) GetPatientAppointments(ctx context.Context, arg GetPatientAppointmentsParams) ([]*GetPatientAppointmentsRow, error) {
@@ -375,11 +396,29 @@ func (q *Queries) GetPatientAppointments(ctx context.Context, arg GetPatientAppo
 			&i.ScheduleID,
 			&i.DiagnosticCentreID,
 			&i.AppointmentDate,
-			&i.Status,
 			&i.TimeSlot,
+			&i.Status,
+			&i.PaymentID,
+			&i.PaymentStatus,
+			&i.PaymentAmount,
+			&i.PaymentDate,
+			&i.CheckInTime,
+			&i.CompletionTime,
 			&i.Notes,
-			&i.DiagnosticCentreName,
-			&i.DiagnosticCentreAddress,
+			&i.CancellationReason,
+			&i.CancelledBy,
+			&i.CancellationTime,
+			&i.CancellationFee,
+			&i.OriginalAppointmentID,
+			&i.ReschedulingReason,
+			&i.RescheduledBy,
+			&i.ReschedulingTime,
+			&i.ReschedulingFee,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ReminderSent,
+			&i.ReminderSentAt,
+			&i.AppointmentDetail,
 		); err != nil {
 			return nil, err
 		}

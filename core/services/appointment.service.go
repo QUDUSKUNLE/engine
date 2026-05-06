@@ -429,12 +429,6 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 		dto.ToDate = dto.FromDate.AddDate(0, 1, 0) // 1 month from FromDate
 	}
 
-	// Force patient ID to current user unless they are a centre manager
-	if currentUser.UserType != db.UserEnumDIAGNOSTICCENTREMANAGER &&
-		currentUser.UserType != db.UserEnumDIAGNOSTICCENTREOWNER {
-		dto.PatientID = currentUser.UserID.String()
-	}
-
 	// Build status array
 	var statuses []string
 	if dto.Status != "" {
@@ -459,13 +453,13 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 	param, _ := SetDefaultPagination(&dto.PaginationQueryDTO).(*domain.PaginationQueryDTO)
 	// Get appointments
 
-	params := db.GetCentreAppointmentsParams{
-		DiagnosticCentreID: dto.DiagnosticCentreID,
-		Column2:            statuses, // Status array
-		AppointmentDate:    toTimestamptz(dto.FromDate),
-		AppointmentDate_2:  toTimestamptz(dto.ToDate),
-		Limit:              param.GetLimit(),
-		Offset:             param.GetOffset(),
+	params := db.GetPatientAppointmentsParams{
+		PatientID:         currentUser.UserID.String(),
+		Column2:           statuses, // Status array
+		AppointmentDate:   toTimestamptz(dto.FromDate),
+		AppointmentDate_2: toTimestamptz(dto.ToDate),
+		Limit:             param.GetLimit(),
+		Offset:            param.GetOffset(),
 	}
 
 	appointments, err := service.appointmentPort.ListAppointments(context.Request().Context(), params)
