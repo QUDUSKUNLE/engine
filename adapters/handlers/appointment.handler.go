@@ -10,6 +10,8 @@ import (
 // @Tags Appointments
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param RequestBody body domain.CreateAppointmentDTO true "Appointment details"
 // @Success 201 {object} handlers.AppointmentSwagger "SUCCESS_RESPONSE"
 // @Failure 400 {object} handlers.BAD_REQUEST "BAD_REQUEST"
@@ -36,9 +38,9 @@ func (h *HTTPHandler) CreateAppointment(c echo.Context) error {
 // @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
 // @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
 // @Router /v1/appointments/{appointment_id} [get]
-func (h *HTTPHandler) GetAppointment(c echo.Context) error {
+func (h *HTTPHandler) GetAPatientAppointment(c echo.Context) error {
 	// Validation happens in middleware
-	return h.service.GetAppointment(c)
+	return h.service.GetAPatientAppointment(c)
 }
 
 // ListAppointments lists appointments based on filters

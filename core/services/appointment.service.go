@@ -68,7 +68,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		utils.Error("Failed to create schedule",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: currentUser.UserID})
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		return utils.ErrorResponse(http.StatusUnprocessableEntity, err, context)
 	}
 
 	// Create appointment with confirmed status since schedule is auto-accepted
@@ -89,7 +89,7 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		utils.Error("Failed to create appointment",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "patient_id", Value: currentUser.UserID.String()})
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		return utils.ErrorResponse(http.StatusUnprocessableEntity, err, context)
 	}
 
 	// Create payment record
@@ -382,8 +382,8 @@ func (service *ServicesHandler) ConfirmAppointment(context echo.Context) error {
 	}, context)
 }
 
-// GetAppointment retrieves an appointment by ID
-func (service *ServicesHandler) GetAppointment(context echo.Context) error {
+// GetAppointment retrieves an appointment by ID and PatientID
+func (service *ServicesHandler) GetAPatientAppointment(context echo.Context) error {
 	// Authentication check
 	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
@@ -391,10 +391,10 @@ func (service *ServicesHandler) GetAppointment(context echo.Context) error {
 	}
 
 	// Get validated DTO
-	dto := context.Get(utils.ValidatedBodyDTO).(*domain.GetAppointmentDTO)
+	dto := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetAppointmentDTO)
 
 	// Get appointment
-	appointment, err := service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	appointment, err := service.appointmentPort.GetAPatientAppointment(context.Request().Context(), db.GetAPatientAppointmentParams{ID: dto.AppointmentID, PatientID: currentUser.UserID.String()})
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotFound, errors.New("appointment not found"), context)
 	}

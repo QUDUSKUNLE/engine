@@ -21,7 +21,7 @@ func AppointmentRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 		{
 			method:  http.MethodGet,
 			path:    "/appointments/:appointment_id",
-			handler: handler.GetAppointment,
+			handler: handler.GetAPatientAppointment,
 			factory: func() interface{} {
 				return &domain.GetAppointmentDTO{}
 			},

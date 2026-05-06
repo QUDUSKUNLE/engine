@@ -148,6 +148,50 @@ func (q *Queries) DeleteAppointment(ctx context.Context, id string) error {
 	return err
 }
 
+const getAPatientAppointment = `-- name: GetAPatientAppointment :one
+SELECT id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at FROM appointments WHERE id = $1 AND patient_id = $2
+`
+
+type GetAPatientAppointmentParams struct {
+	ID        string `db:"id" json:"id"`
+	PatientID string `db:"patient_id" json:"patient_id"`
+}
+
+func (q *Queries) GetAPatientAppointment(ctx context.Context, arg GetAPatientAppointmentParams) (*Appointment, error) {
+	row := q.db.QueryRow(ctx, getAPatientAppointment, arg.ID, arg.PatientID)
+	var i Appointment
+	err := row.Scan(
+		&i.ID,
+		&i.PatientID,
+		&i.ScheduleID,
+		&i.DiagnosticCentreID,
+		&i.AppointmentDate,
+		&i.TimeSlot,
+		&i.Status,
+		&i.PaymentID,
+		&i.PaymentStatus,
+		&i.PaymentAmount,
+		&i.PaymentDate,
+		&i.CheckInTime,
+		&i.CompletionTime,
+		&i.Notes,
+		&i.CancellationReason,
+		&i.CancelledBy,
+		&i.CancellationTime,
+		&i.CancellationFee,
+		&i.OriginalAppointmentID,
+		&i.ReschedulingReason,
+		&i.RescheduledBy,
+		&i.ReschedulingTime,
+		&i.ReschedulingFee,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ReminderSent,
+		&i.ReminderSentAt,
+	)
+	return &i, err
+}
+
 const getAppointment = `-- name: GetAppointment :one
 SELECT id, patient_id, schedule_id, diagnostic_centre_id, appointment_date, time_slot, status, payment_id, payment_status, payment_amount, payment_date, check_in_time, completion_time, notes, cancellation_reason, cancelled_by, cancellation_time, cancellation_fee, original_appointment_id, rescheduling_reason, rescheduled_by, rescheduling_time, rescheduling_fee, created_at, updated_at, reminder_sent, reminder_sent_at FROM appointments WHERE id = $1
 `

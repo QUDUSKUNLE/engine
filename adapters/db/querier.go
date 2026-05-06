@@ -34,6 +34,7 @@ type Querier interface {
 	Delete_Diagnostic_Centre_ByOwner(ctx context.Context, arg Delete_Diagnostic_Centre_ByOwnerParams) (*DiagnosticCentre, error)
 	Delete_Diagnostic_Schedule(ctx context.Context, arg Delete_Diagnostic_ScheduleParams) (*DiagnosticSchedule, error)
 	Find_Nearest_Diagnostic_Centres_WhenRejected(ctx context.Context, arg Find_Nearest_Diagnostic_Centres_WhenRejectedParams) ([]*Find_Nearest_Diagnostic_Centres_WhenRejectedRow, error)
+	GetAPatientAppointment(ctx context.Context, arg GetAPatientAppointmentParams) (*Appointment, error)
 	GetAdminHistory(ctx context.Context, id string) ([]*GetAdminHistoryRow, error)
 	GetAppointment(ctx context.Context, id string) (*Appointment, error)
 	GetCentreAppointments(ctx context.Context, arg GetCentreAppointmentsParams) ([]*GetCentreAppointmentsRow, error)

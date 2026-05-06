@@ -15,6 +15,9 @@ INSERT INTO appointments (
 -- name: GetAppointment :one
 SELECT * FROM appointments WHERE id = $1;
 
+-- name: GetAPatientAppointment :one
+SELECT * FROM appointments WHERE id = $1 AND patient_id = $2;
+
 -- name: GetPatientAppointments :many
 SELECT 
     a.id,

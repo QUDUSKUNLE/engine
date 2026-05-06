@@ -9,6 +9,7 @@ const (
 	CodeForbidden       = "FORBIDDEN"
 	CodeBadRequest      = "BAD_REQUEST"
 	CodeUnauthorized    = "UNAUTHORIZED"
+	CodeUnprocessed     = "UNPROCESSED_REQUEST"
 	CodeInternalError   = "INTERNAL_ERROR"
 	CodeDuplicateError  = "DUPLICATE_ERROR"
 	CodeValidationError = "VALIDATION_ERROR"
@@ -33,6 +34,7 @@ const (
 	MsgForbidden          = "Permission denied"
 	MsgBadRequest         = "Invalid request"
 	MsgTokenExpired       = "Token has expired"
+	MsgUnprocessed        = "Unprocessed request"
 	MsgInvalidToken       = "Invalid or malformed token"
 	MsgUnauthorized       = "Authentication required"
 	MsgInternalError      = "Internal server error"
@@ -49,6 +51,7 @@ var StatusToCode = map[int]string{
 	http.StatusForbidden:           CodeForbidden,
 	http.StatusBadRequest:          CodeBadRequest,
 	http.StatusUnauthorized:        CodeUnauthorized,
+	http.StatusUnprocessableEntity: CodeUnprocessed,
 	http.StatusInternalServerError: CodeInternalError,
 }
 
@@ -60,6 +63,7 @@ var CodeToMessage = map[string]string{
 	CodeTokenExpired:       MsgTokenExpired,
 	CodeInvalidToken:       MsgInvalidToken,
 	CodeUnauthorized:       MsgUnauthorized,
+	CodeUnprocessed:        MsgUnprocessed,
 	CodeInternalError:      MsgInternalError,
 	CodeDatabaseError:      MsgDatabaseError,
 	CodeDuplicateError:     MsgDuplicateError,

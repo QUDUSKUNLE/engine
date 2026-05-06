@@ -1993,6 +1993,11 @@ paths:
       - application/json
       description: Create a new appointment for a diagnostic test
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Appointment details
         in: body
         name: RequestBody
@@ -2022,6 +2027,8 @@ paths:
           description: INTERNAL_SERVER_ERROR
           schema:
             $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
       summary: Create appointment
       tags:
       - Appointments

@@ -62,10 +62,42 @@ func ValidationAdaptor(e *echo.Echo) *echo.Echo {
 }
 
 // bindAndValidateDTO handles DTO binding and validation with proper error handling
-func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc func(interface{}) error, setKey string) error {
+func bindAndValidateDTO(
+	c echo.Context,
+	dtoFactory func() interface{},
+	bindFunc func(interface{}) error,
+	setKey string,
+) error {
+	// STEP 1: Read raw body
+	body := make(map[string]interface{})
+	if err := c.Bind(&body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+
+	// STEP 2: Debug/log raw input
+	fmt.Println("Incoming payload:", body)
+
+	// STEP 3: Create DTO
 	dto := dtoFactory()
 
 	if err := bindFunc(dto); err != nil {
+		// 🔥 Try to detect which field caused UUID issue
+		for key, value := range body {
+			if str, ok := value.(string); ok {
+				if len(str) != 36 && looksLikeUUIDField(key) {
+					utils.Error("Failed to bind request data",
+						utils.LogField{Key: "error", Value: err.Error()},
+						utils.LogField{Key: "path", Value: c.Path()},
+						utils.LogField{Key: key, Value: str},
+						utils.LogField{Key: "method", Value: c.Request().Method})
+					return echo.NewHTTPError(
+						http.StatusBadRequest,
+						fmt.Sprintf("Invalid UUID for field '%s': %s", key, str),
+					)
+				}
+			}
+		}
+
 		utils.Error("Failed to bind request data",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "path", Value: c.Path()},
@@ -104,6 +136,10 @@ func bindAndValidateDTO(c echo.Context, dtoFactory func() interface{}, bindFunc 
 
 	c.Set(setKey, dto)
 	return nil
+}
+
+func looksLikeUUIDField(key string) bool {
+	return strings.Contains(key, "id") || strings.HasSuffix(key, "_id")
 }
 
 // handleMedicalRecordDTO processes form data for medical record creation

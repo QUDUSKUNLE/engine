@@ -58,6 +58,13 @@ func (repo *Repository) GetAppointment(
 	return repo.database.GetAppointment(ctx, id)
 }
 
+func (repo *Repository) GetAPatientAppointment(
+	ctx context.Context,
+	param db.GetAPatientAppointmentParams,
+) (*db.Appointment, error) {
+	return repo.database.GetAPatientAppointment(ctx, param)
+}
+
 func (repo *Repository) ListAppointments(
 	ctx context.Context,
 	params db.GetCentreAppointmentsParams,

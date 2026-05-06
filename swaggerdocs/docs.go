@@ -743,6 +743,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new appointment for a diagnostic test",
                 "consumes": [
                     "application/json"
@@ -755,6 +760,13 @@ const docTemplate = `{
                 ],
                 "summary": "Create appointment",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Appointment details",
                         "name": "RequestBody",
