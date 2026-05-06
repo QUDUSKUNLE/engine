@@ -470,6 +470,11 @@ func (service *ServicesHandler) ListAppointments(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
+	// If len equals zero
+	if len(appointments) == 0 {
+		return utils.ResponseMessage(http.StatusOK, []interface{}{}, context)
+	}
+
 	return utils.ResponseMessage(http.StatusOK, appointments, context)
 }
 
