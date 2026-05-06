@@ -945,6 +945,11 @@ const docTemplate = `{
         },
         "/v1/appointments/{appointment_id}/cancel": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Cancel an existing appointment",
                 "consumes": [
                     "application/json"
@@ -957,6 +962,13 @@ const docTemplate = `{
                 ],
                 "summary": "Cancel appointment",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",

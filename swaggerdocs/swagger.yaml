@@ -2124,6 +2124,11 @@ paths:
       - application/json
       description: Cancel an existing appointment
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - default: 123e4567-e89b-12d3-a456-426614174000
         description: Appointment ID
         in: path
@@ -2161,6 +2166,8 @@ paths:
           description: INTERNAL_SERVER_ERROR
           schema:
             $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
       summary: Cancel appointment
       tags:
       - Appointments

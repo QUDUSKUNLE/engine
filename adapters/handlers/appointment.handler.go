@@ -92,6 +92,8 @@ func (h *HTTPHandler) UpdateAppointment(c echo.Context) error {
 // @Tags Appointments
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param appointment_id path string true "Appointment ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param RequestBody body domain.CancelAppointmentDTO true "Cancellation details"
 // @Success 200 {object} map[string]string "Cancellation success message"
