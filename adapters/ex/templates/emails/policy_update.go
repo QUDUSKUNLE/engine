@@ -1,6 +1,6 @@
 package emails
 
-const policyUpdateTemplate = `
+const PolicyUpdateTemplate = `
 {{define "policy_update"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
 

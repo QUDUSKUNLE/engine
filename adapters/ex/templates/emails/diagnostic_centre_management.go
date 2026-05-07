@@ -1,6 +1,6 @@
 package emails
 
-const diagnosticCentreManagerNotificationTemplate = `
+const DiagnosticCentreManagerNotificationTemplate = `
 {{define "dc_management_notification"}}
 <p><strong>Dear {{.Name}},</strong></p>
 <p>You have been assigned a Manager Role in the diagnostic centre below:</p>

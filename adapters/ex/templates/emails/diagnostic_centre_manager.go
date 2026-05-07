@@ -1,6 +1,6 @@
 package emails
 
-const diagnosticCentreManagerEmailVerificationTemplate = `
+const DiagnosticCentreManagerEmailVerificationTemplate = `
 {{define "dc_manager_notification"}}
 <p><strong>Dear {{.ManagerName}},</strong></p>
 

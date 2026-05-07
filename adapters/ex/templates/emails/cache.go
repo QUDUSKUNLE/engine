@@ -52,18 +52,18 @@ func (c *TemplateCache) GetOrSet(name string, creator func() *template.Template)
 func (c *TemplateCache) Compile() error {
 	// Combine all templates in one go
 	allTemplates := BaseLayout +
-		appointmentConfirmationTemplate +
-		appointmentCancellationTemplate +
-		appointmentReminderTemplate +
-		appointmentRescheduleTemplate +
-		paymentConfirmationTemplate +
-		testResultsTemplate +
-		staffNotificationTemplate +
-		policyUpdateTemplate +
-		emailVerificationTemplate +
-		passwordResetTemplate +
-		diagnosticCentreManagerEmailVerificationTemplate +
-		diagnosticCentreManagerNotificationTemplate
+		AppointmentConfirmationTemplate +
+		AppointmentCancellationTemplate +
+		AppointmentReminderTemplate +
+		AppointmentRescheduleTemplate +
+		PaymentConfirmationTemplate +
+		TestResultsTemplate +
+		StaffNotificationTemplate +
+		PolicyUpdateTemplate +
+		EmailVerificationTemplate +
+		PasswordResetTemplate +
+		DiagnosticCentreManagerEmailVerificationTemplate +
+		DiagnosticCentreManagerNotificationTemplate
 
 	base := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(allTemplates))
 	AddTemplateFuncs(base)

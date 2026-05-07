@@ -692,9 +692,11 @@ func (service *ServicesHandler) verifyAndUpdatePayment(ctx context.Context, prov
 
 // Helper functions to send appointment emails
 func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db.Appointment) {
+
+	ctx := context.Background()
 	// Get patient details by email
-	_, err := service.userPort.GetUser(
-		context.Background(),
+	patient, err := service.userPort.GetUser(
+		ctx,
 		appointment.PatientID,
 	)
 	if err != nil {
@@ -704,8 +706,8 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	}
 
 	// Get centre details
-	_, err = service.diagnosticPort.GetDiagnosticCentre(
-		context.Background(),
+	centre, err := service.diagnosticPort.GetDiagnosticCentre(
+		ctx,
 		appointment.DiagnosticCentreID,
 	)
 	if err != nil {
@@ -715,8 +717,8 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	}
 
 	// Get schedule details for test type
-	_, err = service.schedulePort.GetDiagnosticScheduleByCentre(
-		context.Background(),
+	schedule, err := service.schedulePort.GetDiagnosticScheduleByCentre(
+		ctx,
 		db.Get_Diagnsotic_Schedule_By_CentreParams{
 			ID:                 appointment.ScheduleID,
 			DiagnosticCentreID: appointment.DiagnosticCentreID,
@@ -728,32 +730,33 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 		return
 	}
 
-	// data := emails.AppointmentEmailData{
-	// 	EmailData: emails.EmailData{
-	// 		AppName: "Diagnoxix",
-	// 	},
-	// 	PatientName:     patient.Fullname.String,
-	// 	AppointmentID:   appointment.ID,
-	// 	AppointmentDate: appointment.AppointmentDate.Time,
-	// 	TimeSlot:        appointment.TimeSlot,
-	// 	CentreName:      centre.DiagnosticCentreName,
-	// 	TestType:        string(schedule.TestType),
-	// 	Notes:           appointment.Notes.String,
-	// }
+	data := emails.AppointmentEmailData{
+		EmailData: emails.EmailData{
+			AppName: "Diagnoxix",
+			TemplateName: emails.AppointmentConfirmationTemplate,
+		},
+		PatientName:     patient.Fullname.String,
+		AppointmentID:   appointment.ID,
+		AppointmentDate: appointment.AppointmentDate.Time,
+		TimeSlot:        appointment.TimeSlot,
+		CentreName:      centre.DiagnosticCentreName,
+		TestType:        string(schedule.TestType),
+		Notes:           appointment.Notes.String,
+	}
 
-	// // Get email template
-	// emailBody, err := emails.GetAppointmentConfirmationTemplate(data)
-	// if err != nil {
-	// 	utils.Error("Failed to generate confirmation email template",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// 	return
-	// }
+	// Get email template
+	emailBody, err := emails.GetTemplate(data)
+	if err != nil {
+		utils.Error("Failed to generate confirmation email template",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return
+	}
 
-	// // Send email
-	// if err := service.notificationPort.SendEmail(patient.Email.String, "Appointment Confirmation", emailBody); err != nil {
-	// 	utils.Error("Failed to send confirmation email",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// }
+	// Send email
+	if err := service.notificationPort.SendEmail(patient.Email.String, "Appointment Confirmation", emailBody, data); err != nil {
+		utils.Error("Failed to send confirmation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
 
 	utils.Info("Appointment email sent successfully",
 		utils.LogField{Key: "appointment_id", Value: appointment.ID},

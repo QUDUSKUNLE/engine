@@ -1,6 +1,6 @@
 package emails
 
-const staffNotificationTemplate = `
+const StaffNotificationTemplate = `
 {{define "staff_notification"}}
 <p><strong>Dear {{.StaffName}},</strong></p>
 

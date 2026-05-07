@@ -1,6 +1,6 @@
 package emails
 
-const paymentConfirmationTemplate = `
+const PaymentConfirmationTemplate = `
 {{define "payment_confirmation"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
 

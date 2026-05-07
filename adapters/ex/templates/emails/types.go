@@ -14,6 +14,7 @@ type EmailData struct {
 	Content       template.HTML
 	FooterContent string
 	Type          string
+	TemplateName  string
 }
 
 // EmailVerificationData contains fields for email verification emails

@@ -1,11 +1,6 @@
 package emails
 
-import (
-	"bytes"
-	"html/template"
-)
-
-const appointmentReminderTemplate = `
+const AppointmentReminderTemplate = `
 {{define "appointment_reminder"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
 
@@ -37,22 +32,3 @@ const appointmentReminderTemplate = `
 <p>We look forward to seeing you soon!</p>
 {{end}}
 `
-
-// GetAppointmentReminderTemplate returns the rendered appointment reminder email
-func GetAppointmentReminderTemplate(data AppointmentEmailData) (string, error) {
-	baseTemplate := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
-	contentTemplate := template.Must(baseTemplate.New("content").Parse(appointmentReminderTemplate))
-
-	var buf bytes.Buffer
-	err := contentTemplate.ExecuteTemplate(&buf, "base", map[string]interface{}{
-		"Title":         data.Title,
-		"Icon":          data.Icon,
-		"Content":       data.Content,
-		"FooterContent": data.FooterContent,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
-}

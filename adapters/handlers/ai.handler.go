@@ -200,7 +200,7 @@ func (h *HTTPHandler) AnalyzeMedicalImageHandler(c echo.Context) error {
 		c.Request().Context(), *dto)
 	if err != nil {
 		utils.Error("Medical image analysis failed", utils.LogField{Key: "error", Value: err.Error()})
-		return utils.ErrorResponse(http.StatusInternalServerError, err, c)
+		return utils.ErrorResponse(http.StatusUnprocessableEntity, err, c)
 	}
 
 	return utils.ResponseMessage(http.StatusOK, map[string]interface{}{

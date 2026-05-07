@@ -1,6 +1,6 @@
 package emails
 
-const passwordResetTemplate = `
+const PasswordResetTemplate = `
 {{define "password_reset"}}
 <p><strong>Dear {{.Name}},</strong></p>
 

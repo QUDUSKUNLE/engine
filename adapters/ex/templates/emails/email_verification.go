@@ -1,6 +1,6 @@
 package emails
 
-const emailVerificationTemplate = `
+const EmailVerificationTemplate = `
 {{define "email_verification"}}
 <p>
 	<strong>

@@ -1,6 +1,6 @@
 package emails
 
-const testResultsTemplate = `
+const TestResultsTemplate = `
 {{define "test_results_available"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
 

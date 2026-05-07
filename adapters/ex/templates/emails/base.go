@@ -1,6 +1,7 @@
 package emails
 
 import (
+	"bytes"
 	"html/template"
 	"time"
 )
@@ -171,4 +172,23 @@ var TemplateFuncs = template.FuncMap{
 	"formatCurrency": func(amount float64) string {
 		return "₦%.2f" // Using Naira symbol for Nigerian currency
 	},
+}
+
+// GetAppointmentReminderTemplate returns the rendered appointment reminder email
+func GetTemplate(data AppointmentEmailData) (string, error) {
+	baseTemplate := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
+	contentTemplate := template.Must(baseTemplate.New("content").Parse(data.EmailData.TemplateName))
+
+	var buf bytes.Buffer
+	err := contentTemplate.ExecuteTemplate(&buf, "base", map[string]interface{}{
+		"Title":         data.Title,
+		"Icon":          data.Icon,
+		"Content":       data.Content,
+		"FooterContent": data.FooterContent,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }

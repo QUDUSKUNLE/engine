@@ -1,6 +1,6 @@
 package emails
 
-const appointmentCancellationTemplate = `
+const AppointmentCancellationTemplate = `
 {{define "appointment_cancellation"}}
 <p><strong>Dear {{.PatientName}},</strong></p>
 
