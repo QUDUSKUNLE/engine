@@ -60,19 +60,6 @@ func (handler *HTTPHandler) UpdateSchedule(context echo.Context) error {
 	return handler.service.UpdateDiagnosticSchedule(context)
 }
 
-// DeleteDiagnosticSchedule godoc
-// @Summary Delete a diagnostic schedule
-// @Description Delete an existing diagnostic schedule. Only accessible by the schedule owner.
-// @Tags Schedule
-// @Produce json
-// @Security BearerAuth
-// @Param Authorization header string true "Bearer token"
-// @Param schedule_id path string true "Schedule ID (UUID format)" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
-// @Success 204 {object} nil "Schedule deleted successfully"
-// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
-// @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
-// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
-// @Router /v1/diagnostic_schedules/{schedule_id} [delete]
 func (handler *HTTPHandler) DeleteDiagnosticSchedule(context echo.Context) error {
 	return nil
 }
