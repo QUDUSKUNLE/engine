@@ -5,6 +5,9 @@ import (
 	"html/template"
 	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // TimeFormat formats time in 12-hour format with AM/PM
@@ -49,7 +52,7 @@ func AddTemplateFuncs(t *template.Template) *template.Template {
 		"truncate":    TruncateString,
 		"toLower":     strings.ToLower,
 		"toUpper":     strings.ToUpper,
-		"title":       strings.Title,
+		"title":       func(s string) string { return cases.Title(language.Und).String(s) },
 		"hasPrefix":   strings.HasPrefix,
 		"hasSuffix":   strings.HasSuffix,
 		"contains":    strings.Contains,
