@@ -12,14 +12,12 @@ import (
 // @Produce json
 // @Security BearerAuth
 // @Param Authorization header string true "Bearer token"
-// @Param user_id formData string true "User ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
-// @Param uploader_id formData string false "Uploader ID (for diagnostic centres)" format(uuid) default(123e2345-e89b-12d3-a456-426614174000)
-// @Param schedule_id formData string false "Associated Schedule ID" format(uuid) default(673e9876-e89b-12d3-a456-426614174000)
+// @Param patient_id formData string true "Patient ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
+// @Param diagnostic_centre_id formData string true "Diagnostic Centre ID" format(uuid) default(123e2345-e89b-12d3-a456-426614174000)
+// @Param schedule_id formData string true "Schedule ID" format(uuid) default(673e9876-e89b-12d3-a456-426614174000)
 // @Param title formData string true "Record title"
 // @Param document_type formData string true "Type of medical document" Enums(LAB_REPORT, PRESCRIPTION, DISCHARGE_SUMMARY, IMAGING, VACCINATION, ALLERGY, SURGERY, CHRONIC_CONDITION, FAMILY_HISTORY, OTHER)
 // @Param document_date formData string true "Date of the document" format(date)
-// @Param provider_name formData string false "Healthcare provider name"
-// @Param specialty formData string false "Medical specialty"
 // @Param file formData file true "Medical record file (PDF/Image)"
 // @Success 201 {object} handlers.MedicalRecordSwagger "Medical record created successfully"
 // @Failure 400 {object} handlers.BAD_REQUEST "Invalid input data/file format"

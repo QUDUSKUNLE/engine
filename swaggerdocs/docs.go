@@ -3414,8 +3414,8 @@ const docTemplate = `{
                         "type": "string",
                         "format": "uuid",
                         "default": "123e4567-e89b-12d3-a456-426614174000",
-                        "description": "User ID",
-                        "name": "user_id",
+                        "description": "Patient ID",
+                        "name": "patient_id",
                         "in": "formData",
                         "required": true
                     },
@@ -3423,17 +3423,19 @@ const docTemplate = `{
                         "type": "string",
                         "format": "uuid",
                         "default": "123e2345-e89b-12d3-a456-426614174000",
-                        "description": "Uploader ID (for diagnostic centres)",
-                        "name": "uploader_id",
-                        "in": "formData"
+                        "description": "Diagnostic Centre ID",
+                        "name": "diagnostic_centre_id",
+                        "in": "formData",
+                        "required": true
                     },
                     {
                         "type": "string",
                         "format": "uuid",
                         "default": "673e9876-e89b-12d3-a456-426614174000",
-                        "description": "Associated Schedule ID",
+                        "description": "Schedule ID",
                         "name": "schedule_id",
-                        "in": "formData"
+                        "in": "formData",
+                        "required": true
                     },
                     {
                         "type": "string",
@@ -3468,18 +3470,6 @@ const docTemplate = `{
                         "name": "document_date",
                         "in": "formData",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Healthcare provider name",
-                        "name": "provider_name",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Medical specialty",
-                        "name": "specialty",
-                        "in": "formData"
                     },
                     {
                         "type": "file",

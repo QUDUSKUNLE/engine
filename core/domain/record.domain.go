@@ -12,7 +12,7 @@ type (
 		Content  []byte
 	}
 	CreateMedicalRecordDTO struct {
-		UserID             uuid.UUID       `json:"user_id" validate:"required,uuid"`
+		PatientID             uuid.UUID       `json:"patient_id" validate:"required,uuid"`
 		DiagnosticCentreID uuid.UUID       `json:"diagnostic_centre_id" validate:"required,uuid"`
 		ScheduleID         uuid.UUID       `json:"schedule_id" validate:"required,uuid"`
 		Title              string          `json:"title" validate:"required,min=12"`

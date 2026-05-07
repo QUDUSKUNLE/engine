@@ -3789,23 +3789,25 @@ paths:
         required: true
         type: string
       - default: 123e4567-e89b-12d3-a456-426614174000
-        description: User ID
+        description: Patient ID
         format: uuid
         in: formData
-        name: user_id
+        name: patient_id
         required: true
         type: string
       - default: 123e2345-e89b-12d3-a456-426614174000
-        description: Uploader ID (for diagnostic centres)
+        description: Diagnostic Centre ID
         format: uuid
         in: formData
-        name: uploader_id
+        name: diagnostic_centre_id
+        required: true
         type: string
       - default: 673e9876-e89b-12d3-a456-426614174000
-        description: Associated Schedule ID
+        description: Schedule ID
         format: uuid
         in: formData
         name: schedule_id
+        required: true
         type: string
       - description: Record title
         in: formData
@@ -3833,14 +3835,6 @@ paths:
         in: formData
         name: document_date
         required: true
-        type: string
-      - description: Healthcare provider name
-        in: formData
-        name: provider_name
-        type: string
-      - description: Medical specialty
-        in: formData
-        name: specialty
         type: string
       - description: Medical record file (PDF/Image)
         in: formData

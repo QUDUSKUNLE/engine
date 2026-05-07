@@ -62,7 +62,7 @@ func (service *ServicesHandler) CreateMedicalRecord(cont echo.Context) error {
 
 	// Create medical record
 	createParams := db.CreateMedicalRecordParams{
-		UserID:          dto.UserID.String(),
+		UserID:          dto.PatientID.String(),
 		UploaderID:      dto.DiagnosticCentreID.String(),
 		UploaderAdminID: pgtype.UUID{Bytes: dto.UploaderAdminID, Valid: true},
 		UploaderType:    db.UserEnum(dto.UploaderType),
@@ -91,20 +91,36 @@ func (service *ServicesHandler) CreateMedicalRecord(cont echo.Context) error {
 		}
 	}
 
-	go func(recordID string, fileContent []byte) {
-		fileUrl, err := service.filePort.UploadFile(context.Background(), fileContent)
+	go func(
+		ctx context.Context,
+		logger echo.Logger,
+		svc *ServicesHandler,
+		recordID string,
+		fileContent []byte,
+	) {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Errorf("panic in medical record async job: %v", r)
+			}
+    }()
+		
+		// File Uploads
+		fileUrl, err := svc.filePort.UploadFile(ctx, fileContent)
 		// service.aiPort.
 		if err != nil {
 			cont.Logger().Errorf("File upload failed for record %s: %v", recordID, err)
 			return
 		}
-		_, err = service.aiPort.OCR.Parse(context.Background(), fileContent)
+
+		// Parse to AI
+		_, err = svc.aiPort.OCR.Parse(ctx, fileContent)
 		if err != nil {
 			fmt.Printf("Error %v", err)
 			return
 		}
+
 		// Update DB with final file URL
-		_, err = service.recordPort.UpdateFilePath(context.Background(), db.UpdateFilePathParams{
+		_, err = svc.recordPort.UpdateFilePath(ctx, db.UpdateFilePathParams{
 			ID:       recordID,
 			FilePath: fileUrl,
 		})
@@ -112,77 +128,18 @@ func (service *ServicesHandler) CreateMedicalRecord(cont echo.Context) error {
 			cont.Logger().Errorf("Failed to update file path for record %s: %v", recordID, err)
 			return
 		}
-	}(record.ID, dto.FileUpload.Content)
+	}(
+		context.Background(),
+		cont.Logger(),
+		service,
+		record.ID,
+		dto.FileUpload.Content,
+	)
 
 	return utils.ResponseMessage(http.StatusAccepted, map[string]string{
 		"record_id": record.ID,
-		"status":    "File is uploading in background",
+		"status":    "File is uploading in the background",
 	}, cont)
-}
-
-// GetMedicalRecord retrieves a single medical record.
-func (service *ServicesHandler) GetMedicalRecord(cont echo.Context) error {
-	// Authentication check
-	user, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumPATIENT})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
-	}
-
-	// This validated at the middleware level
-	param, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.GetMedicalRecordParamsDTO)
-
-	// Fetch medical record
-	response, err := service.recordPort.GetMedicalRecord(
-		cont.Request().Context(),
-		db.GetMedicalRecordParams{
-			ID:     param.RecordID.String(),
-			UserID: user.UserID.String(),
-		},
-	)
-	if err != nil {
-		cont.Logger().Error("Failed to get medical record:", err)
-		switch {
-		case errors.Is(err, utils.ErrNotFound):
-			return echo.NewHTTPError(http.StatusNotFound, "Medical record not found")
-		case errors.Is(err, utils.ErrPermissionDenied):
-			return echo.NewHTTPError(http.StatusForbidden, "Access denied to medical record")
-		default:
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve medical record")
-		}
-	}
-
-	if response == nil {
-		return echo.NewHTTPError(http.StatusNotFound, "Medical record not found")
-	}
-
-	return utils.ResponseMessage(http.StatusOK, response, cont)
-}
-
-// GetMedicalRecords retrieves multiple medical records for a user.
-func (service *ServicesHandler) GetMedicalRecords(cont echo.Context) error {
-	user, err := PrivateMiddlewareContext(cont, []db.UserEnum{db.UserEnumPATIENT})
-	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, cont)
-	}
-
-	// This validated at the middleware level
-	query, _ := cont.Get(utils.ValidatedQueryParamDTO).(*domain.PaginationQueryDTO)
-
-	query = SetDefaultPagination(query).(*domain.PaginationQueryDTO)
-
-	response, err := service.recordPort.GetMedicalRecords(cont.Request().Context(), db.GetMedicalRecordsParams{
-		UserID: user.UserID.String(),
-		Limit:  query.GetLimit(),
-		Offset: query.GetOffset(),
-	})
-	if err != nil {
-		return utils.ErrorResponse(http.StatusInternalServerError, err, cont)
-	}
-	if len(response) == 0 {
-		return utils.ResponseMessage(http.StatusOK, []interface{}{}, cont)
-	}
-
-	return utils.ResponseMessage(http.StatusOK, response, cont)
 }
 
 // GetUploaderMedicalRecord retrieves a single medical record uploaded by a specific uploader.

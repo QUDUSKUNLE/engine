@@ -74,9 +74,6 @@ func bindAndValidateDTO(
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 
-	// STEP 2: Debug/log raw input
-	fmt.Println("Incoming payload:", body)
-
 	// STEP 3: Create DTO
 	dto := dtoFactory()
 
@@ -145,7 +142,7 @@ func looksLikeUUIDField(key string) bool {
 // handleMedicalRecordDTO processes form data for medical record creation
 func handleMedicalRecordDTO(c echo.Context, dto *domain.CreateMedicalRecordDTO) error {
 	fields := map[string]*uuid.UUID{
-		"user_id":              &dto.UserID,
+		"patient_id":           &dto.PatientID,
 		"diagnostic_centre_id": &dto.DiagnosticCentreID,
 		"schedule_id":          &dto.ScheduleID,
 	}
@@ -239,7 +236,7 @@ func BodyValidationInterceptorFor(dtoFactory func() interface{}) echo.Middleware
 					}
 					bindFunc = c.Bind
 				}
-				
+
 				if err := bindAndValidateDTO(c, dtoFactory, bindFunc, validatedBodyKey); err != nil {
 					return err
 				}

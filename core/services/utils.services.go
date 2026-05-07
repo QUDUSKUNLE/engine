@@ -82,7 +82,7 @@ func buildCreateMedicalRecordDto(c echo.Context) (*domain.CreateMedicalRecordDTO
 	utils.Info("Successfully built medical record DTO",
 		utils.LogField{Key: "filename", Value: file.Filename},
 		utils.LogField{Key: "file_size", Value: file.Size},
-		utils.LogField{Key: "user_id", Value: dto.UserID})
+		utils.LogField{Key: "user_id", Value: dto.PatientID})
 
 	return dto, nil
 }
