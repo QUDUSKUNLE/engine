@@ -98,19 +98,6 @@ func (handler *HTTPHandler) UpdateDiagnosticCentre(context echo.Context) error {
 	return handler.service.UpdateDiagnosticCentre(context)
 }
 
-// DeleteDiagnosticCentre godoc
-// @Summary Delete a diagnostic centre
-// @Description Delete an existing diagnostic centre (owner only)
-// @Tags DiagnosticCentre
-// @Produce json
-// @Security BearerAuth
-// @Param Authorization header string true "Bearer token"
-// @Param diagnostic_centre_id path string true "Diagnostic Centre ID" format(uuid) default(123e4567-e89b-12d3-a456-426614174000)
-// @Success 200 {object} handlers.DiagnosticCentreSwagger "Diagnostic centre deleted successfully"
-// @Failure 401 {object} handlers.UNAUTHORIZED_ERROR "UNAUTHORIZED_ERROR"
-// @Failure 404 {object} handlers.NOT_FOUND_ERROR "NOT_FOUND_ERROR"
-// @Failure 500 {object} handlers.INTERNAL_SERVER_ERROR "INTERNAL_SERVER_ERROR"
-// @Router /v1/diagnostic_centres/{diagnostic_centre_id} [delete]
 func (handler *HTTPHandler) DeleteDiagnosticCentre(context echo.Context) error {
 	return handler.service.DeleteDiagnosticCentre(context)
 }

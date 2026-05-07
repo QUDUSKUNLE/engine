@@ -2319,65 +2319,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete an existing diagnostic centre (owner only)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "DiagnosticCentre"
-                ],
-                "summary": "Delete a diagnostic centre",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "default": "123e4567-e89b-12d3-a456-426614174000",
-                        "description": "Diagnostic Centre ID",
-                        "name": "diagnostic_centre_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Diagnostic centre deleted successfully",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.DiagnosticCentreSwagger"
-                        }
-                    },
-                    "401": {
-                        "description": "UNAUTHORIZED_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
-                        }
-                    },
-                    "404": {
-                        "description": "NOT_FOUND_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
-                        }
-                    },
-                    "500": {
-                        "description": "INTERNAL_SERVER_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
-                        }
-                    }
-                }
             }
         },
         "/v1/diagnostic_centres/{diagnostic_centre_id}/diagnostic_schedules": {
@@ -3086,62 +3027,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/handlers.BAD_REQUEST"
                         }
-                    },
-                    "401": {
-                        "description": "UNAUTHORIZED_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.UNAUTHORIZED_ERROR"
-                        }
-                    },
-                    "404": {
-                        "description": "NOT_FOUND_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.NOT_FOUND_ERROR"
-                        }
-                    },
-                    "500": {
-                        "description": "INTERNAL_SERVER_ERROR",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.INTERNAL_SERVER_ERROR"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete an existing diagnostic schedule. Only accessible by the schedule owner.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Schedule"
-                ],
-                "summary": "Delete a diagnostic schedule",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "default": "123e4567-e89b-12d3-a456-426614174000",
-                        "description": "Schedule ID (UUID format)",
-                        "name": "schedule_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Schedule deleted successfully"
                     },
                     "401": {
                         "description": "UNAUTHORIZED_ERROR",
