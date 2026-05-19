@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/diagnoxix/adapters/ex"
+	"github.com/diagnoxix/adapters/external"
 	"github.com/diagnoxix/core/jobs"
 	"github.com/diagnoxix/core/ports"
 )

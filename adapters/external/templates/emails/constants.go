@@ -76,26 +76,3 @@ const (
 	MsgKeepReceipt  = ""
 )
 
-// Template partial content
-const (
-	PartialAppointmentDetails = `
-<div class="details">
-    <ul>
-        <li><strong>Appointment ID:</strong> {{.AppointmentID}}</li>
-        <li><strong>Date:</strong> {{.AppointmentDate | formatDate}}</li>
-        <li><strong>Time:</strong> {{.TimeSlot}}</li>
-        <li><strong>Centre:</strong> {{.CentreName}}</li>
-        <li><strong>Test:</strong> {{.TestType | formatTest}}</li>
-    </ul>
-</div>`
-
-	PartialPaymentDetails = `
-<div class="details">
-    <ul>
-        <li><strong>Transaction ID:</strong> {{.TransactionID}}</li>
-        <li><strong>Amount Paid:</strong> {{.PaymentAmount | formatNaira}}</li>
-        <li><strong>Payment Method:</strong> {{.PaymentMethod}}</li>
-        <li><strong>Date:</strong> {{.PaymentDate | formatDate}}</li>
-    </ul>
-</div>`
-)

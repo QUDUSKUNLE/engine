@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/diagnoxix/adapters/db"
-	"github.com/diagnoxix/adapters/ex/templates/emails"
+	"github.com/diagnoxix/adapters/external/templates/emails"
 	"github.com/diagnoxix/core/domain"
 	"github.com/diagnoxix/core/utils"
 	"github.com/google/uuid"

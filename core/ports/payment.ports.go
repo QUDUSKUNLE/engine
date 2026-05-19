@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/diagnoxix/adapters/db"
-	"github.com/diagnoxix/adapters/ex/paystack"
+	"github.com/diagnoxix/adapters/external/paystack"
 )
 
 // DBTX represents a database transaction interface

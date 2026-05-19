@@ -1,7 +1,7 @@
 package ex
 
 import (
-	"github.com/diagnoxix/adapters/ex/templates/emails"
+	"github.com/diagnoxix/adapters/external/templates/emails"
 )
 
 type NotificationAdapter struct {

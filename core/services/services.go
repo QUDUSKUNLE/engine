@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/diagnoxix/adapters/config"
-	"github.com/diagnoxix/adapters/ex"
-	"github.com/diagnoxix/adapters/ex/ai"
-	"github.com/diagnoxix/adapters/ex/paystack"
+	"github.com/diagnoxix/adapters/external"
+	"github.com/diagnoxix/adapters/external/ai"
+	"github.com/diagnoxix/adapters/external/paystack"
 	"github.com/diagnoxix/core/jobs"
 	"github.com/diagnoxix/core/ports"
 	"github.com/diagnoxix/core/services/cache"

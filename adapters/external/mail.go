@@ -5,13 +5,34 @@ import (
 	"net/smtp"
 )
 
+type EmailType string
 
-type EmailStruct struct {
-	To string
-	Subject string
-	templateName string
-	data interface{}
+const (
+	GMAIL EmailType = "GMAIL"
+	ZOHO  EmailType = "ZOHO"
+)
+
+type EmailConfig struct {
+	Host      string
+	Port      int
+	Username  string
+	Password  string // App Password
+	From      string
+	EmailType EmailType
 }
+
+func NewEmailConfig(c EmailConfig) *EmailConfig {
+	return &EmailConfig{
+		Host:      c.Host,
+		Port:      c.Port,
+		Username:  c.Username,
+		Password:  c.Password,
+		From:      c.From,
+		EmailType: c.EmailType,
+	}
+}
+
+
 
 func (n *NotificationAdapter) auth() smtp.Auth {
 	return smtp.PlainAuth("", n.config.Username, n.config.Password, n.config.Host)
