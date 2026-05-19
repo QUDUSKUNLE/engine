@@ -128,6 +128,9 @@ func main() {
 	// Start WebSocket manager
 	services.Core.WebSocketManager.Start()
 
+	// Start reminder job
+	services.Core.Reminder.Start()
+
 	// Add a middleware to skip JWT validation for specific routes under /v1
 	v1 := e.Group("/v1")
 	v1.Use(middlewares.ConditionalJWTMiddleware(cfg.JWT_KEY))

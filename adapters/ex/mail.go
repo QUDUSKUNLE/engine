@@ -5,6 +5,14 @@ import (
 	"net/smtp"
 )
 
+
+type EmailStruct struct {
+	To string
+	Subject string
+	templateName string
+	data interface{}
+}
+
 func (n *NotificationAdapter) auth() smtp.Auth {
 	return smtp.PlainAuth("", n.config.Username, n.config.Password, n.config.Host)
 }
@@ -48,7 +56,7 @@ func (n *NotificationAdapter) SendEmail(
 	)
 }
 
-func (n *NotificationAdapter) SendSMS(phone string, message string) error {
+func (n *NotificationAdapter) SendSMS(phone, message string) error {
 	// TODO: Add your actual SMS sending implementation
 	// For now, just log
 	fmt.Printf("Sending SMS to %s\nMessage: %s\n", phone, message)

@@ -38,3 +38,5 @@ MEDICUE_MOBILE_PRODUCT_STATEMENT.md
 
 main
 adapters/db/seeds/
+# .gitignore
+.vscode/mcp.json

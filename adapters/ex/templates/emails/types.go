@@ -19,6 +19,7 @@ type EmailData struct {
 
 // EmailVerificationData contains fields for email verification emails
 type EmailVerificationData struct {
+	EmailData
 	Name             string
 	VerificationLink string
 	ExpiryDuration   string
@@ -80,6 +81,7 @@ type StaffNotificationData struct {
 
 // PolicyUpdateData contains fields for policy update emails
 type PolicyUpdateData struct {
+	EmailData
 	PatientName    string
 	PolicyTitle    string
 	PolicyDetails  string
@@ -89,6 +91,7 @@ type PolicyUpdateData struct {
 
 // PasswordResetData contains data for password reset emails
 type PasswordResetData struct {
+	EmailData
 	Name      string
 	ResetLink string
 	Token     string
@@ -127,6 +130,7 @@ type AppointmentEmailData struct {
 
 // Additional fields for notification emails
 type NotificationData struct {
+	EmailData
 	// AppointmentEmailData
 	// Fields for test results
 	ResultsAvailable bool
@@ -146,12 +150,14 @@ type NotificationData struct {
 }
 
 type DiagnosticCentreManager struct {
+	EmailData
 	ManagerName string
 	Email       string
 	Password    string
 }
 
 type DiagnosticCentreManagement struct {
+	EmailData
 	Name          string
 	CentreName    string
 	CentreAddress string

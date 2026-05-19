@@ -52,6 +52,7 @@ type Querier interface {
 	// This is just a helper query to make sqlc generate the Doctor type as array
 	GetSampleDoctorArray(ctx context.Context) ([]Doctor, error)
 	GetUnreadCount(ctx context.Context, userID string) (int64, error)
+	GetUpComingAppointments(ctx context.Context, arg GetUpComingAppointmentsParams) ([]*GetUpComingAppointmentsRow, error)
 	// Get an Uploader Medical Record
 	// Retrieves a medical record by its ID and uploader ID.
 	GetUploaderMedicalRecord(ctx context.Context, arg GetUploaderMedicalRecordParams) (*GetUploaderMedicalRecordRow, error)

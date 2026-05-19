@@ -79,6 +79,13 @@ func (repo *Repository) UpdateAppointment(
 	return repo.database.UpdateAppointmentPayment(ctx, params)
 }
 
+func (repo *Repository) GetUpcomingAppointments(
+	ctx context.Context,
+	params db.GetUpComingAppointmentsParams,
+) ([]*db.GetUpComingAppointmentsRow, error) {
+	return repo.database.GetUpComingAppointments(ctx, params)
+}
+
 func (repo *Repository) CancelAppointment(
 	ctx context.Context,
 	id string,

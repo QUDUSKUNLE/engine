@@ -148,6 +148,20 @@ const BaseLayout = `
                 {{template "dc_manager_notification" .Data}}
             {{else if eq .Type "password_reset"}}
                 {{template "password_reset" .Data}}
+            {{else if eq .Type "appointment_reminder"}}
+                {{template "appointment_reminder" .Data}}
+            {{else if eq .Type "appointment_confirmation"}}
+                {{template "appointment_confirmation" .Data}}
+            {{else if eq .Type "appointment_reschedule"}}
+                {{template "appointment_reschedule" .Data}}
+            {{else if eq .Type "payment_confirmation"}}
+                {{template "payment_confirmation" .Data}}
+            {{else if eq .Type "test_results"}}
+                {{template "test_results" .Data}}
+            {{else if eq .Type "staff_notification"}}
+                {{template "staff_notification" .Data}}
+            {{else if eq .Type "policy_update"}}
+                {{template "policy_update" .Data}}
             {{end}}
         </div>
         <div class="footer">

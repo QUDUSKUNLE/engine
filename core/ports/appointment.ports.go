@@ -20,6 +20,11 @@ type AppointmentRepository interface {
 		id string,
 	) (*db.Appointment, error)
 
+	GetUpcomingAppointments(
+		ctx context.Context,
+		param db.GetUpComingAppointmentsParams,
+	) ([]*db.GetUpComingAppointmentsRow, error)
+
 	GetAPatientAppointment(
 		ctx context.Context,
 		param db.GetAPatientAppointmentParams,

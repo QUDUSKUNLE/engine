@@ -8,6 +8,7 @@ import (
 	"github.com/diagnoxix/adapters/ex"
 	"github.com/diagnoxix/adapters/ex/ai"
 	"github.com/diagnoxix/adapters/ex/paystack"
+	"github.com/diagnoxix/core/jobs"
 	"github.com/diagnoxix/core/ports"
 	"github.com/diagnoxix/core/services/cache"
 	"github.com/diagnoxix/core/services/websocket"
@@ -27,6 +28,7 @@ type ServicesHandler struct {
 	notificationPort ports.NotificationService
 	notificationRepo ports.NotificationRepository
 	Config           config.EnvConfiguration
+	Reminder         *jobs.ReminderJob
 	// Payment Gateway
 	paymentService ports.PaymentProviderService
 	// AI Services
@@ -48,6 +50,40 @@ func ServicesAdapter(
 	notificationRepo ports.NotificationRepository,
 	conn config.EnvConfiguration,
 ) *ServicesHandler {
+	// Notification Service
+	notificationService := ex.NewNotificationAdapter(&ex.EmailConfig{
+		Host:      conn.EMAIL_HOST,
+		Port:      func() int { p, _ := strconv.Atoi(conn.EMAIL_PORT); return p }(),
+		Username:  conn.EMAIL_USERNAME,
+		Password:  conn.EMAIL_APP_PASSWORD,
+		From:      conn.EMAIL_FROM_ADDRESS,
+		EmailType: ex.EmailType(conn.EMAIL_TYPE),
+	})
+
+	// Paystack Service
+	payStackService := paystack.NewPaystackAdapter(&paystack.PaystackConfig{
+		SecretKey: conn.PAYSTACK_SECRET_KEY,
+		BaseURL:   conn.PAYSTACK_BASE_URL,
+	})
+
+	// AI Adapter
+	aiAdaptor := ai.NewAIAdaptor(
+		conn.OPEN_API_KEY,
+		ai.WithOCR(ai.NewTesseractOCR()),
+		ai.WithAnomalyDetector(ai.NewAnomalyDetection()),
+		ai.WithReportGenerator(ai.NewAutomatedReport()),
+		ai.WithDecisionSupport(ai.NewDecisionSupport()),
+		ai.WithImageAnalyzer(ai.NewImageAnalysis()),
+		ai.WithPackageAnalyzer(ai.NewPackageAnalysis()),
+	)
+
+	// Reminder Manager Service
+	Reminder := jobs.NewReminderJob(
+		appointmentPort,
+		notificationService,
+		useRepo,
+		diagnosticCentreRepo,
+	)
 	return &ServicesHandler{
 		userPort:         useRepo,
 		schedulePort:     schedulePort,
@@ -57,34 +93,18 @@ func ServicesAdapter(
 		appointmentPort:  appointmentPort,
 		recordPort:       record,
 		testPricePort:    testPriceRepo,
-		notificationPort: ex.NewNotificationAdapter(&ex.EmailConfig{
-			Host:      conn.EMAIL_HOST,
-			Port:      func() int { p, _ := strconv.Atoi(conn.EMAIL_PORT); return p }(),
-			Username:  conn.EMAIL_USERNAME,
-			Password:  conn.EMAIL_APP_PASSWORD,
-			From:      conn.EMAIL_FROM_ADDRESS,
-			EmailType: ex.EmailType(conn.EMAIL_TYPE),
-		}),
+		notificationPort: notificationService,
 		notificationRepo: notificationRepo,
-		paymentService: paystack.NewPaystackAdapter(&paystack.PaystackConfig{
-			SecretKey: conn.PAYSTACK_SECRET_KEY,
-			BaseURL:   conn.PAYSTACK_BASE_URL,
-		}),
-		Config: conn,
-		aiPort: ai.NewAIAdaptor(
-			conn.OPEN_API_KEY,
-			ai.WithOCR(ai.NewTesseractOCR()),
-			ai.WithAnomalyDetector(ai.NewAnomalyDetection()),
-			ai.WithReportGenerator(ai.NewAutomatedReport()),
-			ai.WithDecisionSupport(ai.NewDecisionSupport()),
-			ai.WithImageAnalyzer(ai.NewImageAnalysis()),
-			ai.WithPackageAnalyzer(ai.NewPackageAnalysis()),
-		),
+		paymentService:   payStackService,
+		Config:           conn,
+		aiPort:           aiAdaptor,
 		AI:               initializeAIService(conn),
 		WebSocketManager: websocket.NewWebSocketManager(),
 		filePort:         ex.NewLocalFileService(),
+		Reminder:         Reminder,
 	}
 }
+
 // initializeAIService creates an AI service with caching if Redis is available
 func initializeAIService(conn config.EnvConfiguration) *AIService {
 	// Try to initialize cache if Redis URL is provided
@@ -101,7 +121,7 @@ func initializeAIService(conn config.EnvConfiguration) *AIService {
 
 		aiCache, err := cache.NewAICache(cacheConfig)
 		if err != nil {
-			utils.Warn("Failed to initialize AI cache, proceeding without caching", 
+			utils.Warn("Failed to initialize AI cache, proceeding without caching",
 				utils.LogField{Key: "error", Value: err.Error()})
 			return NewAIService(conn.OPEN_API_KEY)
 		}

@@ -430,6 +430,102 @@ func (q *Queries) GetPatientAppointments(ctx context.Context, arg GetPatientAppo
 	return items, nil
 }
 
+const getUpComingAppointments = `-- name: GetUpComingAppointments :many
+SELECT 
+    a.id as id,
+    a.patient_id as patient_id,
+    a.diagnostic_centre_id as diagnostic_centre_id,
+    a.status as status,
+    a.appointment_date as appointment_date,
+    a.time_slot as time_slot,
+    a.reminder_sent as reminder_sent,
+    a.reminder_sent_at as reminder_sent_at,
+    a.created_at as created_at,
+    a.updated_at as updated_at,
+
+    u.fullname as full_name,
+    u.email as email,
+
+    dc.diagnostic_centre_name as diagnostic_centre_name
+
+FROM appointments a
+
+LEFT JOIN users u
+    ON a.patient_id = u.id
+
+LEFT JOIN diagnostic_centres dc
+    ON a.diagnostic_centre_id = dc.id
+
+WHERE a.status::text = ANY($1::text[])
+    AND a.appointment_date > CURRENT_TIMESTAMP
+    AND a.appointment_date <= $2
+
+ORDER BY a.appointment_date ASC
+LIMIT $3 OFFSET $4
+`
+
+type GetUpComingAppointmentsParams struct {
+	Column1         []string           `db:"column_1" json:"column_1"`
+	AppointmentDate pgtype.Timestamptz `db:"appointment_date" json:"appointment_date"`
+	Limit           int32              `db:"limit" json:"limit"`
+	Offset          int32              `db:"offset" json:"offset"`
+}
+
+type GetUpComingAppointmentsRow struct {
+	ID                   string             `db:"id" json:"id"`
+	PatientID            string             `db:"patient_id" json:"patient_id"`
+	DiagnosticCentreID   string             `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
+	Status               AppointmentStatus  `db:"status" json:"status"`
+	AppointmentDate      pgtype.Timestamptz `db:"appointment_date" json:"appointment_date"`
+	TimeSlot             string             `db:"time_slot" json:"time_slot"`
+	ReminderSent         pgtype.Bool        `db:"reminder_sent" json:"reminder_sent"`
+	ReminderSentAt       pgtype.Timestamptz `db:"reminder_sent_at" json:"reminder_sent_at"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	FullName             pgtype.Text        `db:"full_name" json:"full_name"`
+	Email                pgtype.Text        `db:"email" json:"email"`
+	DiagnosticCentreName pgtype.Text        `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+}
+
+func (q *Queries) GetUpComingAppointments(ctx context.Context, arg GetUpComingAppointmentsParams) ([]*GetUpComingAppointmentsRow, error) {
+	rows, err := q.db.Query(ctx, getUpComingAppointments,
+		arg.Column1,
+		arg.AppointmentDate,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetUpComingAppointmentsRow
+	for rows.Next() {
+		var i GetUpComingAppointmentsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.PatientID,
+			&i.DiagnosticCentreID,
+			&i.Status,
+			&i.AppointmentDate,
+			&i.TimeSlot,
+			&i.ReminderSent,
+			&i.ReminderSentAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.FullName,
+			&i.Email,
+			&i.DiagnosticCentreName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const rescheduleAppointment = `-- name: RescheduleAppointment :one
 WITH old_appointment AS (
     UPDATE appointments 

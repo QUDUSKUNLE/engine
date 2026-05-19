@@ -155,3 +155,37 @@ SET reminder_sent = true,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 
 RETURNING *;
+
+
+-- name: GetUpComingAppointments :many
+SELECT 
+    a.id as id,
+    a.patient_id as patient_id,
+    a.diagnostic_centre_id as diagnostic_centre_id,
+    a.status as status,
+    a.appointment_date as appointment_date,
+    a.time_slot as time_slot,
+    a.reminder_sent as reminder_sent,
+    a.reminder_sent_at as reminder_sent_at,
+    a.created_at as created_at,
+    a.updated_at as updated_at,
+
+    u.fullname as full_name,
+    u.email as email,
+
+    dc.diagnostic_centre_name as diagnostic_centre_name
+
+FROM appointments a
+
+LEFT JOIN users u
+    ON a.patient_id = u.id
+
+LEFT JOIN diagnostic_centres dc
+    ON a.diagnostic_centre_id = dc.id
+
+WHERE a.status::text = ANY($1::text[])
+    AND a.appointment_date > CURRENT_TIMESTAMP
+    AND a.appointment_date <= $2
+
+ORDER BY a.appointment_date ASC
+LIMIT $3 OFFSET $4;
