@@ -1240,6 +1240,11 @@ const docTemplate = `{
         },
         "/v1/availability/{diagnostic_centre_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get availability slots for the diagnostic centre, optionally filtered by day of week",
                 "consumes": [
                     "application/json"
@@ -1252,6 +1257,13 @@ const docTemplate = `{
                 ],
                 "summary": "Get availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",
@@ -1313,6 +1325,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update multiple availability slots for the diagnostic centre",
                 "consumes": [
                     "application/json"
@@ -1325,6 +1342,13 @@ const docTemplate = `{
                 ],
                 "summary": "Bulk update availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",
@@ -1382,6 +1406,11 @@ const docTemplate = `{
         },
         "/v1/availability/{diagnostic_centre_id}/{day_of_week}": {
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update an existing availability slot for the diagnostic centre",
                 "consumes": [
                     "application/json"
@@ -1394,6 +1423,13 @@ const docTemplate = `{
                 ],
                 "summary": "Update availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",
@@ -1453,6 +1489,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete an availability slot for the diagnostic centre",
                 "consumes": [
                     "application/json"
@@ -1465,6 +1506,13 @@ const docTemplate = `{
                 ],
                 "summary": "Delete availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",
@@ -6670,7 +6718,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "engine-nwu3.onrender.com",
+	Host:             "127.0.0.1:7556",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Diagnoxix AI",

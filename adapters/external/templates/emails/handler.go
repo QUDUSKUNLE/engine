@@ -32,7 +32,7 @@ func (h *EmailTemplateHandler) ExecuteTemplate(templateName string, data interfa
 	case TemplatePaymentConfirmation:
 		return h.renderPaymentConfirmation(data.(*PaymentData))
 	case TemplateEmailVerification:
-		return h.renderEmailVerification(data.(*EmailVerificationData))
+		return h.renderEmailVerification(data.(*EmailVerificationData)) // Working
 	case TemplateStaffNotification:
 		return h.renderStaffNotification(data.(*StaffNotificationData))
 	case TemplateTestResults:
@@ -40,7 +40,7 @@ func (h *EmailTemplateHandler) ExecuteTemplate(templateName string, data interfa
 	case TemplatePolicyUpdate:
 		return h.renderPolicyUpdate(data.(*PolicyUpdateData))
 	case TemplateResetPassword:
-		return h.renderResetPassword(data.(*PasswordResetData))
+		return h.renderResetPassword(data.(*PasswordResetData)) // Working
 	case TemplateDiagnosticCentreManager:
 		return h.renderDiagnosticCentreManager(data.(*DiagnosticCentreManager))
 	case TemplateDiagnosticCentreManagement:

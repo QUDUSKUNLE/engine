@@ -753,7 +753,7 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	}
 
 	// Send email
-	if err := service.notificationPort.SendEmail(patient.Email.String, "Appointment Confirmation", emailBody, data); err != nil {
+	if err := service.notificationPort.SendEmail(patient.Email.String, emails.TitleAppointmentConfirmed, emailBody, data); err != nil {
 		utils.Error("Failed to send confirmation email",
 			utils.LogField{Key: "error", Value: err.Error()})
 	}

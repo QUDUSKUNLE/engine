@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "engine-nwu3.onrender.com",
+    "host": "127.0.0.1:7556",
     "basePath": "/",
     "paths": {
         "/v1/account": {
@@ -1234,6 +1234,11 @@
         },
         "/v1/availability/{diagnostic_centre_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get availability slots for the diagnostic centre, optionally filtered by day of week",
                 "consumes": [
                     "application/json"
@@ -1246,6 +1251,13 @@
                 ],
                 "summary": "Get availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",
@@ -1307,6 +1319,11 @@
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update multiple availability slots for the diagnostic centre",
                 "consumes": [
                     "application/json"
@@ -1319,6 +1336,13 @@
                 ],
                 "summary": "Bulk update availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",
@@ -1376,6 +1400,11 @@
         },
         "/v1/availability/{diagnostic_centre_id}/{day_of_week}": {
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update an existing availability slot for the diagnostic centre",
                 "consumes": [
                     "application/json"
@@ -1388,6 +1417,13 @@
                 ],
                 "summary": "Update availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",
@@ -1447,6 +1483,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete an availability slot for the diagnostic centre",
                 "consumes": [
                     "application/json"
@@ -1459,6 +1500,13 @@
                 ],
                 "summary": "Delete availability for a diagnostic centre",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "default": "123e4567-e89b-12d3-a456-426614174000",

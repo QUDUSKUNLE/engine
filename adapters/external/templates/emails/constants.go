@@ -2,11 +2,11 @@ package emails
 
 // Email template titles
 const (
-	TitleAppointmentConfirmed       = "Appointment Confirmed"
+	TitleAppointmentConfirmed       = "Appointment Confirmation"
 	TitleAppointmentCancelled       = "Appointment Cancelled"
 	TitleAppointmentReminder        = "Appointment Reminder"
 	TitleAppointmentReschedule      = "Appointment Rescheduled"
-	TitlePaymentConfirmed           = "Payment Confirmed"
+	TitlePaymentConfirmed           = "Payment Confirmation"
 	TitleTestResults                = "Test Results Available"
 	TitleStaffNotification          = "New Appointment"
 	TitlePolicyUpdate               = "Policy Update"

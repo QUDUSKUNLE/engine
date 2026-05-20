@@ -2,6 +2,7 @@ package emails
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"time"
 )
@@ -142,25 +143,25 @@ const BaseLayout = `
                 {{template "email_verification" .Data}}
             {{else if eq .Type "dc_management_notification" }}
                 {{template "dc_management_notification" .Data}}
-            {{else if eq .Type "appointment_cancellation"}}
+            {{else if eq .Type "appointment_cancellation" }}
                 {{template "appointment_cancellation" .Data}}
-            {{else if eq .Type "dc_manager_notification"}} 
+            {{else if eq .Type "dc_manager_notification" }} 
                 {{template "dc_manager_notification" .Data}}
-            {{else if eq .Type "password_reset"}}
+            {{else if eq .Type "password_reset" }}
                 {{template "password_reset" .Data}}
-            {{else if eq .Type "appointment_reminder"}}
+            {{else if eq .Type "appointment_reminder" }}
                 {{template "appointment_reminder" .Data}}
-            {{else if eq .Type "appointment_confirmation"}}
+            {{else if eq .Type "appointment_confirmation" }}
                 {{template "appointment_confirmation" .Data}}
-            {{else if eq .Type "appointment_reschedule"}}
+            {{else if eq .Type "appointment_reschedule" }}
                 {{template "appointment_reschedule" .Data}}
-            {{else if eq .Type "payment_confirmation"}}
+            {{else if eq .Type "payment_confirmation" }}
                 {{template "payment_confirmation" .Data}}
-            {{else if eq .Type "test_results"}}
+            {{else if eq .Type "test_results" }}
                 {{template "test_results" .Data}}
-            {{else if eq .Type "staff_notification"}}
+            {{else if eq .Type "staff_notification" }}
                 {{template "staff_notification" .Data}}
-            {{else if eq .Type "policy_update"}}
+            {{else if eq .Type "policy_update" }}
                 {{template "policy_update" .Data}}
             {{end}}
         </div>
@@ -184,21 +185,24 @@ var TemplateFuncs = template.FuncMap{
 		return t.Format("3:04 PM")
 	},
 	"formatCurrency": func(amount float64) string {
-		return "₦%.2f" // Using Naira symbol for Nigerian currency
+		return fmt.Sprintf("₦%.2f", amount) // Using Naira symbol for Nigerian currency
 	},
 }
 
 // GetAppointmentReminderTemplate returns the rendered appointment reminder email
 func GetTemplate(data AppointmentEmailData) (string, error) {
 	baseTemplate := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
-	contentTemplate := template.Must(baseTemplate.New("content").Parse(data.EmailData.TemplateName))
+	template.Must(
+		baseTemplate.Parse(string(data.EmailData.Content)))
 
 	var buf bytes.Buffer
-	err := contentTemplate.ExecuteTemplate(&buf, "base", map[string]interface{}{
+	err := baseTemplate.ExecuteTemplate(&buf, "base", map[string]interface{}{
 		"Title":         data.Title,
 		"Icon":          data.Icon,
 		"Content":       data.Content,
 		"FooterContent": data.FooterContent,
+		"Type":          data.EmailData.TemplateName,
+		"Data":          data,
 	})
 	if err != nil {
 		return "", err
