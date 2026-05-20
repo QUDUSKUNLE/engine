@@ -78,24 +78,19 @@ linters-settings:
 run:
   timeout: 5m
   tests: false
-  skip-dirs:
-    - vendor/
-    - docs/
-  skip-files:
-    - ".*_test\\.go$"
-    - "\\.pb\\.go$"
 
 issues:
+  exclude:
+    - ".*_test\\.go$"
+    - "\\.pb\\.go$"
+  exclude-dirs:
+    - vendor
+    - docs
   exclude-rules:
-    - path: _test.go
+    - path: _test\.go
       linters:
         - errcheck
         - funlen
         - gocyclo
   max-same-issues: 10
   max-issues-per-linter: 50
-
-output:
-  format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true
