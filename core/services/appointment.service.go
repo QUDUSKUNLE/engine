@@ -733,7 +733,6 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 	data := emails.AppointmentEmailData{
 		EmailData: emails.EmailData{
 			AppName: "Diagnoxix",
-			TemplateName: emails.AppointmentConfirmationTemplate,
 		},
 		PatientName:     patient.Fullname.String,
 		AppointmentID:   appointment.ID,
@@ -744,16 +743,14 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 		Notes:           appointment.Notes.String,
 	}
 
-	// Get email template
-	emailBody, err := emails.GetTemplate(data)
-	if err != nil {
-		utils.Error("Failed to generate confirmation email template",
-			utils.LogField{Key: "error", Value: err.Error()})
-		return
-	}
 
 	// Send email
-	if err := service.notificationPort.SendEmail(patient.Email.String, emails.TitleAppointmentConfirmed, emailBody, data); err != nil {
+	if err := service.notificationPort.SendEmail(
+		patient.Email.String,
+		emails.TitleAppointmentConfirmed,
+		emails.TemplateAppointmentConfirmed,
+		&data,
+	); err != nil {
 		utils.Error("Failed to send confirmation email",
 			utils.LogField{Key: "error", Value: err.Error()})
 	}

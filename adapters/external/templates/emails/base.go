@@ -1,7 +1,6 @@
 package emails
 
 import (
-	"bytes"
 	"fmt"
 	"html/template"
 	"time"
@@ -189,24 +188,3 @@ var TemplateFuncs = template.FuncMap{
 	},
 }
 
-// GetAppointmentReminderTemplate returns the rendered appointment reminder email
-func GetTemplate(data AppointmentEmailData) (string, error) {
-	baseTemplate := template.Must(template.New("base").Funcs(TemplateFuncs).Parse(BaseLayout))
-	template.Must(
-		baseTemplate.Parse(string(data.EmailData.Content)))
-
-	var buf bytes.Buffer
-	err := baseTemplate.ExecuteTemplate(&buf, "base", map[string]interface{}{
-		"Title":         data.Title,
-		"Icon":          data.Icon,
-		"Content":       data.Content,
-		"FooterContent": data.FooterContent,
-		"Type":          data.EmailData.TemplateName,
-		"Data":          data,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
-}
