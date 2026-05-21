@@ -23,12 +23,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
+	// @host engine-nwu3.onrender.com
 )
 
 // @title Diagnoxix AI
 // @version 1.0
 // @description Diagnoxix AI API
-// @host engine-nwu3.onrender.com
+// @host 127.0.0.1:7556
 // @BasePath /
 func main() {
 	// Initialize logger with custom configuration

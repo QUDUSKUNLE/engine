@@ -14,6 +14,7 @@ func (job *ReminderJob) Start() {
 	// Run every hour to check for appointments that need reminders
 	job.scheduler.Every(1).Hour().Do(job.sendAppointmentReminders)
 	job.scheduler.StartAsync()
+
 	utils.Info("Reminder job manager started")
 }
 
@@ -24,6 +25,8 @@ func (job *ReminderJob) Stop() {
 func (job *ReminderJob) sendAppointmentReminders() {
 	ctx := context.Background()
 	now := time.Now()
+
+	utils.Info("Reminder job for the next 1 hour is about to run...")
 
 	// Get appointments in the next 24 hours that haven't had reminders sent
 	appointments, err := job.appointmentRepo.GetUpcomingAppointments(ctx, db.GetUpComingAppointmentsParams{
@@ -56,6 +59,8 @@ func (job *ReminderJob) sendAppointmentReminders() {
 				utils.LogField{Key: "appointment_id", Value: appointment.ID})
 		}
 	}
+
+	utils.Info("Finished reminder job for the next 1 hour...")
 }
 
 func (job *ReminderJob) SendReminderEmail(param *db.GetUpComingAppointmentsRow) error {

@@ -1503,7 +1503,7 @@ definitions:
       value:
         type: string
     type: object
-host: engine-nwu3.onrender.com
+host: 127.0.0.1:7556
 info:
   contact: {}
   description: Diagnoxix AI API
@@ -2317,6 +2317,11 @@ paths:
       description: Get availability slots for the diagnostic centre, optionally filtered
         by day of week
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - default: 123e4567-e89b-12d3-a456-426614174000
         description: Diagnostic Centre ID
         in: path
@@ -2360,6 +2365,8 @@ paths:
           description: INTERNAL_SERVER_ERROR
           schema:
             $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
       summary: Get availability for a diagnostic centre
       tags:
       - Availability
@@ -2368,6 +2375,11 @@ paths:
       - application/json
       description: Update multiple availability slots for the diagnostic centre
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - default: 123e4567-e89b-12d3-a456-426614174000
         description: Diagnostic Centre ID
         in: path
@@ -2405,6 +2417,8 @@ paths:
           description: INTERNAL_SERVER_ERROR
           schema:
             $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
       summary: Bulk update availability for a diagnostic centre
       tags:
       - Availability
@@ -2414,6 +2428,11 @@ paths:
       - application/json
       description: Delete an availability slot for the diagnostic centre
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - default: 123e4567-e89b-12d3-a456-426614174000
         description: Diagnostic Centre ID
         in: path
@@ -2442,6 +2461,8 @@ paths:
           description: INTERNAL_SERVER_ERROR
           schema:
             $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
       summary: Delete availability for a diagnostic centre
       tags:
       - Availability
@@ -2450,6 +2471,11 @@ paths:
       - application/json
       description: Update an existing availability slot for the diagnostic centre
       parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - default: 123e4567-e89b-12d3-a456-426614174000
         description: Diagnostic Centre ID
         in: path
@@ -2490,6 +2516,8 @@ paths:
           description: INTERNAL_SERVER_ERROR
           schema:
             $ref: '#/definitions/handlers.INTERNAL_SERVER_ERROR'
+      security:
+      - BearerAuth: []
       summary: Update availability for a diagnostic centre
       tags:
       - Availability

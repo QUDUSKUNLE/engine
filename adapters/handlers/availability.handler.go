@@ -28,6 +28,8 @@ func (handler *HTTPHandler) CreateAvailability(context echo.Context) error {
 // @Tags Availability
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param day_of_week query string false "Day of week" Enums(monday,tuesday,wednesday,thursday,friday,saturday,sunday)
 // @Success 200 {array} domain.AvailabilitySlot "SUCCESS_RESPONSE"
@@ -45,6 +47,8 @@ func (handler *HTTPHandler) GetAvailability(context echo.Context) error {
 // @Tags Availability
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param day_of_week path string true "Day of week (monday, tuesday, etc.)"
 // @Param RequestBody body domain.UpdateAvailabilityDTO true "Updated availability information"
@@ -63,6 +67,8 @@ func (h *HTTPHandler) UpdateAvailability(c echo.Context) error {
 // @Tags Availability
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param RequestBody body domain.UpdateManyAvailabilityDTO true "Updated availability information"
 // @Success 200 {array} domain.AvailabilitySlot "SUCCESS_RESPONSE"
@@ -80,6 +86,8 @@ func (handler *HTTPHandler) UpdateManyAvailability(context echo.Context) error {
 // @Tags Availability
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer token"
 // @Param diagnostic_centre_id path string true "Diagnostic Centre ID" default(123e4567-e89b-12d3-a456-426614174000)
 // @Param day_of_week path string true "Day of week (monday, tuesday, etc.)"
 // @Success 204 "No Content"
