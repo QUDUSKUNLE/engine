@@ -68,7 +68,11 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		utils.Error("Failed to create schedule",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: currentUser.UserID})
-		return utils.ErrorResponse(http.StatusUnprocessableEntity, err, context)
+		return utils.ErrorResponse(
+			http.StatusUnprocessableEntity,
+			err,
+			context,
+		)
 	}
 
 	// Create appointment with confirmed status since schedule is auto-accepted
@@ -100,7 +104,11 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 		utils.Error("Failed to convert amount to numeric",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "amount", Value: amount})
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New("invalid amount format"), context)
+		return utils.ErrorResponse(
+			http.StatusBadRequest,
+			errors.New("invalid amount format"),
+			context,
+		)
 	}
 
 	// Generate unique reference for this payment
@@ -212,14 +220,22 @@ func (service *ServicesHandler) CreateAppointment(context echo.Context) error {
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "appointment_id", Value: appointment.ID},
 		)
-		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+		return utils.ErrorResponse(
+			http.StatusInternalServerError,
+			err,
+			context,
+		)
 	}
 
 	// Commit transaction
 	if err := tx.Commit(ctx); err != nil {
 		utils.Error("Failed to commit appointment transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
-		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit appointment transaction"), context)
+		return utils.ErrorResponse(
+			http.StatusInternalServerError,
+			errors.New("failed to commit appointment transaction"),
+			context,
+		)
 	}
 
 	return utils.ResponseMessage(http.StatusCreated, map[string]interface{}{
@@ -540,13 +556,16 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
 
-	_, err = service.notificationRepo.CreateNotification(ctx, db.CreateNotificationParams{
-		UserID:   currentUser.UserID.String(),
-		Type:     db.NotificationTypeAPPOINTMENTCANCELLED,
-		Title:    dto.Reason,
-		Message:  dto.Reason,
-		Metadata: metadataJSON,
-	})
+	_, err = service.notificationRepo.CreateNotification(
+		ctx,
+		db.CreateNotificationParams{
+			UserID:   currentUser.UserID.String(),
+			Type:     db.NotificationTypeAPPOINTMENTCANCELLED,
+			Title:    dto.Reason,
+			Message:  dto.Reason,
+			Metadata: metadataJSON,
+		},
+	)
 	if err != nil {
 		utils.Error("Failed to create cancel notification",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -557,46 +576,78 @@ func (service *ServicesHandler) CancelAppointment(context echo.Context) error {
 	// Send cancellation email asynchronously
 	go service.sendAppointmentCancellationEmail(cancelledAppointment)
 
-	return utils.ResponseMessage(http.StatusOK, map[string]string{"message": "Appointment cancelled successfully"}, context)
+	return utils.ResponseMessage(
+		http.StatusOK,
+		map[string]string{"message": "Appointment cancelled successfully"},
+		context,
+	)
 }
 
 // RescheduleAppointment reschedules an appointment to a new time
 func (service *ServicesHandler) RescheduleAppointment(context echo.Context) error {
+
+	ctx := context.Request().Context()
 	// Authentication check
 	currentUser, err := PrivateMiddlewareContext(context, []db.UserEnum{db.UserEnumPATIENT})
 	if err != nil {
-		return utils.ErrorResponse(http.StatusUnauthorized, err, context)
+		return utils.ErrorResponse(
+			http.StatusUnauthorized,
+			err, context,
+		)
 	}
 
 	// Get validated DTO
 	dto := context.Get(utils.ValidatedBodyDTO).(*domain.RescheduleAppointmentDTO)
 
 	// Verify appointment exists and belongs to user
-	appointment, err := service.appointmentPort.GetAppointment(context.Request().Context(), dto.AppointmentID)
+	appointment, err := service.appointmentPort.GetAppointment(ctx, dto.AppointmentID)
 	if err != nil {
-		return utils.ErrorResponse(http.StatusNotFound, errors.New("appointment not found"), context)
+		return utils.ErrorResponse(
+			http.StatusNotFound,
+			errors.New("appointment not found"),
+			context,
+		)
 	}
 
 	if appointment.PatientID != currentUser.UserID.String() {
-		return utils.ErrorResponse(http.StatusForbidden, errors.New("not authorized to reschedule this appointment"), context)
+		return utils.ErrorResponse(
+			http.StatusForbidden,
+			errors.New("not authorized to reschedule this appointment"),
+			context,
+		)
 	}
 
 	// Verify appointment can be rescheduled
 	if appointment.Status != db.AppointmentStatusPending && appointment.Status != db.AppointmentStatusConfirmed {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New("appointment cannot be rescheduled in its current state"), context)
+		return utils.ErrorResponse(
+			http.StatusBadRequest,
+			errors.New("appointment cannot be rescheduled in its current state"),
+			context,
+		)
 	}
 
 	// Verify new schedule exists and is valid
-	newSchedule, err := service.schedulePort.GetDiagnosticScheduleByCentre(context.Request().Context(), db.Get_Diagnsotic_Schedule_By_CentreParams{
-		ID:                 dto.NewScheduleID,
-		DiagnosticCentreID: appointment.DiagnosticCentreID,
-	})
+	newSchedule, err := service.schedulePort.GetDiagnosticScheduleByCentre(
+		ctx,
+		db.Get_Diagnsotic_Schedule_By_CentreParams{
+			ID:                 dto.NewScheduleID,
+			DiagnosticCentreID: appointment.DiagnosticCentreID,
+		},
+	)
 	if err != nil {
-		return utils.ErrorResponse(http.StatusNotFound, errors.New("new schedule not found"), context)
+		return utils.ErrorResponse(
+			http.StatusNotFound,
+			errors.New("new schedule not found"),
+			context,
+		)
 	}
 
 	if newSchedule.AcceptanceStatus != db.ScheduleAcceptanceStatusACCEPTED {
-		return utils.ErrorResponse(http.StatusBadRequest, errors.New("new schedule is not accepted"), context)
+		return utils.ErrorResponse(
+			http.StatusBadRequest,
+			errors.New("new schedule is not accepted"),
+			context,
+		)
 	}
 
 	// Reschedule appointment
@@ -610,7 +661,7 @@ func (service *ServicesHandler) RescheduleAppointment(context echo.Context) erro
 		TimeSlot:           dto.NewTimeSlot,
 	}
 
-	rescheduledAppointment, err := service.appointmentPort.RescheduleAppointment(context.Request().Context(), params)
+	rescheduledAppointment, err := service.appointmentPort.RescheduleAppointment(ctx, params)
 	if err != nil {
 		utils.Error("Failed to reschedule appointment",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -625,7 +676,10 @@ func (service *ServicesHandler) RescheduleAppointment(context echo.Context) erro
 }
 
 // Helper function to verify and update payment
-func (service *ServicesHandler) verifyAndUpdatePayment(ctx context.Context, providerReference string) (*db.Payment, error) {
+func (service *ServicesHandler) verifyAndUpdatePayment(
+	ctx context.Context,
+	providerReference string,
+) (*db.Payment, error) {
 	// Verify payment with provider
 	verificationResponse, err := service.paymentService.VerifyTransaction(providerReference)
 	if err != nil {
@@ -743,7 +797,6 @@ func (service *ServicesHandler) sendAppointmentConfirmationEmail(appointment *db
 		Notes:           appointment.Notes.String,
 	}
 
-
 	// Send email
 	if err := service.notificationPort.SendEmail(
 		patient.Email.String,
@@ -780,7 +833,7 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 		return
 	}
 
-	_ = emails.AppointmentEmailData{
+	data := emails.AppointmentEmailData{
 		EmailData: emails.EmailData{
 			AppName: "Diagnoxix",
 		},
@@ -789,20 +842,19 @@ func (service *ServicesHandler) sendAppointmentCancellationEmail(appointment *db
 		AppointmentDate: appointment.AppointmentDate.Time,
 		TimeSlot:        appointment.TimeSlot,
 		CentreName:      centre.DiagnosticCentreName,
-		// Status:          appointment.Status,
+		Status:          string(appointment.Status),
 	}
 
-	// "body, err := emails.GetAppointmentCancellationTemplate(data)
-	// if err != nil {
-	// 	utils.Error("Failed to generate cancellation email template",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// 	return
-	// }"
-
-	// if err := service.notificationPort.SendEmail(patient.Email.String, "Appointment Cancelled", body); err != nil {
-	// 	utils.Error("Failed to send cancellation email",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// }
+	
+	if err := service.notificationPort.SendEmail(
+		patient.Email.String,
+		emails.TitleAppointmentCancelled,
+		emails.AppointmentCancellationTemplate,
+		&data,
+	); err != nil {
+		utils.Error("Failed to send cancellation email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
 }
 
 func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.Appointment) {
@@ -825,7 +877,7 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 		return
 	}
 
-	_ = emails.AppointmentEmailData{
+	data := emails.AppointmentEmailData{
 		EmailData: emails.EmailData{
 			AppName: "Diagnoxix",
 		},
@@ -834,29 +886,35 @@ func (service *ServicesHandler) sendAppointmentRescheduleEmail(appointment *db.A
 		AppointmentDate: appointment.AppointmentDate.Time,
 		TimeSlot:        appointment.TimeSlot,
 		CentreName:      centre.DiagnosticCentreName,
-		// Status:          appointment.Status,
+		Status:          string(appointment.Status),
 	}
 
-	// body, err := emails.GetAppointmentRescheduleTemplate(data)
-	// if err != nil {
-	// 	utils.Error("Failed to generate reschedule email template",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// 	return
-	// }
 
-	// if err := service.notificationPort.SendEmail(patient.Email.String, "Appointment Rescheduled", body); err != nil {
-	// 	utils.Error("Failed to send reschedule email",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// }
+	if err := service.notificationPort.SendEmail(
+		patient.Email.String,
+		emails.TitleAppointmentReschedule,
+		emails.TemplateAppointmentReschedule,
+		&data,
+	); err != nil {
+		utils.Error("Failed to send reschedule email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
 }
 
 // notifyDiagnosticCentreOfNewAppointment notifies the diagnostic centre about a new appointment
-func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointment *db.Appointment, centre *db.DiagnosticCentre) {
+func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(
+	appointment *db.Appointment,
+	centre *db.DiagnosticCentre,
+) {
+	ctx := context.Background()
 	// Get schedule details to get test type and doctor preference
-	schedule, err := service.schedulePort.GetDiagnosticScheduleByCentre(context.Background(), db.Get_Diagnsotic_Schedule_By_CentreParams{
-		ID:                 appointment.ScheduleID,
-		DiagnosticCentreID: appointment.DiagnosticCentreID,
-	})
+	schedule, err := service.schedulePort.GetDiagnosticScheduleByCentre(
+		ctx,
+		db.Get_Diagnsotic_Schedule_By_CentreParams{
+			ID:                 appointment.ScheduleID,
+			DiagnosticCentreID: appointment.DiagnosticCentreID,
+		},
+	)
 	if err != nil {
 		utils.Error("Failed to get schedule details for centre notification",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -865,7 +923,7 @@ func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointme
 
 	// Get patient details
 	patient, err := service.userPort.GetUserByEmail(
-		context.Background(),
+		ctx,
 		pgtype.Text{String: appointment.PatientID, Valid: true},
 	)
 	if err != nil {
@@ -882,7 +940,7 @@ func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointme
 		return
 	}
 
-	_ = emails.StaffNotificationData{
+	data := emails.StaffNotificationData{
 		EmailData: emails.EmailData{
 			AppName: "Diagnoxix",
 		},
@@ -897,18 +955,16 @@ func (service *ServicesHandler) NotifyDiagnosticCentreOfNewAppointment(appointme
 		RequiredAction:  "New appointment confirmation received",
 	}
 
-	// body, err := emails.GetStaffNotificationTemplate(data)
-	// if err != nil {
-	// 	utils.Error("Failed to generate staff notification template",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// 	return
-	// }
-
-	// // Send email to diagnostic centre's primary email
-	// if err := service.notificationPort.SendEmail(contact.Email, "New Appointment Confirmation", body); err != nil {
-	// 	utils.Error("Failed to send centre notification email",
-	// 		utils.LogField{Key: "error", Value: err.Error()})
-	// }
+	// Send email to diagnostic centre's primary email
+	if err := service.notificationPort.SendEmail(
+		contact.Email,
+		emails.TitleStaffNotification,
+		emails.TemplateStaffNotification,
+		&data,
+	); err != nil {
+		utils.Error("Failed to send centre notification email",
+			utils.LogField{Key: "error", Value: err.Error()})
+	}
 
 	// If configured, also send SMS notifications to all phone numbers
 	for _, phone := range contact.Phone {
