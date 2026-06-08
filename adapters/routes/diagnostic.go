@@ -34,7 +34,7 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			factory: func() interface{} {
 				return &domain.PaginationQueryDTO{}
 			},
-			description: "Get Diagnostic Centre Manager",
+			description: "Get Diagnostic Centre Managers",
 		},
 		{
 			method:  http.MethodPost,

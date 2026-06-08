@@ -8,16 +8,16 @@ import (
 
 const (
 	PaymentMethodCard     PaymentMethod = "card"
-	PaymentMethodTransfer PaymentMethod = "transfer"
 	PaymentMethodCash     PaymentMethod = "cash"
 	PaymentMethodWallet   PaymentMethod = "wallet"
+	PaymentMethodTransfer PaymentMethod = "transfer"
 )
 
 const (
-	PaymentProviderPaystack    PaymentProvider = "PAYSTACK"
-	PaymentProviderFlutterwave PaymentProvider = "FLUTTERWAVE"
 	PaymentProviderStripe      PaymentProvider = "STRIPE"
 	PaymentProviderMonnify     PaymentProvider = "MONNIFY"
+	PaymentProviderPaystack    PaymentProvider = "PAYSTACK"
+	PaymentProviderFlutterwave PaymentProvider = "FLUTTERWAVE"
 )
 
 type (
