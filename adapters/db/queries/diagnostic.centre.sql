@@ -123,17 +123,32 @@ SET
   contact = COALESCE($7, contact),
   doctors = COALESCE($8, doctors),
   available_tests = COALESCE($9, available_tests),
-  admin_id = CASE 
-    WHEN $10 IS NULL THEN NULL 
-    ELSE COALESCE($10, admin_id)
-  END,
-  admin_assigned_by = CASE
-    WHEN $10 IS NULL THEN NULL -- If admin_id is null, also null the assigned_by
-    ELSE COALESCE($11, admin_assigned_by)
-  END,
+  admin_id = $10,
+  admin_assigned_by = $11,
   updated_at = NOW()
 WHERE id = $1 AND created_by = $2
 RETURNING *;
+
+-- Get Centre With Pricess
+-- name: GetDiagnosticCentreWithPrices :one
+SELECT
+  dc.*,
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_test_prices dctp
+  ON dctp.diagnostic_centre_id = dc.id
+LEFT JOIN LATERAL (
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'test_type', dctp.test_type,
+      'price', dctp.price
+    )
+  ) AS test_prices
+  FROM diagnostic_centre_test_prices dctp
+  WHERE dctp.diagnostic_centre_id = dc.id
+) prices ON true
+WHERE dc.id = $1
+GROUP BY dc.id, prices.test_prices;
 
 -- Deletes a diagnosticCentre only by the created_by.
 -- name: Delete_Diagnostic_Centre_ByOwner :one

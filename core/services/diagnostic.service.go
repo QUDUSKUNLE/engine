@@ -24,6 +24,8 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 		return echo.NewHTTPError(http.StatusUnauthorized, utils.AuthenticationRequired)
 	}
 
+	ctx := context.Request().Context()
+
 	// This validated at the middleware level
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.CreateDiagnosticDTO)
 
@@ -39,18 +41,17 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	params.CreatedBy = currentUser.UserID.String()
 
 	// Start transaction
-	tx, err := service.diagnosticPort.BeginDiagnostic(context.Request().Context())
+	tx, err := service.diagnosticPort.BeginDiagnostic(ctx)
 	if err != nil {
 		utils.Error("Failed to start diagnostic transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
 	}
-	defer tx.Rollback(context.Request().Context())
+	defer tx.Rollback(ctx)
 
 	// Make this a transaction
 	// Create diagnostic centre
-	diagnostic_centre, err := tx.CreateDiagnosticCentre(
-		context.Request().Context(), *params)
+	diagnostic_centre, err := tx.CreateDiagnosticCentre(ctx, *params)
 	if err != nil {
 		utils.Error("Failed to create diagnostic centre",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -80,7 +81,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
-	test_price, err := tx.CreateTestPrice(context.Request().Context(), *buildPrice)
+	test_price, err := tx.CreateTestPrice(ctx, *buildPrice)
 	if err != nil {
 		utils.Error("Failed to submit test price",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -109,7 +110,7 @@ func (service *ServicesHandler) CreateDiagnosticCentre(context echo.Context) err
 	}
 
 	// Commit transaction
-	if err := tx.Commit(context.Request().Context()); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		utils.Error("Failed to commit diagnostic transaction",
 			utils.LogField{Key: "error", Value: err.Error()})
 		return utils.ErrorResponse(http.StatusInternalServerError, errors.New("failed to commit transaction"), context)
@@ -352,16 +353,67 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	if err != nil {
 		return utils.ErrorResponse(http.StatusBadRequest, err, context)
 	}
+
 	dto.ID = param_id
 	dto.CreatedBy = currentUser.UserID.String()
 	if body.ADMINID != uuid.Nil {
 		dto.AdminAssignedBy = pgtype.UUID{Bytes: currentUser.UserID, Valid: true}
 	}
-	response, err := service.diagnosticPort.UpdateDiagnosticCentreByOwner(context.Request().Context(), *dto)
+
+	ctx := context.Request().Context()
+
+	// Implement test Price here
+	buildPrice, err := buildTestPrice(&domain.CreateDiagnosticDTO{
+		DiagnosticCentreName: dto.DiagnosticCentreName,
+		Latitude:             dto.Latitude.Float64,
+		Longitude:            dto.Longitude.Float64,
+		Address:              body.Address,
+		Contact:              body.Contact,
+		AvailableTests:       body.AvailableTests,
+	}, dto.ID)
+	if err != nil {
+		utils.Error("Failed to build test prices",
+			utils.LogField{Key: "error", Value: err.Error()})
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+
+	_, err = service.testPricePort.CreateTestPrice(ctx, *buildPrice)
+	if err != nil {
+		utils.Error("Failed to submit test price",
+			utils.LogField{Key: "error", Value: err.Error()},
+			utils.LogField{Key: "admin_id", Value: dto.AdminID})
+		return utils.ErrorResponse(http.StatusBadRequest, err, context)
+	}
+
+	response, err := service.diagnosticPort.UpdateDiagnosticCentreByOwner(ctx, *dto)
 	if err != nil {
 		return utils.ErrorResponse(http.StatusNotAcceptable, err, context)
 	}
-	return utils.ResponseMessage(http.StatusNoContent, response, context)
+
+	resp, err := service.diagnosticPort.GetDiagnosticWithPrices(ctx, response.ID)
+
+	row := &db.List_Diagnostic_Centres_ByOwnerRow{
+		ID: resp.ID,
+		DiagnosticCentreName: resp.DiagnosticCentreName,
+		Latitude: resp.Latitude,
+		Longitude: resp.Longitude,
+		Address: resp.Address,
+		Contact: resp.Contact,
+		Doctors: resp.Doctors,
+		AvailableTests: resp.AvailableTests,
+		CreatedAt: resp.CreatedAt,
+		UpdatedAt: resp.UpdatedAt,
+		AdminID: resp.AdminID,
+		TestPrices: resp.TestPrices,
+		AdminAssignedAt: resp.AdminAssignedAt,
+		AdminStatus: resp.AdminStatus,
+	}
+	// Build response
+	res, err := buildDiagnosticCentreResponseFromRow(row)
+	if err != nil {
+		return utils.ErrorResponse(http.StatusInternalServerError, err, context)
+	}
+	return utils.ResponseMessage(http.StatusAccepted, res, context)
 }
 
 // DeleteDiagnosticCentre deletes a diagnostic center (owner only)

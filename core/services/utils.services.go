@@ -212,7 +212,10 @@ func buildUpdateDiagnosticCentreByOwnerParams(value *domain.UpdateDiagnosticBody
 	copy(doctors, value.Doctors)
 
 	availableTests := make([]string, len(value.AvailableTests))
-	copy(availableTests, value.AvailableTests)
+
+	for i, v := range value.AvailableTests {
+		availableTests[i] = v.TestType
+	}
 
 	var adminID pgtype.UUID
 	if value.ADMINID != uuid.Nil {
