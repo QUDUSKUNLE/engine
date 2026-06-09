@@ -38,6 +38,8 @@ type Querier interface {
 	GetAdminHistory(ctx context.Context, id string) ([]*GetAdminHistoryRow, error)
 	GetAppointment(ctx context.Context, id string) (*Appointment, error)
 	GetCentreAppointments(ctx context.Context, arg GetCentreAppointmentsParams) ([]*GetCentreAppointmentsRow, error)
+	// Get Centre With Pricess
+	GetDiagnosticCentreWithPrices(ctx context.Context, id string) (*GetDiagnosticCentreWithPricesRow, error)
 	GetEmailVerificationToken(ctx context.Context, token string) (*EmailVerificationToken, error)
 	// Get a Medical Record
 	GetMedicalRecord(ctx context.Context, arg GetMedicalRecordParams) (*GetMedicalRecordRow, error)

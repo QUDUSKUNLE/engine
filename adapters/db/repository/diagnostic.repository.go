@@ -39,6 +39,13 @@ func (repo *Repository) GetDiagnosticCentre(
 	return repo.database.Get_Diagnostic_Centre(ctx, arg)
 }
 
+func (repo *Repository) GetDiagnosticWithPrices(
+	ctx context.Context,
+	arg string,
+) (*db.GetDiagnosticCentreWithPricesRow, error) {
+	return repo.database.GetDiagnosticCentreWithPrices(ctx, arg)
+}
+
 func (repo *Repository) GetDiagnosticCentreByManager(
 	ctx context.Context,
 	arg db.Get_Diagnostic_Centre_ByManagerParams,

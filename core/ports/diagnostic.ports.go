@@ -23,6 +23,11 @@ type DiagnosticRepository interface {
 		id string,
 	) (*db.Get_Diagnostic_CentreRow, error)
 
+	GetDiagnosticWithPrices(
+		ctx context.Context,
+		id string,
+	) (*db.GetDiagnosticCentreWithPricesRow, error)
+
 	UpdateDiagnosticCentreByOwner(
 		ctx context.Context,
 		params db.Update_Diagnostic_Centre_ByOwnerParams,

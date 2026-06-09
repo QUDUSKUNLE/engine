@@ -15,4 +15,9 @@ INSERT INTO diagnostic_centre_test_prices (
     is_active
 ) 
 SELECT * FROM test_price_params
+ON CONFLICT (diagnostic_centre_id, test_type)
+DO UPDATE SET
+    price = EXCLUDED.price,
+    currency = EXCLUDED.currency,
+    is_active = EXCLUDED.is_active
 RETURNING *;

@@ -323,6 +323,75 @@ func (q *Queries) GetAdminHistory(ctx context.Context, id string) ([]*GetAdminHi
 	return items, nil
 }
 
+const getDiagnosticCentreWithPrices = `-- name: GetDiagnosticCentreWithPrices :one
+SELECT
+  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
+  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+FROM diagnostic_centres dc
+LEFT JOIN diagnostic_centre_test_prices dctp
+  ON dctp.diagnostic_centre_id = dc.id
+LEFT JOIN LATERAL (
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'test_type', dctp.test_type,
+      'price', dctp.price
+    )
+  ) AS test_prices
+  FROM diagnostic_centre_test_prices dctp
+  WHERE dctp.diagnostic_centre_id = dc.id
+) prices ON true
+WHERE dc.id = $1
+GROUP BY dc.id, prices.test_prices
+`
+
+type GetDiagnosticCentreWithPricesRow struct {
+	ID                   string             `db:"id" json:"id"`
+	DiagnosticCentreName string             `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	Latitude             pgtype.Float8      `db:"latitude" json:"latitude"`
+	Longitude            pgtype.Float8      `db:"longitude" json:"longitude"`
+	Address              []byte             `db:"address" json:"address"`
+	Contact              []byte             `db:"contact" json:"contact"`
+	Doctors              []string           `db:"doctors" json:"doctors"`
+	AvailableTests       []string           `db:"available_tests" json:"available_tests"`
+	CreatedBy            string             `db:"created_by" json:"created_by"`
+	AdminID              pgtype.UUID        `db:"admin_id" json:"admin_id"`
+	CreatedAt            pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	AdminAssignedAt      pgtype.Timestamptz `db:"admin_assigned_at" json:"admin_assigned_at"`
+	AdminAssignedBy      pgtype.UUID        `db:"admin_assigned_by" json:"admin_assigned_by"`
+	AdminUnassignedAt    pgtype.Timestamptz `db:"admin_unassigned_at" json:"admin_unassigned_at"`
+	AdminUnassignedBy    pgtype.UUID        `db:"admin_unassigned_by" json:"admin_unassigned_by"`
+	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
+	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
+}
+
+// Get Centre With Pricess
+func (q *Queries) GetDiagnosticCentreWithPrices(ctx context.Context, id string) (*GetDiagnosticCentreWithPricesRow, error) {
+	row := q.db.QueryRow(ctx, getDiagnosticCentreWithPrices, id)
+	var i GetDiagnosticCentreWithPricesRow
+	err := row.Scan(
+		&i.ID,
+		&i.DiagnosticCentreName,
+		&i.Latitude,
+		&i.Longitude,
+		&i.Address,
+		&i.Contact,
+		&i.Doctors,
+		&i.AvailableTests,
+		&i.CreatedBy,
+		&i.AdminID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdminAssignedAt,
+		&i.AdminAssignedBy,
+		&i.AdminUnassignedAt,
+		&i.AdminUnassignedBy,
+		&i.AdminStatus,
+		&i.TestPrices,
+	)
+	return &i, err
+}
+
 const get_Diagnostic_Centre = `-- name: Get_Diagnostic_Centre :one
 SELECT 
   dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
@@ -1400,14 +1469,8 @@ SET
   contact = COALESCE($7, contact),
   doctors = COALESCE($8, doctors),
   available_tests = COALESCE($9, available_tests),
-  admin_id = CASE 
-    WHEN $10 IS NULL THEN NULL 
-    ELSE COALESCE($10, admin_id)
-  END,
-  admin_assigned_by = CASE
-    WHEN $10 IS NULL THEN NULL -- If admin_id is null, also null the assigned_by
-    ELSE COALESCE($11, admin_assigned_by)
-  END,
+  admin_id = $10,
+  admin_assigned_by = $11,
   updated_at = NOW()
 WHERE id = $1 AND created_by = $2
 RETURNING id, diagnostic_centre_name, latitude, longitude, address, contact, doctors, available_tests, created_by, admin_id, created_at, updated_at, admin_assigned_at, admin_assigned_by, admin_unassigned_at, admin_unassigned_by, admin_status

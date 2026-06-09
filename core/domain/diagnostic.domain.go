@@ -62,15 +62,15 @@ type (
 		DiagnosticCentreID uuid.UUID `param:"diagnostic_centre_id"`
 	}
 	UpdateDiagnosticBodyDTO struct {
-		DiagnosticCentreName string    `json:"diagnostic_centre_name"`
-		Latitude             float64   `json:"latitude"`
-		Longitude            float64   `json:"longitude"`
-		Address              Address   `json:"address"`
-		Contact              Contact   `json:"contact"`
-		Doctors              []string  `json:"doctors"`
-		AvailableTests       []string  `json:"available_tests"`
-		CreatedBy            uuid.UUID `json:"created_by"`
-		ADMINID              uuid.UUID `json:"admin_id"`
+		DiagnosticCentreName string       `json:"diagnostic_centre_name"`
+		Latitude             float64      `json:"latitude"`
+		Longitude            float64      `json:"longitude"`
+		Address              Address      `json:"address"`
+		Contact              Contact      `json:"contact"`
+		Doctors              []string     `json:"doctors"`
+		AvailableTests       []TestPrices `json:"available_tests"`
+		CreatedBy            uuid.UUID    `json:"created_by"`
+		ADMINID              uuid.UUID    `json:"admin_id"`
 	}
 	UpdateDiagnosticManagerDTO struct {
 		ID        uuid.UUID `json:"diagnostic_centre_id" validate:"uuid,required"`
@@ -80,10 +80,10 @@ type (
 		ID uuid.UUID `json:"diagnostic_centre_id" validate:"uuid,required"`
 	}
 	GetDiagnosticRecordsParamDTO struct {
-		DiagnosticCentreID string    `param:"diagnostic_centre_id" validate:"required,uuid"`
+		DiagnosticCentreID string `param:"diagnostic_centre_id" validate:"required,uuid"`
 		StartDate          string `query:"start_date" validate:"omitempty,datetime=2006-01-02"`
 		EndDate            string `query:"end_date" validate:"omitempty,datetime=2006-01-02"`
-		DocumentType       string    `query:"document_type" validate:"omitempty,oneof=LAB_REPORT PRESCRIPTION IMAGING DISCHARGE_SUMMARY OTHER"`
+		DocumentType       string `query:"document_type" validate:"omitempty,oneof=LAB_REPORT PRESCRIPTION IMAGING DISCHARGE_SUMMARY OTHER"`
 		PaginationQueryDTO
 	}
 	PaginationQueryDTO struct {
