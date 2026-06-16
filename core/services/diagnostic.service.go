@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"math"
 
 	"github.com/diagnoxix/adapters/db"
 	"github.com/diagnoxix/adapters/external/templates/emails"
@@ -393,20 +394,20 @@ func (service *ServicesHandler) UpdateDiagnosticCentre(context echo.Context) err
 	resp, err := service.diagnosticPort.GetDiagnosticWithPrices(ctx, response.ID)
 
 	row := &db.List_Diagnostic_Centres_ByOwnerRow{
-		ID: resp.ID,
+		ID:                   resp.ID,
 		DiagnosticCentreName: resp.DiagnosticCentreName,
-		Latitude: resp.Latitude,
-		Longitude: resp.Longitude,
-		Address: resp.Address,
-		Contact: resp.Contact,
-		Doctors: resp.Doctors,
-		AvailableTests: resp.AvailableTests,
-		CreatedAt: resp.CreatedAt,
-		UpdatedAt: resp.UpdatedAt,
-		AdminID: resp.AdminID,
-		TestPrices: resp.TestPrices,
-		AdminAssignedAt: resp.AdminAssignedAt,
-		AdminStatus: resp.AdminStatus,
+		Latitude:             resp.Latitude,
+		Longitude:            resp.Longitude,
+		Address:              resp.Address,
+		Contact:              resp.Contact,
+		Doctors:              resp.Doctors,
+		AvailableTests:       resp.AvailableTests,
+		CreatedAt:            resp.CreatedAt,
+		UpdatedAt:            resp.UpdatedAt,
+		AdminID:              resp.AdminID,
+		TestPrices:           resp.TestPrices,
+		AdminAssignedAt:      resp.AdminAssignedAt,
+		AdminStatus:          resp.AdminStatus,
 	}
 	// Build response
 	res, err := buildDiagnosticCentreResponseFromRow(row)
@@ -515,7 +516,9 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 	}
 
 	result := make([]map[string]interface{}, 0, len(response))
+	var total_available int64
 	for _, centre := range response {
+		total_available = centre.TotalAvailable
 		// Convert DiagnosticCentre to Get_Nearest_Diagnostic_CentresRow
 		centreRow := &db.List_Diagnostic_Centres_ByOwnerRow{
 			ID:                   centre.ID,
@@ -541,8 +544,18 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 		}
 		result = append(result, item)
 	}
+	// totalPages := 
 
-	return utils.ResponseMessage(http.StatusOK, result, context)
+	output := map[string]interface{}{
+		"result": result,
+		"pagination": map[string]interface{}{
+			"page": (params.GetOffset() / params.GetLimit()) + 1,
+			"limit": params.GetLimit(),
+			"total": total_available,
+			"total_pages": int(math.Ceil(float64(total_available) / float64(params.GetLimit()))),
+		},
+	}
+	return utils.ResponseMessage(http.StatusOK, output, context)
 }
 
 // GetDiagnosticCentreStats retrieves statistical information about a diagnostic centre
@@ -814,7 +827,7 @@ func (service *ServicesHandler) AssignAdmin(context echo.Context) error {
 		CentreName:    diagnostic_centre.DiagnosticCentreName,
 		CentreAddress: add,
 	}
-	go service.emailGoroutine(
+	go service.EmailService(
 		emailData,
 		managerDetails.Email,
 		emails.SubjectDiagnosticCentreManagement,
