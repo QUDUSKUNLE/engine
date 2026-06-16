@@ -29,7 +29,7 @@ import (
 // @title Diagnoxix AI
 // @version 1.0
 // @description Diagnoxix AI API
-// @host 127.0.0.1:7556
+// @host engine-nwu3.onrender.com
 // @BasePath /
 func main() {
 	// Initialize logger with custom configuration

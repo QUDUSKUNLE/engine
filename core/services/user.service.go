@@ -76,7 +76,12 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 		ExpiryDuration:   "24 hours",
 	}
 
-	go service.emailGoroutine(emaildata, createdUser.Email.String, emails.SubjectEmailVerification, emails.TemplateEmailVerification)
+	go service.EmailService(
+		emaildata,
+		createdUser.Email.String,
+		emails.SubjectEmailVerification,
+		emails.TemplateEmailVerification,
+	)
 
 	return utils.ResponseMessage(http.StatusCreated, createdUser, context)
 }
@@ -237,7 +242,7 @@ func (service *ServicesHandler) CreateDiagnosticCentreManager(context echo.Conte
 		Password:    password,
 	}
 
-	go service.emailGoroutine(
+	go service.EmailService(
 		emaildata,
 		createdUser.Email.String,
 		emails.SubjectDiagnosticCentreManager,
@@ -330,7 +335,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		ExpiresIn: "15 minutes",
 	}
 
-	go service.emailGoroutine(
+	go service.EmailService(
 		emailData,
 		user.Email.String,
 		emails.SubjectResetPassword,
@@ -543,7 +548,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 		ExpiryDuration:   "24 hours",
 	}
 
-	go service.emailGoroutine(
+	go service.EmailService(
 		emaildata,
 		user.Email.String,
 		emails.SubjectEmailVerification,

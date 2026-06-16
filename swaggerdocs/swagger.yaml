@@ -776,7 +776,7 @@ definitions:
         type: string
       available_tests:
         items:
-          type: string
+          $ref: '#/definitions/domain.TestPrices'
         type: array
       contact:
         $ref: '#/definitions/domain.Contact'
@@ -1503,7 +1503,7 @@ definitions:
       value:
         type: string
     type: object
-host: 127.0.0.1:7556
+host: engine-nwu3.onrender.com
 info:
   contact: {}
   description: Diagnoxix AI API

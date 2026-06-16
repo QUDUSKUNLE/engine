@@ -999,34 +999,42 @@ func (q *Queries) Get_Nearest_Diagnostic_Centres(ctx context.Context, arg Get_Ne
 }
 
 const list_Diagnostic_Centres_ByOwner = `-- name: List_Diagnostic_Centres_ByOwner :many
+WITH centres AS (
+  SELECT 
+    dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
+    ARRAY_AGG(
+      json_build_object(
+        'day_of_week', dca.day_of_week,
+        'start_time', dca.start_time,
+        'end_time', dca.end_time,
+        'max_appointments', dca.max_appointments,
+        'slot_duration', dca.slot_duration,
+        'break_time', dca.break_time
+      )
+    ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) AS availability,
+    COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
+  FROM diagnostic_centres dc
+  LEFT JOIN diagnostic_centre_availability dca 
+    ON dc.id = dca.diagnostic_centre_id
+  LEFT JOIN LATERAL (
+    SELECT jsonb_agg(
+      jsonb_build_object(
+        'test_type', dctp.test_type,
+        'price', dctp.price
+      )
+    ) AS test_prices
+    FROM diagnostic_centre_test_prices dctp
+    WHERE dctp.diagnostic_centre_id = dc.id
+  ) prices ON true
+  WHERE dc.created_by = $1
+  GROUP BY dc.id, prices.test_prices
+)
+
 SELECT 
-  dc.id, dc.diagnostic_centre_name, dc.latitude, dc.longitude, dc.address, dc.contact, dc.doctors, dc.available_tests, dc.created_by, dc.admin_id, dc.created_at, dc.updated_at, dc.admin_assigned_at, dc.admin_assigned_by, dc.admin_unassigned_at, dc.admin_unassigned_by, dc.admin_status,
-  ARRAY_AGG(
-    json_build_object(
-      'day_of_week', dca.day_of_week,
-      'start_time', dca.start_time,
-      'end_time', dca.end_time,
-      'max_appointments', dca.max_appointments,
-      'slot_duration', dca.slot_duration,
-      'break_time', dca.break_time
-    )
-  ) FILTER (WHERE dca.diagnostic_centre_id IS NOT NULL) as availability,
-  COALESCE(prices.test_prices, '[]'::jsonb) AS test_prices
-FROM diagnostic_centres dc
-LEFT JOIN diagnostic_centre_availability dca ON dc.id = dca.diagnostic_centre_id
-LEFT JOIN LATERAL (
-  SELECT jsonb_agg(
-    jsonb_build_object(
-      'test_type', dctp.test_type,
-      'price', dctp.price
-    )
-  ) AS test_prices
-  FROM diagnostic_centre_test_prices dctp
-  WHERE dctp.diagnostic_centre_id = dc.id
-) prices ON true
-WHERE dc.created_by = $1
-GROUP BY dc.id, prices.test_prices
-ORDER BY dc.created_at DESC
+  centres.id, centres.diagnostic_centre_name, centres.latitude, centres.longitude, centres.address, centres.contact, centres.doctors, centres.available_tests, centres.created_by, centres.admin_id, centres.created_at, centres.updated_at, centres.admin_assigned_at, centres.admin_assigned_by, centres.admin_unassigned_at, centres.admin_unassigned_by, centres.admin_status, centres.availability, centres.test_prices,
+  COUNT(*) OVER() AS total_available
+FROM centres
+ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -1056,6 +1064,7 @@ type List_Diagnostic_Centres_ByOwnerRow struct {
 	AdminStatus          pgtype.Text        `db:"admin_status" json:"admin_status"`
 	Availability         interface{}        `db:"availability" json:"availability"`
 	TestPrices           []byte             `db:"test_prices" json:"test_prices"`
+	TotalAvailable       int64              `db:"total_available" json:"total_available"`
 }
 
 // Retrieves all diagnostic records for a specific owner.
@@ -1088,6 +1097,7 @@ func (q *Queries) List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_
 			&i.AdminStatus,
 			&i.Availability,
 			&i.TestPrices,
+			&i.TotalAvailable,
 		); err != nil {
 			return nil, err
 		}
