@@ -1,7 +1,7 @@
 package response
 
 // CalculatePagination calculates pagination metadata
-func CalculatePagination(params PaginationParams, total int) *Meta {
+func CalculatePagination(params PaginationParams, total int64) *Meta {
 	if params.Page < 1 {
 		params.Page = 1
 	}
@@ -20,7 +20,7 @@ func CalculatePagination(params PaginationParams, total int) *Meta {
 }
 
 // ParsePaginationParams extracts and validates pagination parameters
-func ParsePaginationParams(page, perPage int) PaginationParams {
+func ParsePaginationParams(page, perPage int64) PaginationParams {
 	params := PaginationParams{
 		Page:    page,
 		PerPage: perPage,
@@ -29,7 +29,7 @@ func ParsePaginationParams(page, perPage int) PaginationParams {
 	if params.Page < 1 {
 		params.Page = 1
 	}
-	if params.PerPage < 1 || params.PerPage > 100 {
+	if params.PerPage < 1 || params.PerPage > 10 {
 		params.PerPage = 10 // Default to 10 items per page with a max of 100
 	}
 
@@ -37,11 +37,11 @@ func ParsePaginationParams(page, perPage int) PaginationParams {
 }
 
 // GetOffset calculates the database query offset based on pagination params
-func (p PaginationParams) GetOffset() int {
+func (p PaginationParams) GetOffset() int64 {
 	return (p.Page - 1) * p.PerPage
 }
 
 // GetLimit returns the number of items to fetch
-func (p PaginationParams) GetLimit() int {
+func (p PaginationParams) GetLimit() int64 {
 	return p.PerPage
 }

@@ -172,7 +172,8 @@ SELECT
   u.updated_at,
   u.created_admin,
   dc.id AS diagnostic_centre_id,
-  dc.diagnostic_centre_name AS diagnostic_centre_name
+  dc.diagnostic_centre_name AS diagnostic_centre_name,
+  COUNT(*) OVER() AS total_count
 FROM users u
 LEFT JOIN diagnostic_centres dc
   ON u.id = dc.admin_id
@@ -206,6 +207,7 @@ type ListUsersByAdminRow struct {
 	CreatedAdmin         pgtype.UUID        `db:"created_admin" json:"created_admin"`
 	DiagnosticCentreID   pgtype.UUID        `db:"diagnostic_centre_id" json:"diagnostic_centre_id"`
 	DiagnosticCentreName pgtype.Text        `db:"diagnostic_centre_name" json:"diagnostic_centre_name"`
+	TotalCount           int64              `db:"total_count" json:"total_count"`
 }
 
 func (q *Queries) ListUsersByAdmin(ctx context.Context, arg ListUsersByAdminParams) ([]*ListUsersByAdminRow, error) {
@@ -236,6 +238,7 @@ func (q *Queries) ListUsersByAdmin(ctx context.Context, arg ListUsersByAdminPara
 			&i.CreatedAdmin,
 			&i.DiagnosticCentreID,
 			&i.DiagnosticCentreName,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
