@@ -88,7 +88,7 @@ type (
 	}
 	PaginationQueryDTO struct {
 		Page    int32 `query:"page" validate:"omitempty,min=1" json:"page"`
-		PerPage int32 `query:"per_page" validate:"omitempty,min=1,max=50" json:"per_page"`
+		PerPage int32 `query:"per_page" validate:"omitempty,min=1,max=10" json:"per_page"`
 	}
 )
 

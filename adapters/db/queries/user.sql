@@ -47,7 +47,8 @@ SELECT
   u.updated_at,
   u.created_admin,
   dc.id AS diagnostic_centre_id,
-  dc.diagnostic_centre_name AS diagnostic_centre_name
+  dc.diagnostic_centre_name AS diagnostic_centre_name,
+  COUNT(*) OVER() AS total_count
 FROM users u
 LEFT JOIN diagnostic_centres dc
   ON u.id = dc.admin_id

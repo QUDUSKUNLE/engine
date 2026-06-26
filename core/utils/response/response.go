@@ -24,16 +24,16 @@ type (
 
 	// Meta holds metadata like pagination info
 	Meta struct {
-		Page      int `json:"page,omitempty"`
-		PerPage   int `json:"per_page,omitempty"`
-		Total     int `json:"total,omitempty"`
-		TotalPage int `json:"total_page,omitempty"`
+		Page      int64 `json:"page,omitempty"`
+		PerPage   int64 `json:"per_page,omitempty"`
+		Total     int64 `json:"total,omitempty"`
+		TotalPage int64 `json:"total_page,omitempty"`
 	}
 
 	// PaginationParams holds pagination request parameters
 	PaginationParams struct {
-		Page    int `query:"page"`
-		PerPage int `query:"per_page"`
+		Page    int64 `query:"page"`
+		PerPage int64 `query:"per_page"`
 	}
 )
 // Success sends a successful response

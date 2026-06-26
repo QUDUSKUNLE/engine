@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -767,7 +768,39 @@ func (service *ServicesHandler) ListManagers(context echo.Context) error {
 	if len(response) == 0 {
 		response = []*db.ListUsersByAdminRow{}
 	}
-	return utils.ResponseMessage(http.StatusOK, response, context)
+
+	result := make([]*db.ListUsersByAdminRow, 0, len(response))
+	var total_count int64
+
+	for _, manager := range response {
+		total_count = manager.TotalCount
+		resultRow := &db.ListUsersByAdminRow{
+			ID:                   manager.ID,
+			Email:                manager.Email,
+			Nin:                  manager.Nin,
+			UserType:             manager.UserType,
+			Fullname:             manager.Fullname,
+			PhoneNumber:          manager.PhoneNumber,
+			EmailVerified:        manager.EmailVerified,
+			EmailVerifiedAt:      manager.EmailVerifiedAt,
+			CreatedAt:            manager.CreatedAt,
+			UpdatedAt:            manager.UpdatedAt,
+			CreatedAdmin:         manager.CreatedAdmin,
+			DiagnosticCentreID:   manager.DiagnosticCentreID,
+			DiagnosticCentreName: manager.DiagnosticCentreName,
+		}
+		result = append(result, resultRow)
+	}
+	output := map[string]interface{}{
+		"result": result,
+		"pagination": map[string]interface{}{
+			"page":        (pagination.GetOffset() / pagination.GetLimit()) + 1,
+			"limit":       pagination.GetLimit(),
+			"total":       total_count,
+			"total_pages": int(math.Ceil(float64(total_count) / float64(pagination.GetLimit()))),
+		},
+	}
+	return utils.ResponseMessage(http.StatusOK, output, context)
 }
 
 func (service *ServicesHandler) OwnerKYC(context echo.Context) error {
