@@ -1027,6 +1027,18 @@ WITH centres AS (
     WHERE dctp.diagnostic_centre_id = dc.id
   ) prices ON true
   WHERE dc.created_by = $1
+  AND (
+      $4::boolean IS NULL
+    OR (
+        $4::boolean = TRUE
+        AND dc.admin_id IS NOT NULL
+    )
+    OR (
+        $4::boolean = FALSE
+        AND dc.admin_id IS NULL
+    )
+
+  )
   GROUP BY dc.id, prices.test_prices
 )
 
@@ -1039,9 +1051,10 @@ LIMIT $2 OFFSET $3
 `
 
 type List_Diagnostic_Centres_ByOwnerParams struct {
-	CreatedBy string `db:"created_by" json:"created_by"`
-	Limit     int32  `db:"limit" json:"limit"`
-	Offset    int32  `db:"offset" json:"offset"`
+	CreatedBy string      `db:"created_by" json:"created_by"`
+	Limit     int32       `db:"limit" json:"limit"`
+	Offset    int32       `db:"offset" json:"offset"`
+	Admin     pgtype.Bool `db:"admin" json:"admin"`
 }
 
 type List_Diagnostic_Centres_ByOwnerRow struct {
@@ -1069,7 +1082,12 @@ type List_Diagnostic_Centres_ByOwnerRow struct {
 
 // Retrieves all diagnostic records for a specific owner.
 func (q *Queries) List_Diagnostic_Centres_ByOwner(ctx context.Context, arg List_Diagnostic_Centres_ByOwnerParams) ([]*List_Diagnostic_Centres_ByOwnerRow, error) {
-	rows, err := q.db.Query(ctx, list_Diagnostic_Centres_ByOwner, arg.CreatedBy, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, list_Diagnostic_Centres_ByOwner,
+		arg.CreatedBy,
+		arg.Limit,
+		arg.Offset,
+		arg.Admin,
+	)
 	if err != nil {
 		return nil, err
 	}

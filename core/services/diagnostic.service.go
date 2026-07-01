@@ -3,9 +3,9 @@ package services
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"strings"
-	"math"
 
 	"github.com/diagnoxix/adapters/db"
 	"github.com/diagnoxix/adapters/external/templates/emails"
@@ -498,13 +498,24 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 	}
 
 	// Get and validate pagination parameters
-	params, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.PaginationQueryDTO)
-	params = SetDefaultPagination(params).(*domain.PaginationQueryDTO)
+	params, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.GetOwnerDiagnosticCentresQueryDTO)
 
 	dbParams := db.List_Diagnostic_Centres_ByOwnerParams{
 		CreatedBy: currentUser.UserID.String(),
-		Limit:     params.GetLimit(),
-		Offset:    params.GetOffset(),
+		Limit:     params.PaginationQueryDTO.GetLimit(),
+		Offset:    params.PaginationQueryDTO.GetOffset(),
+	}
+
+	// only set when query param exists
+	if params.Admin != nil {
+		dbParams.Admin = pgtype.Bool{
+			Bool:  *params.Admin,
+			Valid: true,
+		}
+	} else {
+		dbParams.Admin = pgtype.Bool{
+			Valid: false,
+		}
 	}
 
 	response, err := service.diagnosticPort.ListDiagnosticCentresByOwner(context.Request().Context(), dbParams)
@@ -544,14 +555,14 @@ func (service *ServicesHandler) GetDiagnosticCentresByOwner(context echo.Context
 		}
 		result = append(result, item)
 	}
-	// totalPages := 
+	// totalPages :=
 
 	output := map[string]interface{}{
 		"result": result,
 		"pagination": map[string]interface{}{
-			"page": (params.GetOffset() / params.GetLimit()) + 1,
-			"limit": params.GetLimit(),
-			"total": total_available,
+			"page":        (params.GetOffset() / params.GetLimit()) + 1,
+			"limit":       params.GetLimit(),
+			"total":       total_available,
 			"total_pages": int(math.Ceil(float64(total_available) / float64(params.GetLimit()))),
 		},
 	}
@@ -649,8 +660,10 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 	centreID := context.Param(utils.DiagnosticCentreID)
 	managerDetails, _ := context.Get(utils.ValidatedBodyDTO).(*domain.UpdateDiagnosticManagerDTO)
 
+	ctx := context.Request().Context()
+
 	// Verify ownership
-	_, err = service.diagnosticPort.GetDiagnosticCentreByOwner(context.Request().Context(), db.Get_Diagnostic_Centre_ByOwnerParams{
+	_, err = service.diagnosticPort.GetDiagnosticCentreByOwner(ctx, db.Get_Diagnostic_Centre_ByOwnerParams{
 		ID:        centreID,
 		CreatedBy: currentUser.UserID.String(),
 	})
@@ -664,7 +677,7 @@ func (service *ServicesHandler) UpdateDiagnosticCentreManager(context echo.Conte
 		AdminID:   pgtype.UUID{Bytes: managerDetails.ManagerID, Valid: true},
 	}
 
-	response, err := service.diagnosticPort.UpdateDiagnosticCentreByOwner(context.Request().Context(), updateParams)
+	response, err := service.diagnosticPort.UpdateDiagnosticCentreByOwner(ctx, updateParams)
 	if err != nil {
 		utils.Error("Failed to update diagnostic centre manager",
 			utils.LogField{Key: "error", Value: err.Error()},

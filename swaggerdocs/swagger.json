@@ -2147,6 +2147,12 @@
                         "description": "Items per page",
                         "name": "per_page",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by admin assignment. true=with admin, false=without admin, omit=all centres",
+                        "name": "admin",
+                        "in": "query"
                     }
                 ],
                 "responses": {

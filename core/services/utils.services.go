@@ -270,6 +270,7 @@ func isValidUserType(allowedTypes []db.UserEnum, userType db.UserEnum) bool {
 
 // SetDefaultPagination sets default values for pagination parameters if not provided
 func SetDefaultPagination(params PaginationParams) PaginationParams {
+	
 	if params.GetLimit() <= 0 {
 		params.SetLimit(50) // Default limit
 	}

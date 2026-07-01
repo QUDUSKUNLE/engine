@@ -3374,6 +3374,11 @@ paths:
         minimum: 1
         name: per_page
         type: integer
+      - description: Filter by admin assignment. true=with admin, false=without admin,
+          omit=all centres
+        in: query
+        name: admin
+        type: boolean
       produces:
       - application/json
       responses:
