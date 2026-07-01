@@ -90,9 +90,12 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 func (service *ServicesHandler) CreateWithPhoneNumber(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.PhoneRegisterDTO)
 
+
+	ctx := context.Request().Context()
+
 	// Check if phone number already exists
 	// existingUser, _ := service.userPort.GetUserByPhoneNumber(
-	//     context.Request().Context(),
+	//     ctx,
 	//     pgtype.Text{String: dto.PhoneNumber, Valid: true},
 	// )
 	// if existingUser != nil {
@@ -117,7 +120,7 @@ func (service *ServicesHandler) CreateWithPhoneNumber(context echo.Context) erro
 		EmailVerified: pgtype.Bool{Bool: true, Valid: true}, // Skip email verification
 	}
 
-	createdUser, err := service.userPort.CreateUser(context.Request().Context(), newUser)
+	createdUser, err := service.userPort.CreateUser(ctx, newUser)
 	if err != nil {
 		utils.Error("Failed to create user with phone",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -302,8 +305,9 @@ func (service *ServicesHandler) Login(context echo.Context) error {
 func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.RequestPasswordResetDTO)
 
+	ctx := context.Request().Context()
 	// Check if user exists
-	user, err := service.userPort.GetUserByEmail(context.Request().Context(), pgtype.Text{String: dto.Email, Valid: true})
+	user, err := service.userPort.GetUserByEmail(ctx, pgtype.Text{String: dto.Email, Valid: true})
 	if err != nil {
 		utils.Error("Password reset requested for non-existent user",
 			utils.LogField{Key: "email", Value: dto.Email})
@@ -322,7 +326,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		Token:     token,
 		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
 	}
-	if err := service.userPort.CreatePasswordResetToken(context.Request().Context(), resetToken); err != nil {
+	if err := service.userPort.CreatePasswordResetToken(ctx, resetToken); err != nil {
 		utils.Error("Failed to create password reset token",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "user_id", Value: user.ID})
@@ -351,8 +355,9 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.ResetPasswordDTO)
 
+	ctx := context.Request().Context()
 	// Verify token
-	token, err := service.userPort.GetPasswordResetToken(context.Request().Context(), dto.Token)
+	token, err := service.userPort.GetPasswordResetToken(ctx, dto.Token)
 	if err != nil {
 		utils.Error("Invalid password reset token",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -383,7 +388,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	}
 
 	// Update password
-	if err := service.userPort.UpdateUserPassword(context.Request().Context(), db.UpdateUserPasswordParams{
+	if err := service.userPort.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
 		Email:    pgtype.Text{String: dto.Email, Valid: true},
 		Password: hashedPassword,
 	}); err != nil {
@@ -393,7 +398,7 @@ func (service *ServicesHandler) ResetPassword(context echo.Context) error {
 	}
 
 	// Mark token as used
-	if err := service.userPort.MarkResetTokenUsed(context.Request().Context(), token.ID); err != nil {
+	if err := service.userPort.MarkResetTokenUsed(ctx, token.ID); err != nil {
 		utils.Error("Failed to mark reset token as used",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "token_id", Value: token.ID})
@@ -446,9 +451,10 @@ func (service *ServicesHandler) UpdatePassword(context echo.Context) error {
 func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedQueryParamDTO).(*domain.EmailVerificationDTO)
 
+	ctx := context.Request().Context()
 	// Get user by email
 	user, err := service.userPort.GetUserByEmail(
-		context.Request().Context(),
+		ctx,
 		pgtype.Text{String: dto.Email, Valid: true},
 	)
 	if err != nil {
@@ -458,7 +464,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	}
 
 	// Get and verify token
-	token, err := service.userPort.GetEmailVerificationToken(context.Request().Context(), dto.Token)
+	token, err := service.userPort.GetEmailVerificationToken(ctx, dto.Token)
 	if err != nil {
 		utils.Error("Invalid verification token",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -480,7 +486,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	}
 
 	// Marked user as verified
-	err = service.userPort.MarkEmailAsVerified(context.Request().Context(), dto.Email)
+	err = service.userPort.MarkEmailAsVerified(ctx, dto.Email)
 	if err != nil {
 		utils.Error("Failed to mark user as verified",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -489,7 +495,7 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 	}
 
 	// Mark token as used
-	if err := service.userPort.MarkEmailVerificationTokenUsed(context.Request().Context(), token.ID); err != nil {
+	if err := service.userPort.MarkEmailVerificationTokenUsed(ctx, token.ID); err != nil {
 		utils.Error("Failed to mark verification token as used",
 			utils.LogField{Key: "error", Value: err.Error()},
 			utils.LogField{Key: "token_id", Value: token.ID})
@@ -508,9 +514,10 @@ func (service *ServicesHandler) VerifyEmail(context echo.Context) error {
 func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.ResendVerificationDTO)
 
+	ctx := context.Request().Context()
 	// Get user by email
 	user, err := service.userPort.GetUserByEmail(
-		context.Request().Context(),
+		ctx,
 		pgtype.Text{String: dto.Email, Valid: true},
 	)
 	if err != nil {
@@ -531,7 +538,7 @@ func (service *ServicesHandler) ResendVerification(context echo.Context) error {
 
 	// Save token to database
 	_, err = service.userPort.CreateEmailVerificationToken(
-		context.Request().Context(),
+		ctx,
 		verificationParams,
 	)
 	if err != nil {
@@ -570,8 +577,9 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 		// We only need the ID token, not the client secret since we're using the frontend flow
 	}
 
+	ctx := context.Request().Context()
 	// Create OAuth2 service
-	oauth2Service, err := oauth2v2.New(oauth2.NewClient(context.Request().Context(), nil))
+	oauth2Service, err := oauth2v2.New(oauth2.NewClient(ctx, nil))
 	if err != nil {
 		utils.Error("Failed to create OAuth2 service",
 			utils.LogField{Key: "error", Value: err.Error()})
@@ -602,7 +610,7 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 
 	// Check if user exists
 	user, err := service.userPort.GetUserByEmail(
-		context.Request().Context(),
+		ctx,
 		pgtype.Text{String: tokenInfo.Email, Valid: true},
 	)
 
@@ -623,7 +631,7 @@ func (service *ServicesHandler) GoogleLogin(context echo.Context) error {
 			UserType: db.UserEnumPATIENT,
 		}
 
-		user, err = service.userPort.CreateUser(context.Request().Context(), newUser)
+		user, err = service.userPort.CreateUser(ctx, newUser)
 		if err != nil {
 			utils.Error("Failed to create user from Google login",
 				utils.LogField{Key: "error", Value: err.Error()},
@@ -819,11 +827,10 @@ func (service *ServicesHandler) createUserHelper(
 			errors.New("invalid user type"), context)
 	}
 
+	ctx := context.Request().Context()
+
 	// Check if user exists
-	existingUser, _ := service.userPort.GetUserByEmail(
-		context.Request().Context(),
-		arg.Email,
-	)
+	existingUser, _ := service.userPort.GetUserByEmail(ctx, arg.Email)
 	if existingUser != nil {
 		utils.Error("User already exists",
 			utils.LogField{Key: "email", Value: arg.Email.String})
@@ -831,7 +838,7 @@ func (service *ServicesHandler) createUserHelper(
 	}
 
 	// Create user
-	createdRow, err := service.userPort.CreateUser(context.Request().Context(), arg)
+	createdRow, err := service.userPort.CreateUser(ctx, arg)
 	if err != nil {
 		utils.Error("Failed to create user",
 			utils.LogField{Key: "error", Value: err.Error()})

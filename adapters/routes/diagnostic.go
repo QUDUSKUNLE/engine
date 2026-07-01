@@ -77,7 +77,7 @@ func DiagnosticRoutes(group *echo.Group, handler *handlers.HTTPHandler) {
 			path:    "/diagnostic_centres/owner",
 			handler: handler.GetDiagnosticCentresByOwner,
 			factory: func() interface{} {
-				return &domain.PaginationQueryDTO{}
+				return &domain.GetOwnerDiagnosticCentresQueryDTO{}
 			},
 			description: "Get Owner diagnostic centres",
 		},

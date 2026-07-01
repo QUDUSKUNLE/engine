@@ -184,6 +184,18 @@ WITH centres AS (
     WHERE dctp.diagnostic_centre_id = dc.id
   ) prices ON true
   WHERE dc.created_by = $1
+  AND (
+      sqlc.narg('admin')::boolean IS NULL
+    OR (
+        sqlc.narg('admin')::boolean = TRUE
+        AND dc.admin_id IS NOT NULL
+    )
+    OR (
+        sqlc.narg('admin')::boolean = FALSE
+        AND dc.admin_id IS NULL
+    )
+
+  )
   GROUP BY dc.id, prices.test_prices
 )
 
