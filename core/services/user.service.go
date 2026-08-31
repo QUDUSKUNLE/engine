@@ -53,7 +53,10 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 	verificationParams := db.CreateEmailVerificationTokenParams{
 		Email:     createdUser.Email.String,
 		Token:     token,
-		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
+		ExpiresAt: pgtype.Timestamptz{
+			Time: expiresAt,
+			Valid: true,
+		},
 	}
 
 	// Save verification token
@@ -73,7 +76,12 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 
 	emaildata := &emails.EmailVerificationData{
 		Name:             newUser.Fullname.String,
-		VerificationLink: fmt.Sprintf("%s/v1/verify_email?token=%s&email=%s", service.Config.APP_URL, verificationToken.Token, escapedEmail),
+		VerificationLink: fmt.Sprintf(
+			"%s/v1/verify_email?token=%s&email=%s",
+			service.Config.APP_URL,
+			verificationToken.Token,
+			escapedEmail,
+		),
 		ExpiryDuration:   "24 hours",
 	}
 
@@ -89,7 +97,6 @@ func (service *ServicesHandler) Create(context echo.Context) error {
 
 func (service *ServicesHandler) CreateWithPhoneNumber(context echo.Context) error {
 	dto, _ := context.Get(utils.ValidatedBodyDTO).(*domain.PhoneRegisterDTO)
-
 
 	ctx := context.Request().Context()
 
@@ -112,12 +119,21 @@ func (service *ServicesHandler) CreateWithPhoneNumber(context echo.Context) erro
 
 	// Create user
 	newUser := db.CreateUserParams{
-		Fullname:      pgtype.Text{String: fmt.Sprintf("%s %s", dto.FirstName, dto.LastName), Valid: true},
-		PhoneNumber:   pgtype.Text{String: dto.PhoneNumber, Valid: true},
+		Fullname:      pgtype.Text{
+			String: fmt.Sprintf("%s %s", dto.FirstName, dto.LastName),
+			Valid: true,
+		},
+		PhoneNumber:   pgtype.Text{
+			String: dto.PhoneNumber,
+			Valid: true,
+		},
 		Password:      hashedPassword,
 		UserType:      dto.UserType,
 		Email:         pgtype.Text{},                        // Empty email for phone-based users
-		EmailVerified: pgtype.Bool{Bool: true, Valid: true}, // Skip email verification
+		EmailVerified: pgtype.Bool{
+			Bool: true,
+			Valid: true,
+		}, // Skip email verification
 	}
 
 	createdUser, err := service.userPort.CreateUser(ctx, newUser)
@@ -326,6 +342,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		Token:     token,
 		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
 	}
+
 	if err := service.userPort.CreatePasswordResetToken(ctx, resetToken); err != nil {
 		utils.Error("Failed to create password reset token",
 			utils.LogField{Key: "error", Value: err.Error()},
@@ -334,8 +351,14 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 	}
 
 	// Send password reset email
+	name := user.Fullname.String
+	if !user.Fullname.Valid || name == "" {
+			name = user.Email.String
+	}
+
+	// Send password reset email
 	emailData := &emails.PasswordResetData{
-		Name:      user.Fullname.String,
+		Name:      name,
 		ResetLink: fmt.Sprintf("%s/v1/reset_password?token=%s&email=%s", service.Config.APP_URL, token, url.QueryEscape(user.Email.String)),
 		ExpiresIn: "15 minutes",
 	}
@@ -346,6 +369,7 @@ func (service *ServicesHandler) RequestPasswordReset(context echo.Context) error
 		emails.SubjectResetPassword,
 		emails.TemplateResetPassword,
 	)
+
 
 	return utils.ResponseMessage(http.StatusOK, map[string]string{
 		"message": "If your email exists in our system, you will receive password reset instructions",
